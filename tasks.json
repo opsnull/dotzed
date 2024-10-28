@@ -1,0 +1,26 @@
+[
+  {
+    "label": "emacs-daemon",
+    "command": "emacs",
+    "args": ["--daemon", "-nw", "-q", "-l", "~/emacs/minimal.el"],
+    "env": {},
+    "use_new_terminal": true,
+    "allow_concurrent_runs": true
+  },
+  {
+    "label": "magit",
+    "command": "emacsclient",
+    "args": ["-nw", "-u", "-e", "'(magit-status)'"],
+    "env": {},
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false
+  },
+  {
+    "label": "Lazygit",
+    "command": "lazygit",
+    "args": [],
+    "env": {},
+    "use_new_terminal": true,
+    "allow_concurrent_runs": false
+  }
+]

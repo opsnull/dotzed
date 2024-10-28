@@ -1,0 +1,236 @@
+{
+  // 不使用缺省的 keymap，只使用自定义 keymap。
+  "base_keymap": "None",
+  "assistant": {
+    "default_model": {
+      "provider": "zed.dev",
+      "model": "claude-3-5-sonnet-latest"
+    },
+    "inline_alternatives": [
+      {
+        "provider": "zed.dev",
+        "model": "claude-3-5-sonnet-latest"
+      }
+    ],
+    "button": true,
+    "enabled": true,
+    "version": "2"
+  },
+  "journal": {
+    "hour_format": "hour24",
+    "path": "~/docs"
+  },
+  // 关闭全局 soft wrap, 在 languages 中按语言开启（如 markdown 默认开启）。
+  "soft_wrap": "none",
+  "preferred_line_length": 90,
+  "theme": {
+    "mode": "system",
+    "light": "One Light",
+    "dark": "One Dark"
+  },
+  "show_inline_completions": true,
+  "features": {
+    "inline_completion_provider": "none" // "copilot"
+  },
+  "confirm_quit": true,
+  // block 比 bar 显示的更明显
+  "cursor_shape": "bar",
+  "buffer_font_size": 16,
+  "ui_font_size": 16,
+  "indent_guides": {
+    "coloring": "fixed"
+  },
+  // 在 multibuffer 中双击: 打开文件。
+  "double_click_in_multibuffer": "open",
+  "gutter": {
+    // 打开 line number，这样看当前高亮的行更清晰。
+    "line_numbers": true,
+    // 关闭一些不常用显示，节省左侧空间。
+    "code_actions": false,
+    "runnables": false
+  },
+  // 开启后，搜索字符包含大写时区分大小写（未开启时不区分大小写）。
+  "use_smartcase_search": false,
+  "centered_layout": {
+    "left_padding": 0.15,
+    "right_padding": 0.15
+  },
+  "auto_signature_help": true,
+  "hover_popover_enabled": true,
+  // 空闲超过指定时间后自动保存。
+  "autosave": { "after_delay": { "milliseconds": 10000 } },
+  "inlay_hints": {
+    // 关闭，提升性能
+    "enabled": false
+  },
+  "project_panel": {
+    "indent_size": 15,
+    "dock": "left"
+  },
+  "outline_panel": {
+    "indent_size": 15,
+    "dock": "left"
+  },
+  "chat_panel": {
+    "button": false
+  },
+  "notification_panel": {
+    "button": false
+  },
+  "collaboration_panel": {
+    "button": false
+  },
+  //   "active_pane_magnification": 1,
+  "vim_mode": false,
+  //   "default_dock_anchor": "expanded",
+  "tabs": {
+    "git_status": true,
+    // 不显示 icon，节省 tab 空间。
+    "file_icons": false,
+    "close_position": "left"
+  },
+  "tab_bar": {
+    "show": true
+  },
+  "toolbar": {
+    // 显示搜索、AI、Inlay 等快速操作按钮。
+    "quick_actions": true,
+    "breadcrumbs": true
+  },
+  "scrollbar": { "show": "auto" },
+  // preview tabs: 在一个公共 tab 中自动切换显示多个文件，避免打开过多 tab。
+  "preview_tabs": {
+    // 对 file finder 打开的文件启用
+    "enable_preview_from_file_finder": true,
+    // 对 code navi 打开的文件启用
+    "enable_preview_from_code_navigation": true
+  },
+  // 添加到终端的环境变量
+  "env": {},
+  "terminal": {
+    "option_as_meta": true,
+    "copy_on_select": true,
+    "shell": {
+      "with_arguments": {
+        "program": "bash",
+        "args": ["--login"]
+      }
+    }
+  },
+  "proxy": "socks5://127.0.0.1:1080",
+  "git": {
+    "inline_blame": {
+      // 按需命令面板开启
+      "enabled": false,
+      "delay_ms": 3000
+    }
+  },
+  "ssh_connections": [
+    {
+      "host": "dev2",
+      "username": "alizj",
+      "args": ["-i", "~/.ssh/id_rsa"],
+      "upload_binary_over_ssh": true,
+      "port": 22,
+      // 显示在 zed UI 上的用户名。
+      "nickname": "my dev2 server"
+    }
+  ],
+  "file_scan_exclusions": [
+    "**/.git",
+    "**/.svn",
+    "**/.hg",
+    "**/CVS",
+    "**/.DS_Store",
+    "**/Thumbs.db",
+    "**/.classpath",
+    "**/.settings",
+    // rust target 缓存目录
+    "**/target/debug",
+    "**/target/release",
+    "**/target/aarch64-apple-darwin",
+    "**/vendor" // go
+  ],
+  "file_types": {
+    "JSONC": [
+      // 所有 JSON 文件均使用 jsonc
+      "**/*.json"
+    ]
+  },
+  // by 语言设置配置参数, 可配置的参数列表: https://zed.dev/docs/configuring-zed#languages
+  "languages": {
+    "Markdown": {
+      "tab_size": 2,
+      "formatter": "prettier",
+      "preferred_line_length": 90,
+      "soft_wrap": "preferred_line_length"
+    },
+    "TOML": {
+      "formatter": "prettier",
+      "format_on_save": "off"
+    },
+    "YAML": {
+      "tab_size": 2,
+      "formatter": "prettier"
+    },
+    "JSON": {
+      "tab_size": 2,
+      "preferred_line_length": 130,
+      "formatter": "prettier"
+    },
+    "JSONC": {
+      "tab_size": 2,
+      "preferred_line_length": 100,
+      "formatter": "prettier"
+    }
+  },
+  "lsp": {
+    // key 为 language server 名称。
+    "gopls": {
+      // 需要配置 -debug 地址为 127.0.0.1，防止被 proxy 代理导致出错。
+      "binary": {
+        "path": "/Users/alizj/go/bin/gopls",
+        "arguments": ["-debug=127.0.0.1:9090"]
+      },
+      "initialization_options": {
+        "usePlaceholders": true,
+        "env": {
+          "GOOS": "linux",
+          "GOARCH": "arm64"
+        },
+        "buildFlags": ["-tags=debug"],
+        "completeUnimported": true,
+        "experimentalPostfixCompletions": true,
+        "hints": {
+          "assignVariableTypes": false,
+          "compositeLiteralFields": false,
+          "compositeLiteralTypes": false,
+          "constantValues": true,
+          "functionTypeParameters": true,
+          "parameterNames": true,
+          "rangeVariableTypes": true
+        }
+      }
+    },
+    "rust-analyzer": {
+      "initialization_options": {
+        "check": {
+          "command": "clippy" // rust-analyzer.check.command (default: "check")
+        }
+      }
+    }
+    // "clangd": {
+    //   "binary": {
+    //     "path": "/path/to/compiler",
+    //     "arguments": [
+    //       "--background-index",
+    //       "--compile-commands-dir=build",
+    //       "--clang-tidy",
+    //       "--clang-tidy-checks=*",
+    //       "--header-insertion=never",
+    //       "--header-insertion-decorators=none"
+    //     ]
+    //   }
+    // }
+  }
+}
