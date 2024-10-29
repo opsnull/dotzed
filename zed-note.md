@@ -29,7 +29,71 @@ index bc95e1dd6a..a20fd09268 100755
 构建并安装到 /Applications 目录:
 
 ```sh
-./script/bundle-mac -odli
+$ enable_socks_proxy
+$ ./script/bundle-mac -oidl
+```
+
+修改文件  `crates/zed/RELEASE_CHANNEL`，可选值为：
+- dev
+- nightly
+- preview
+- stable
+
+如果是 dev 模式，则每次连接远程服务器时都会[重新构建 remote_server](https://github.com/zed-industries/zed/blob/21b58643fadb5d06d5896ab1b41be25b95d86875/crates/recent_projects/src/ssh_connections.rs#L504)，
+比较耗时。其它都是 server 从 zed.dev 下载已经构建好的 remote server binary。
+
+通过修改代码，实现如果 remote_server.gz 文件不存在，则重新构建，否则就复用本地已经构建和打包好的 gz 文件。
+
+    // https://github.com/zed-industries/zed/blob/21b58643fadb5d06d5896ab1b41be25b95d86875/crates/recent_projects/src/ssh_connections.rs#L769-L790
+    if platform.arch == std::env::consts::ARCH && platform.os == std::env::consts::OS {
+        let path = std::env::current_dir()?.join("target/remote_server/debug/remote_server.gz");
+        if !path.exists() { // 加一个 remote_server.gz 是否存在的判断。
+            self.update_status(Some("Building remote server binary from source"), cx);
+            log::info!("building remote server binary from source");
+            run_cmd(Command::new("cargo").args([
+                "build",
+                "--package",
+                "remote_server",
+                "--features",
+                "debug-embed",
+                "--target-dir",
+                "target/remote_server",
+            ]))
+            .await?;
+
+            self.update_status(Some("Compressing binary"), cx);
+
+            run_cmd(Command::new("gzip").args([
+                "-9",
+                "-f",
+                "target/remote_server/debug/remote_server",
+            ]))
+            .await?;
+        }
+        return Ok(Some((path, version)));
+
+``` sh
+alizj@lima-dev2:/Users/alizj/.config/zed$ ~/.zed_server/zed-remote-server-dev-linux-aarch64 version
+0.160.0
+```
+
+zed 的 ssh_session.rs 的 [update_server_binary_if_needed() 函数](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/remote/src/ssh_session.rs#L1735) 会通过执行 server 上的 zed-remote-server 的 version 子命令来获得 server 语义版本，如果执行成功，则检查当前本地 zed 版本是否比 server 语义版本低：
+1. 如果低则提示升级本地 zed 版本；
+2. 如果 server 语义版本比本地低，则会自动上传本地 zed-remote-server binary 到 server（dev 模式或设置了 upload_binary_over_ssh=true), 否则 server 自己从 zed.dev 下载指定版本的 binary。
+
+也可以手动上传 server binary 到 ~/.zed_server/zed-remote-server-xx-linux-xx，然后启动：
+ZED_USE_CACHED_REMOTE_SERVER=1 zed ssh://blah
+这时 zed 会先检查 server 是否存在 remote server binary，如果存在则继续使用。
+
+在 zed server 运行过程中，会自动[从网络下载 lsp language 并安装](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/languages/src/rust.rs#L100)：
+
+``` sh
+alizj@lima-dev2:~/.local/share/zed/logs$ grep gopls *
+server-dev-workspace-189.log:{"level":3,"module_path":"project::lsp_store","file":"crates/project/src/lsp_store.rs","line":5529,"message":"(remote server) attempting to start language server \"gopls\", path: \"/Users/alizj/go/src/github.com/kubernetes\", id: 0"}
+server-dev-workspace-189.log:{"level":3,"module_path":"language","file":"/Users/alizj/go/src/github.com/zed-industries/zed/crates/language/src/language.rs","line":548,"message":"(remote server) fetching latest version of language server \"gopls\""}
+server-dev-workspace-189.log:{"level":3,"module_path":"language","file":"/Users/alizj/go/src/github.com/zed-industries/zed/crates/language/src/language.rs","line":555,"message":"(remote server) downloading language server \"gopls\""}
+server-dev-workspace-189.log:{"level":3,"module_path":"project::lsp_store","file":"crates/project/src/lsp_store.rs","line":5483,"message":"(remote server) using project environment for language server LanguageServerName(\"gopls\")"}
+server-dev-workspace-189.log:{"level":3,"module_path":"lsp","file":"crates/lsp/src/lsp.rs","line":283,"message":"(remote server) starting language server process. binary path: \"/home/alizj.linux/.local/share/zed/languages/gopls/gopls_0.16.2\", working directory: \"/Users/alizj/go/src/github.com/kubernetes\", args: [\"-mode=stdio\"]"}
 ```
 
 # 启动
@@ -71,7 +135,7 @@ zed 获得环境变量的两种方式：
 2. 通过 dock 启动, 先切换到 HOME 目录 spawn 一个 login shell 来获得用户环境变量, 然后被所有 zed
 窗口继承;
 
-zed 打开 project 时, 会使用 direnv 等机制来获得项目相关的环境变量, 并被项目的 task/lsp/terminal 继承;
+zed 打开 project 时, 会使用 direnv/editorconfig 等机制来获得项目相关的环境变量, 并被项目的 task/lsp/terminal 继承;
 
 # 布局
 
@@ -165,6 +229,8 @@ preview tabs 通过以下方式转换为普通独立 tab：
 
 # 按键绑定
 
+注：使用命令 `debug: Open Key Context View` 查看当前焦点的 context，触发的按键，以及按键匹配情况。
+
 zed 按键绑定（`/.config/zed/keymap.json`）不区分相同按键序列但不同顺序的情况，如 `ctrl-cmd-a` 和 `cmd-ctrl-a` 是相同的按键，但 zed 不提示重复的按键绑定。解决办法：使用固定的顺序来写按键，如 `ctrl-cmd-alt-shift`。
 
 统一规划一些前缀快捷键，如 `ctrl-x`, 它们只用于前缀场景，而不单独使用，否则会导致按键响应延迟。（因为 zed 会等待一段时间来接收前缀后续的按键，当超时后，才认为是致独立绑定语义）。
@@ -175,6 +241,13 @@ zed 支持灵活的按键 remap：
 - `["workspace::SendKeystrokes", ": task:spawn enter Test Under Cursor enter"]`
 - `["task::Spawn", { "task_name": "Example task" }]`
 - `["assistant::InlineAssist",{ "prompt": "Build a snake game" }]`
+
+不确定是否支持这个语法？
+
+    "shift-down": [
+      "editor::SelectDown",
+      ["editor::MoveUpByLines", { "lines": 5 }]
+    ]
 
 自定义按键绑定覆盖缺省按键绑定，缺省绑定中未覆盖的按键继续有效。所以，如果要确保自己的按键定生效，则可能需要在多个 context 中重复设置。
 
@@ -212,8 +285,6 @@ shift- 用于表示大写字母或第二按键，使用时需要注意：
     "ctrl-shift-=": 不对，因为 = 有第二按键 +，应该直接使用 "ctrl-+"。
 
 - "ctrl-x ^" 中的 ctrl-x 是作为前缀快捷键来使用，那么 ctrl-x 不能再有单独的定义。
-
-# context
 
 zed 窗口是由层次化的 UI 元素节点组成的，节点间有父子、兄弟关系，处于不同层次的上下文中。
 反映到按键上，就是有优先级，嵌套越深的层次上定义的快捷键优先级越高，如 buffer 搜索输入框的层次是：
@@ -361,9 +432,7 @@ keymap 的 context 中使用逻辑表达式来匹配特定模式的 Editor：
 
 - 渲染的 markdown 窗口。
 
-# UI Node 层次和 key context
-
-可以查看各 zed crate 实现的 Render trait。以 Picker 的 Render 实现为例:
+查看各 zed crate 实现的 Render trait。以 Picker 的 Render 实现为例:
 
 1. key_context("Picker) 定义了该元素 Node 的 context;
 2. on_action() 定义了该 Node 监听的按键绑定;(非监听的按键不做处理)
@@ -440,22 +509,6 @@ crate module 通过 actions!() 和 impl_actions!() 宏来定义和暴露给命�
 
 zed 支持 by 语言参数[参数列表](https://zed.dev/docs/configuring-languages#language-specific-settings)
 
-- tab_size: The number of spaces for each indentation level
-- formatter: The tool used for code formatting
-- format_on_save: Whether to automatically format code when saving
-- enable_language_server: Toggle language server support
-- hard_tabs: Use tabs instead of spaces for indentation
-- preferred_line_length: The recommended maximum line length
-- soft_wrap: How to wrap long lines of code
-- language_servers: 为语言指定 language server 名称列表, 如:
-  `"language_servers": ["intelephense", "!phpactor", "..."]`
-  - intelephense is set as the primary language server
-  - phpactor is disabled (note the ! prefix)
-  - ... preserves any other default language server settings
-- enable_language_server: "enable_language_server": false
-
-----
-
     "languages": {
       "Markdown": {
         "tab_size": 2,
@@ -497,34 +550,63 @@ zed 支持 by 语言参数[参数列表](https://zed.dev/docs/configuring-langua
       }
     }
 
+## rust
 
-# 任务
+对于大型项目，为了避免每次保存文件都触发 rust-analyzer check 影响性能，可以使用如下配置：
 
-支持全局或项目级别的任务定义, 任务可以通过变量获得文件/位置/选中的内容等信息, 变量支持缺省值 `${ZED_FILE:default_value}`.zed 使用 `bash -i -c 'xxx'` 来执行输入的命令。
+    "rust-analyzer": {
+      "initialization_options": {
+        // 从 rust-analyzer 获得更多的诊断信息（因为后续关闭了cargo check 检查）。
+        "diagnostics": {
+          "experimental": {
+            "enable": true
+          }
+        },
+        // 关闭 checkOnSave 后，rust-analyzer 将不再运行 cargo check 命令，而只运行 rust-analyzer
+        // 自身的检查。下面的 check、cargo 配置都将失效。
+        // 如果想运行默认的检查，可以执行 zed 自动为 rust 项目生成的 task：argo check --workspace --all-targets
+        "checkOnSave": false,
+        // 默认 cargo check --workspace --all-targets，影响性能，关闭 --workspace 和 --all-targets。
+        "check": {
+          "command": "clippy",
+          "workspace": false
+        },
+        "cargo": {
+          "allTargets": false
+        }
+      }
+    }
 
-- ZED_COLUMN: current line column
-- ZED_ROW: current line row
-- ZED_FILE: absolute path of the currently opened file (e.g. -/Users/my-user/path/to/project/src/main.rs)
-- ZED_FILENAME: filename of the currently opened file (e.g. main.rs)
-- ZED_DIRNAME: absolute path of the currently opened file with file name stripped (e.g. - /Users/my-user/path/to/project/src)
-- ZED_RELATIVE_FILE: path of the currently opened file, relative to ZED_WORKTREE_ROOT (e.g. - src/main.rs)
-- ZED_STEM: stem (filename without extension) of the currently opened file (e.g. main)
-- ZED_SYMBOL: currently selected symbol; should match the last symbol shown in a symbol breadcrumb - (e.g. mod tests > fn test_task_contexts)
-- ZED_SELECTED_TEXT: currently selected text
-- ZED_WORKTREE_ROOT: absolute path to the root of the current worktree. (e.g. - /Users/my-user/path/to/project)
-- ZED_CUSTOM_RUST_PACKAGE: (Rust-specific) name of the parent package of $ZED_FILE source file.
+由于 zed 自动为 rust 生成 task，可以手动执行 task：cargo check --workspace --all-targets 来实现 checkOnSave 的效果。
 
-任务定义默认保存到 `~/.config/zed/tasks.json` 文件中。
+对于包含多个 project 的 zed workspace（它们没有不属于一个 cargo workspace 的 member），可以在 initialization_options 中添加 linkedProjects 列表，这样 ra 会自动诊断它们。
 
-实例：
+    "linkedProjects": [
+      "./path/to/a/Cargo.toml",
+      "./path/to/b/Cargo.toml"
+    ]
+
+# task
+
+支持全局或项目级别的任务模板（task template）定义, 全局任务模板保存到 `~/.config/zed/tasks.json` 文件中。
+
+zed 也会自动根据项目语言生成一些 task，如对于 rust 项目，自动生成如下 task（-p xx yy 根据当前正编辑的文件而变化）：
+
+- cargo check -p anthropic
+- cargo test -p collab ids -- --nocapture
+- cargo test -p collab db
+- cargo check --workspace --all-targets  # 执行 rust-analyzer 的 checkOnSave 的完整检查。
+- cargo clean
+- cargo run
+
+任务模板可以使用变量（[列表](https://zed.dev/docs/tasks)）来获得文件/位置/选中的内容等信息, 变量支持缺省值 `${ZED_FILE:default_value}`.
+
+zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当前 rust 对 work directory 的判断是基于当前 *正在编辑的文件* 为基础的，可能会将普通文件判断为 work directory，从而导致 task 执行静默出错，debug 日志如下：
+
+
+例子：
 
     [
-      {
-        "label": "Example task",
-        "command": "for i in {1..5}; do echo \"Hello $i/5\"; sleep 1; done",
-        "env": { "foo": "bar" },
-        "shell": "system"
-      },
       {
         "label": "clippy", // 显示到 modal 的项目名称
         "command": "./script/clippy",
@@ -553,12 +635,10 @@ zed 支持 by 语言参数[参数列表](https://zed.dev/docs/configuring-langua
     }
 
 
-执行 task::Spawn 时:
-
-- 可以输入任意 shell 命令和参数, 然后按 ctrl-enter 执行;
-  - oneshot task："ctrl-enter"，会记录到 task history 中；
-  - Ephemeral task："ctrl-cmd-enter"，不会记录到 task history 中；
-- 选中候选者, 按 tab, 可以修改选中 task 的命令和参数;
+执行 task::Spawn 时，按 tab 选中候选者来修改 task 的命令和参数，也可以输入任意 shell 命令和参数,
+然后执行;
+- oneshot task："ctrl-enter"，会记录到 task history 中；
+- Ephemeral task："ctrl-cmd-enter"，不会记录到 task history 中；
 
     {
       "context": "Picker > Editor",
@@ -566,8 +646,10 @@ zed 支持 by 语言参数[参数列表](https://zed.dev/docs/configuring-langua
         // 选中候选者, 如果是 task::Spawn 面板则会在输入框中填写候选者命令配置,
         // 这时可以修改 task 命令和参数.
         "tab": "picker::ConfirmCompletion",
+
         // 适用于 task::Spawn 面板执行 oneshot shell 命令
         "ctrl-enter": ["picker::ConfirmInput", { "secondary": false }],
+
         // 适用于 task::Spawn 面板执行 Ephemeral tasks shell 命令
         // 该命令不会记录到 task history 中。
         "ctrl-cmd-enter": ["picker::ConfirmInput", { "secondary": true }]
@@ -578,6 +660,8 @@ zed 支持 by 语言参数[参数列表](https://zed.dev/docs/configuring-langua
 例如, 计算 zed buffer 中选中内容的字符数：执行 `ctrl-t`， 然后输入：`echo "$ZED_SELECTED_TEXT" | wc -c`， 最后执行 `ctrl-enter`。
 
 # assistant
+
+zed 的 claude 3.5 Sonnet 每个账号每月 10 美元额度，超过的需要自己充值。
 
 assistant context editor 和普通 Editor 一样，支持各种编辑模式的按键绑定。但是该 editor 中包含 message block，每个 block 是不同 role 的 container：
 
@@ -655,6 +739,11 @@ extensions 默认被安装到 `~/Library/Application Support/Zed/extensions`。
 
 extensions 使用 Rust 开发，但被编译为 WebAssembly 后被 zed 执行。
 
+实例：
+
+1. [FireCrawl Zed Extension](https://github.com/notpeter/firecrawl-zed)
+2. [RFC Zed Extension](https://github.com/notpeter/rfc-zed)
+
 # markdown
 
 bash/shell code block 需要使用 sh 语言简称, 这样 markdown 才能正确高亮对应 code block。
@@ -669,6 +758,77 @@ bash/shell code block 需要使用 sh 语言简称, 这样 markdown 才能正确
 show_completions_on_input vs show_inline_completions：前者是 LSP 代码补全，后者是大模型补全。
 
 字体：默认使用的是 https://github.com/zed-industries/zed-fonts/tree/zed-plex 字体，需要手动下载安装。zed plex font 的主要特点是缩小了字体间距，UI 显示的更紧凑。
+
+# remote ssh
+
+安装 docker desktop。
+
+清理 ~/.docker/config.json 和 ~/.docker/daemon.json 中的旧配置。
+
+安装 SOCKS5 转 HTTP 代理：
+``` sh
+zj@a:~/go/src/github.com/zed-industries/zed$ pip3 install pproxy
+zj@a:~/go/src/github.com/zed-industries/zed$ pproxy -r socks5://127.0.0.1:1080 -vv
+Serving on ipv? 0.0.0.0:8080 by http,socks4,socks5
+Serving on ipv? :::8080 by http,socks4,socks5
+2024-10-29 12:29:57 Unsupported protocol from 127.0.0.1
+```
+
+配置 docker-desktop 使用 HTTP 代理：
+1. 配置使用 Host Network 类型；
+1. 配置 HTTP 和 HTTPS 代理均为 https://127.0.0.1:8080
+
+切换到 zed 项目源码目录，启动 zed：
+
+``` sh
+zj@a:~/.config/zed$ cd
+zj@a:~$ cd go/src/github.com/zed-industries/zed
+zj@a:~/go/src/github.com/zed-industries/zed$  RUST_LOG=debug /Applications/Zed\ Dev.app/Contents/MacOS/zed
+```
+
+使用 `projects: open remote` 创建一个 SSH 连接，zed 会自动安装 cross 来为 ssh server 交叉编译一个
+zed binary 并上传。
+
+``` sh
+zj@a:~/go/src/github.com/zed-industries/zed$ docker ps -a
+CONTAINER ID   IMAGE                                                                 COMMAND                     CREATED         STATUS          PORTS     NAMES
+c5e53ec7bee9   localhost/cross-rs/cross-custom-zed:aarch64-unknown-linux-gnu-8d728   "sh -c 'PATH=\"$PATH\"…"   3 minutes ago   Up 3 minutes              cross-1.81-x86_64-unknown-linux-gnu-38948-eeb90cda1-aarch64-unknown-linux-gnu-8d728-1730176669812
+```
+
+然后登录目标服务器，可见本地的 zed 向它上传了一个本地交叉编译生成的 zed-remote-server-dev-linux--aarch64  二进制并运行：
+
+``` sh
+alizj@lima-dev2:~$ ps -eH -opid,args |grep zed
+  54801           grep --color=auto zed
+  54534         .zed_server/zed-remote-server-dev-linux-aarch64 proxy --identifier dev-workspace-176
+  54536   /home/alizj.linux/.zed_server/zed-remote-server-dev-linux-aarch64 run --log-file /home/alizj.linux/.local/share/zed/logs/server-dev-workspace-176.log --pid-file /home/alizj.linux/.local/share/zed/server_state/dev-workspace-176/server.pid --stdin-socket /home/alizj.linux/.local/share/zed/server_state/dev-workspace-176/stdin.sock --stdout-socket /home/alizj.linux/.local/share/zed/server_state/dev-workspace-176/stdout.sock --stderr-socket /home/alizj.linux/.local/share/zed/server_state/dev-workspace-176/stderr.sock
+  54683     /home/alizj.linux/.local/share/zed/node/node-v22.5.1-linux-arm64/bin/node /home/alizj.linux/.local/share/zed/languages/json-language-server/node_modules/vscode-langservers-extracted/bin/vscode-json-language-server --stdio
+```
+
+同时 zed 在目标服务器上创建和保存了如下文件和目录：
+
+``` sh
+alizj@lima-dev2:~$ ./.zed_server/zed-remote-server-dev-linux-aarch64 version
+0.160.0
+alizj@lima-dev2:~$ ls ~/.config/zed/
+settings.json
+
+alizj@lima-dev2:~$ ls ~/.local/share/
+applications  zed
+
+alizj@lima-dev2:~$ ls ~/.local/share/applications/
+dev.zed.Zed.desktop
+
+alizj@lima-dev2:~$ ls ~/.local/share/zed/
+copilot  db  embeddings  extensions  languages  logs  node  prettier  prompts  server_state  zed-stable.sock
+
+alizj@lima-dev2:~$ ls ~/.local/share/zed/languages/
+json-language-server
+```
+
+也可以使用命令行打开 zed remote ssh：
+- 协议链接：zed://ssh/<connnection>/<path>
+- zed 命令：zed ssh://my-host/~/code/zed
 
 # Bugs
 
@@ -696,3 +856,29 @@ show_completions_on_input vs show_inline_completions：前者是 LSP 代码补�
 
   - "ctrl-cmd-d": "editor::DeleteToPreviousWordStart", // 不生效
   - "cmd-q": "editor::Rewrap", // 自动折行，有问题，折行的长度不对。
+
+4. 本地交叉编译 remote_server 报错
+
+    [2024-10-29T17:14:42+08:00 DEBUG worktree] ignoring event "target/remote_server/debug/incremental/build_script_build-34db12mrzjok5/s-h1avtiisg8-0xfewcx-working" within unloaded directory
+    error: linking with `aarch64-linux-gnu-gcc` failed: exit status: 1
+      |
+      = note: LC_ALL="C" PATH="/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin:/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin:/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/bin" VSLANG="1033" "aarch64-linux-gnu-gcc" "-Wl,--version-script=/tmp/rustc36YcCI/list" "-Wl,--no-undefined-version" "/tmp/rustc36YcCI/symbols.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.00.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.01.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.02.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.03.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.04.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.05.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.06.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.07.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.08.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.09.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.10.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.11.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.12.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.13.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.14.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.15.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.bmqrrknlrqqnfika44j5n5qxv.rcgu.o" "-Wl,--as-needed" "-L" "/target/aarch64-unknown-linux-gnu/debug/deps" "-L" "/target/debug/deps" "-L" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib" "-Wl,-Bstatic" "/target/aarch64-unknown-linux-gnu/debug/deps/libzune_core-1888dc448ab93c4b.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libstd-2bf0b2a5e0a60917.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libpanic_unwind-0af01d78b15f6872.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libobject-aa90d1efd19541cb.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libmemchr-6645a3a6124c47a1.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libaddr2line-3de13e717f4d9e74.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libgimli-f50e3ac5e8bc32ca.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/librustc_demangle-f84a4f82a7a57e94.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libstd_detect-bd992eebc2a12fc4.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libhashbrown-c9882005b74b1193.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/librustc_std_workspace_alloc-b18e8234ebc582c8.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libminiz_oxide-79ef105ee0e8243e.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libadler-652182712f7d3bc4.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libunwind-6cb747324af00512.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libcfg_if-740a433abf104d06.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/liblibc-1e2f311c277b60cf.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/liballoc-85299feea58ac1e7.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/librustc_std_workspace_core-2a73a86214747017.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libcore-29cdff63f523de0d.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libcompiler_builtins-405c9891256dbf91.rlib" "-Wl,-Bdynamic" "-lgcc_s" "-lutil" "-lrt" "-lpthread" "-lm" "-ldl" "-lc" "-Wl,--eh-frame-hdr" "-Wl,-z,noexecstack" "-L" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib" "-o" "/target/aarch64-unknown-linux-gnu/debug/deps/libzune_jpeg-d98812c935e11704.so" "-Wl,--gc-sections" "-shared" "-Wl,-soname=libzune_jpeg-d98812c935e11704.so" "-Wl,-z,relro,-z,now" "-nodefaultlibs" "-fuse-ld=mold"
+      = note: aarch64-linux-gnu-gcc: error: unrecognized command line option '-fuse-ld=mold'; did you mean '-fuse-ld=gold'?
+
+      解决办法：
+      1. 下载 mold 包，并解压到 /usr/local
+      2. 修改 .cargo/config.toml，使用 "link-arg=-B/usr/local/libexec/mold"，
+      https://github.com/zed-industries/zed/pull/19910, 该目录下的 ld 是 mold 的软链接，这样 gcc 在使用 ld 时实际使用的是 old。
+
+      https://gitlab.kitware.com/cmake/cmake/-/issues/25748
+
+      zj@a:~/go/src/github.com/zed-industries/zed$ docker run -it localhost/cross-rs/cross-custom-zed:aarch64-unknown-linux-gnu-8d728 bash
+
+      root@b4fce23c85a8:/app# aarch64-linux-gnu-gcc --version
+      aarch64-linux-gnu-gcc (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0
+      Copyright (C) 2019 Free Software Foundation, Inc.
+      This is free software; see the source for copying conditions.  There is NO
+      warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+
+      root@b4fce23c85a8:/app# which mold
+      /usr/local/bin/mold

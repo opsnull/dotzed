@@ -23,11 +23,6 @@
   // 关闭全局 soft wrap, 在 languages 中按语言开启（如 markdown 默认开启）。
   "soft_wrap": "none",
   "preferred_line_length": 90,
-  "theme": {
-    "mode": "system",
-    "light": "One Light",
-    "dark": "One Dark"
-  },
   "show_inline_completions": true,
   "features": {
     "inline_completion_provider": "none" // "copilot"
@@ -58,7 +53,7 @@
   "auto_signature_help": true,
   "hover_popover_enabled": true,
   // 空闲超过指定时间后自动保存。
-  "autosave": { "after_delay": { "milliseconds": 10000 } },
+  "autosave": { "after_delay": { "milliseconds": 5000 } },
   "inlay_hints": {
     // 关闭，提升性能
     "enabled": false
@@ -128,12 +123,7 @@
   "ssh_connections": [
     {
       "host": "dev2",
-      "username": "alizj",
-      "args": ["-i", "~/.ssh/id_rsa"],
-      "upload_binary_over_ssh": true,
-      "port": 22,
-      // 显示在 zed UI 上的用户名。
-      "nickname": "my dev2 server"
+      "username": "alizj"
     }
   ],
   "file_scan_exclusions": [
@@ -148,8 +138,12 @@
     // rust target 缓存目录
     "**/target/debug",
     "**/target/release",
+    "**/target/release-fast",
     "**/target/aarch64-apple-darwin",
-    "**/vendor" // go
+    "**/target/remote_server",
+    "**/vendor", // go
+    "**/pkg/mod",
+    "**/.cargo"
   ],
   "file_types": {
     "JSONC": [
@@ -214,8 +208,23 @@
     },
     "rust-analyzer": {
       "initialization_options": {
+        // 从 rust-analyzer 获得更多的诊断信息（因为后续关闭了cargo check 检查）。
+        "diagnostics": {
+          "experimental": {
+            "enable": true
+          }
+        },
+        // 关闭 checkOnSave 后，rust-analyzer 将不再运行 cargo check 命令，而只运行 rust-analyzer
+        // 自身的检查。下面的 check、cargo 配置都将失效。
+        // 如果想运行默认的检查，可以执行 zed 自动为 rust 项目生成的 task：argo check --workspace --all-targets
+        "checkOnSave": false,
+        // 默认 cargo check --workspace --all-targets，影响性能，关闭 --workspace 和 --all-targets。
         "check": {
-          "command": "clippy" // rust-analyzer.check.command (default: "check")
+          "command": "clippy",
+          "workspace": false
+        },
+        "cargo": {
+          "allTargets": false
         }
       }
     }
