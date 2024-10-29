@@ -92,7 +92,7 @@
       "ctrl-9": ["pane::ActivateItem", 8],
 
       /// 导航历史
-      "ctrl-,": "pane::GoBack",
+      "cmd-,": "pane::GoBack",
       "ctrl-cmd-,": "pane::GoForward",
 
       /// Pane 操作
