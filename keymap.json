@@ -46,6 +46,7 @@
       "ctrl-x ctrl-p": "project_panel::ToggleFocus",
       "ctrl-x ctrl-o": "outline_panel::ToggleFocus",
       "ctrl-x ctrl-t": "terminal_panel::ToggleFocus",
+      "ctrl-x ctrl-`": "terminal_panel::ToggleFocus",
       "cmd-1": "workspace::ToggleLeftDock",
       "cmd-2": "workspace::ToggleRightDock",
       "cmd-3": "workspace::ToggleBottomDock",
@@ -77,7 +78,7 @@
       "escape": "workspace::Unfollow",
       "ctrl-g": "workspace::Unfollow",
 
-      /// Buffer 切换
+      /// Pane Item 切换
       "ctrl-[": "pane::ActivatePrevItem",
       "ctrl-]": "pane::ActivateNextItem",
       "ctrl-0": "pane::ActivateLastItem",
@@ -97,11 +98,14 @@
 
       /// Pane 操作
       "cmd-o": "workspace::ActivateNextPane",
+      "ctrl-x o": "workspace::ActivateNextPane",
       "cmd-shift-o": "workspace::ActivatePreviousPane",
       "ctrl-x 0": "pane::CloseActiveItem",
       "ctrl-x 1": "workspace::ToggleZoom",
       "ctrl-x 2": "pane::SplitDown",
       "ctrl-x 3": "pane::SplitRight",
+      "ctrl-+": "zed::IncreaseBufferFontSize",
+      "ctrl-_": "zed::DecreaseBufferFontSize",
       "ctrl-cmd-t": "pane::ReopenClosedItem"
     }
   },
@@ -113,12 +117,6 @@
       /// 基础编辑操作
       "tab": "editor::Tab",
       "escape": "editor::Cancel",
-      "backspace": "editor::Backspace",
-      "delete": "editor::Delete",
-      "ctrl-h": "editor::Backspace",
-      "ctrl-d": "editor::Delete",
-      "ctrl-j": "editor::Newline",
-      "ctrl-m": "editor::NewlineBelow",
 
       /// 光标移动
       // 基础
@@ -126,8 +124,8 @@
       "down": "editor::MoveDown",
       "left": "editor::MoveLeft",
       "right": "editor::MoveRight",
-      "ctrl-p": "editor::MoveUp",
       "ctrl-n": "editor::MoveDown",
+      "ctrl-p": "editor::MoveUp",
       "ctrl-b": "editor::MoveLeft",
       "ctrl-f": "editor::MoveRight",
       // 单词
@@ -147,9 +145,9 @@
       "cmd->": "editor::MoveToEnd",
       "ctrl-l": "editor::ScrollCursorCenterTopBottom",
       "cmd-%": "editor::MoveToEnclosingBracket",
-      // 按 git 变更移动
-      "cmd-j": "editor::GoToHunk",
-      "cmd-k": "editor::GoToPrevHunk",
+      // 根据选择历史移动
+      "ctrl-u": "editor::UndoSelection",
+      "ctrl-cmd-u": "editor::RedoSelection",
 
       /// 选择操作
       // 基础
@@ -188,8 +186,12 @@
       "ctrl-y": "editor::Paste",
 
       /// 删除操作
-      "cmd-d": "editor::DeleteToNextWordEnd",
+      "backspace": "editor::Backspace",
       "cmd-backspace": "editor::DeleteToPreviousSubwordStart",
+      "delete": "editor::Delete",
+      "ctrl-h": "editor::Backspace",
+      "ctrl-d": "editor::Delete",
+      "cmd-d": "editor::DeleteToNextWordEnd",
       "ctrl-k": "editor::CutToEndOfLine",
       "ctrl-cmd-k": "editor::DeleteToBeginningOfLine",
       // 删除连续的空格为一个。
@@ -201,6 +203,8 @@
       "cmd-\\": ["workspace::SendKeystrokes", "cmd-{ cmd-} ctrl-cmd-} ctrl-cmd-{ backspace"],
 
       // 行操作
+      "ctrl-j": "editor::Newline",
+      "ctrl-m": "editor::NewlineBelow",
       "cmd-up": "editor::MoveLineUp",
       "cmd-down": "editor::MoveLineDown",
       "ctrl-cmd-l": "editor::DuplicateLineUp",
@@ -210,8 +214,6 @@
       /// 撤销和重做
       "ctrl-/": "editor::Undo",
       "ctrl-cmd-/": "editor::Redo",
-      "ctrl-u": "editor::UndoSelection",
-      "ctrl-cmd-u": "editor::RedoSelection",
 
       /// 搜索和导航
       "ctrl-s": "buffer_search::Deploy",
@@ -230,21 +232,28 @@
       "cmd-e": "diagnostics::Deploy",
       "cmd-n": "editor::GoToDiagnostic",
       "cmd-p": "editor::GoToPrevDiagnostic",
-      // 导航
+      // 根据 git 变更移动
+      "cmd-j": "editor::GoToHunk",
+      "cmd-k": "editor::GoToPrevHunk",
+      // xref
       "cmd-.": "editor::GoToDefinition",
       "ctrl-cmd-.": "editor::GoToDefinitionSplit",
       "cmd-shift-i": "editor::GoToImplementation",
       "ctrl-cmd-shift-i": "editor::GoToImplementationSplit",
       "cmd-?": "editor::FindAllReferences",
+
       // 注释和格式化
       "cmd-;": ["editor::ToggleComments", { "advance_downwards": false }],
       "ctrl-c ctrl-f": "editor::Format",
 
-      /// 其他
+      // 缩进
+      "ctrl-c ctrl-[": "editor::Outdent",
+      "ctrl-c ctrl-]": "editor::Indent",
+
+      /// 折叠
       "cmd-q": "editor::Rewrap",
-      "ctrl-x cmd-[": "editor::Outdent",
-      "ctrl-x cmd-]": "editor::Indent",
       "cmd-[ cmd-[": "editor::ToggleFold",
+      "cmd-] cmd-]": "editor::UnfoldAll",
       "cmd-[ cmd-1": ["editor::FoldAtLevel", { "level": 1 }],
       "cmd-[ cmd-2": ["editor::FoldAtLevel", { "level": 2 }],
       "cmd-[ cmd-3": ["editor::FoldAtLevel", { "level": 3 }],
@@ -324,7 +333,9 @@
     "bindings": {
       "ctrl-t": "task::Spawn",
       // 重新执行上次的 task
-      "ctrl-cmd-t": "task::Rerun"
+      "ctrl-cmd-t": "task::Rerun",
+      // 快速切换输入法
+      "shift shift": ["task::Spawn", { "task_name": "switch-input-method" }]
     }
   },
   {
@@ -431,8 +442,9 @@
       "escape": "menu::Cancel",
       // 在新 tab 中打开文件, 焦点还位于 outline panel。
       "ctrl-o": ["outline_panel::Open", { "change_selection": false }],
-      "enter": ["outline_panel::Open", { "change_selection": false }],
       "tab": ["outline_panel::Open", { "change_selection": false }],
+      // 在新 tab 中打开文件，将焦点移动到文件中。
+      "enter": ["outline_panel::Open", { "change_selection": true }],
       "ctrl-n": "menu::SelectNext",
       "ctrl-p": "menu::SelectPrev",
       "^": "outline_panel::SelectParent",
@@ -473,7 +485,7 @@
       "shift-d": ["project_panel::Trash", { "skip_prompt": false }],
       "backspace": ["project_panel::Trash", { "skip_prompt": false }],
       // 路径操作（焦点必须位于目录或文件中）
-      "ctrl-cmd-w": "project_panel::CopyPath",
+      "ctrl-cmd-w": "project_panel::CopyRelativePath",
       "ctrl-r": "project_panel::RevealInFileManager",
       "ctrl-s": "project_panel::NewSearchInDirectory"
     }

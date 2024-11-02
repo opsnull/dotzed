@@ -1,6 +1,6 @@
-# 构建
+# build
 
-对 `script/bundle-mac` 做如下修改:
+对 `script/bundle-mac` 文件做如下修改:
 
 ``` sh
 zj@a:~/go/src/github.com/zed-industries/zed$ git diff script/bundle-mac
@@ -26,77 +26,101 @@ index bc95e1dd6a..a20fd09268 100755
      cp crates/zed/contents/$channel/embedded.provisionprofile "${app_path}/Contents/"
 ```
 
-构建并安装到 /Applications 目录:
+解决 mac bundle 构建报错：
+> An SSL error has occurred and a secure connection to the server cannot be made
 
-```sh
-$ enable_socks_proxy
-$ ./script/bundle-mac -oidl
+``` sh
+# 查看系统全局代理：
+scutil --proxy
+
+zj@a:~/go/src/github.com/zed-industries/zed$ ls -l target/debug/WebRTC.framework/
+total 0
+lrwxr-xr-x 1 alizj  24 11  2 11:08 Headers -> Versions/Current/Headers/
+lrwxr-xr-x 1 alizj  24 11  2 11:08 Modules -> Versions/Current/Modules/
+lrwxr-xr-x 1 alizj  26 11  2 11:08 Resources -> Versions/Current/Resources/
+drwxr-xr-x 4 alizj 128 11  2 11:08 Versions/
+lrwxr-xr-x 1 alizj  23 11  2 11:08 WebRTC -> Versions/Current/WebRTC*
+
+zj@a:~/go/src/github.com/zed-industries/zed$ ls -l target/debug/WebRTC.framework/Resources/Info.plist
+-rw-r--r-- 1 alizj 1018 11  2 11:08 target/debug/WebRTC.framework/Resources/Info.plist
 ```
 
-修改文件  `crates/zed/RELEASE_CHANNEL`，可选值为：
-- dev
-- nightly
-- preview
-- stable
+编辑生成的 `Info.plist` 文件，在 dict 中添加如下内容：
++ 参考：https://github.com/microsoft/vscode/issues/73806#issuecomment-496334904
 
-如果是 dev 模式，则每次连接远程服务器时都会[重新构建 remote_server](https://github.com/zed-industries/zed/blob/21b58643fadb5d06d5896ab1b41be25b95d86875/crates/recent_projects/src/ssh_connections.rs#L504)，
-比较耗时。其它都是 server 从 zed.dev 下载已经构建好的 remote server binary。
+``` xml
+<key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+```
 
-通过修改代码，实现如果 remote_server.gz 文件不存在，则重新构建，否则就复用本地已经构建和打包好的 gz 文件。
+本地开发构建使用 `dev profile`，zed 内部会识别当前是否 dev 版本（通过宏 `cfg!(not(debug_assertions))` ），会做一些 dev 特殊处理逻辑。
 
-    // https://github.com/zed-industries/zed/blob/21b58643fadb5d06d5896ab1b41be25b95d86875/crates/recent_projects/src/ssh_connections.rs#L769-L790
-    if platform.arch == std::env::consts::ARCH && platform.os == std::env::consts::OS {
-        let path = std::env::current_dir()?.join("target/remote_server/debug/remote_server.gz");
-        if !path.exists() { // 加一个 remote_server.gz 是否存在的判断。
-            self.update_status(Some("Building remote server binary from source"), cx);
-            log::info!("building remote server binary from source");
-            run_cmd(Command::new("cargo").args([
-                "build",
-                "--package",
-                "remote_server",
-                "--features",
-                "debug-embed",
-                "--target-dir",
-                "target/remote_server",
-            ]))
-            .await?;
+```sh
+# 构建 MacOS bundle DMG 并安装
+$ ./script/bundle-mac -idl
 
-            self.update_status(Some("Compressing binary"), cx);
+# 或者只构建 binary
+$ cargo build --profile dev
+$ RUST_LOG=debug ./target/dev/zed
+```
 
-            run_cmd(Command::new("gzip").args([
-                "-9",
-                "-f",
-                "target/remote_server/debug/remote_server",
-            ]))
-            .await?;
-        }
-        return Ok(Some((path, version)));
+zed 的 ssh_session.rs 的 [update_server_binary_if_needed() 函数](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/remote/src/ssh_session.rs#L1735) 会先执行 server 上的 zed-remote-server 的 version 子命令来获得 server 语义版本(current_version)：
 
 ``` sh
 alizj@lima-dev2:/Users/alizj/.config/zed$ ~/.zed_server/zed-remote-server-dev-linux-aarch64 version
 0.160.0
 ```
 
-zed 的 ssh_session.rs 的 [update_server_binary_if_needed() 函数](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/remote/src/ssh_session.rs#L1735) 会通过执行 server 上的 zed-remote-server 的 version 子命令来获得 server 语义版本，如果执行成功，则检查当前本地 zed 版本是否比 server 语义版本低：
-1. 如果低则提示升级本地 zed 版本；
-2. 如果 server 语义版本比本地低，则会自动上传本地 zed-remote-server binary 到 server（dev 模式或设置了 upload_binary_over_ssh=true), 否则 server 自己从 zed.dev 下载指定版本的 binary。
+编译时，zed 使用文件 `crates/zed/RELEASE_CHANNEL` 中配置来确定 release channel 类型，可选值为：
+- dev
+- nightly
+- preview
+- stable
 
-也可以手动上传 server binary 到 ~/.zed_server/zed-remote-server-xx-linux-xx，然后启动：
-ZED_USE_CACHED_REMOTE_SERVER=1 zed ssh://blah
-这时 zed 会先检查 server 是否存在 remote server binary，如果存在则继续使用。
+有一些 zed 特性也是根据 release channel 类型来做不同处理的。例如 ssh_sessions.rs 的 update_server_binary_if_needed() 根据 release channel 来确定需要为 remote server [安装的版本（wanted_version）](https://github.com/zed-industries/zed/blob/40802d91d4faf849ad35fb53d6b00320c1d04cc1/crates/remote/src/ssh_session.rs#L1760)：
+1. 如果是 dev，则设置 wanted_version 为 None，后续进行本地构建；
+2. 如果是 nightly、preview、stable，则从 zed.dev API 获得对应版本；
 
-在 zed server 运行过程中，会自动[从网络下载 lsp language 并安装](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/languages/src/rust.rs#L100)：
+如果执行成功则获得 current_version 值，否则将它设置为 None，则进行版本比较(current_version vs wanted_version)：
+1. 如果两者都有值且匹配，则不安装或升级；
+1. 如果本地版本低，则提示升级本地 zed 版本后返回；
+3. 否则（如 server 版本低，或者有任何一方为 None），则会安装新版本。
+
+在安装新 remote server binary 前，zed 会检查 bianry 是否在使用。如果在使用且 zed 不是 dev 版本，则会直接返回错误，提示 binary 在使用，不能升级。但是如果是 dev 版本，则即使在使用也可以升级。
+
+如果是 dev 模式（wanted_version 为 None）：
+1. 先检查环境变量 `ZED_BUILD_REMOTE_SERVER` 是否设置，如果 **未设置** ：
+  1. 如果 current_version 有值，则复用 binary，直接返回；
+  2. 如果无值，则报错：ZED_BUILD_REMOTE_SERVER is not set, but no remote server exists
+2. 在设置 ZED_BUILD_REMOTE_SERVER 的情况下：
+  1. 如果是 dev 模式，则进行本地构建和上传到 server；
+  2. 否则报错：Running development build in release mode, cannot cross compile (unset ZED_BUILD_REMOTE_SERVER)
+
+如果不是 dev 模式，则检查配置参数 upload_binary_over_ssh：
+1. 如果为 false（默认），则 server 尝试先从 zed.dev 下载 binary，如果失败则从 zed 本地上传。
+2. 如果为 true，则从 zed 本地上传。
+
+从 zed 本地上传：本地 zed 先下载 binary，然后上传到 server。
+
+总结：在 dev 模式下：
+1. 如果未设置环境变量 ZED_BUILD_REMOTE_SERVER，则要求远端已经有 bianry 在运行，**直接复用**。
+2. 如果设置 ZED_BUILD_REMOTE_SERVER，则会本地侯建和上传。
 
 ``` sh
-alizj@lima-dev2:~/.local/share/zed/logs$ grep gopls *
-server-dev-workspace-189.log:{"level":3,"module_path":"project::lsp_store","file":"crates/project/src/lsp_store.rs","line":5529,"message":"(remote server) attempting to start language server \"gopls\", path: \"/Users/alizj/go/src/github.com/kubernetes\", id: 0"}
-server-dev-workspace-189.log:{"level":3,"module_path":"language","file":"/Users/alizj/go/src/github.com/zed-industries/zed/crates/language/src/language.rs","line":548,"message":"(remote server) fetching latest version of language server \"gopls\""}
-server-dev-workspace-189.log:{"level":3,"module_path":"language","file":"/Users/alizj/go/src/github.com/zed-industries/zed/crates/language/src/language.rs","line":555,"message":"(remote server) downloading language server \"gopls\""}
-server-dev-workspace-189.log:{"level":3,"module_path":"project::lsp_store","file":"crates/project/src/lsp_store.rs","line":5483,"message":"(remote server) using project environment for language server LanguageServerName(\"gopls\")"}
-server-dev-workspace-189.log:{"level":3,"module_path":"lsp","file":"crates/lsp/src/lsp.rs","line":283,"message":"(remote server) starting language server process. binary path: \"/home/alizj.linux/.local/share/zed/languages/gopls/gopls_0.16.2\", working directory: \"/Users/alizj/go/src/github.com/kubernetes\", args: [\"-mode=stdio\"]"}
+ZED_BUILD_REMOTE_SERVER=1  RUST_log=debug target/debug/zed
 ```
 
-# 启动
+zed 本地构建 remote server bianry 时执行的命令：
+1. 同构：cargo build --package remote_server --features debug-embed --target-dir target/remote_server
+2. 异构：triple=aarch64-linux cargo install cross --git "https://github.com/cross-rs/cross"
+cross build --package remote_server --features debug-embed --target-dir target/remote_server --target ${triple}
+
+在 zed server 运行过程中，会自动[从网络下载 lsp language 并安装](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/languages/src/rust.rs#L100) 到 ~/.local/share/zed/languages/ 目录下：
+
+# launch
 
 窗口右上角显示资源用量和 GPU FPS 信息（有 bug，可能导致段错误）：
 
@@ -113,7 +137,7 @@ $ pwd
 $ RUST_LOG=debug /Applications/Zed\ Dev.app/Contents/MacOS/zed
 ```
 
-*zed cli* : 可以通过 Zed 菜单 “Install CLI” 来安装 zed 命令行工具命令 zed：
+zed cli : 可以通过 Zed 菜单 “Install CLI” 来安装 zed 命令行工具命令 zed：
 
 ``` sh
 zj@a:~$ which zed
@@ -137,7 +161,7 @@ zed 获得环境变量的两种方式：
 
 zed 打开 project 时, 会使用 direnv/editorconfig 等机制来获得项目相关的环境变量, 并被项目的 task/lsp/terminal 继承;
 
-# 布局
+# layout
 
 一个 window 有多个 panes （通过 spit），一个 pane 有多个 items（tabs）。
 
@@ -147,9 +171,11 @@ pane 有自己的 tool bar 和导航 history（前进、后退）。光标在 Pa
 
 将 project 和 outline panel 都设置到 left dock, 便于查看。
 
-# 编辑
+# editing
 
-zed 打开的文件对话框后，按 Command-Shift-g 可以按照文件路径来打开。
+zed 打开系统文件对话框后，按 Command-Shift-g 可以按照文件路径来打开。也可以在终端使用 `zed cli` 来按照文件路径打开文件。
+
+在 editor 或 terminal buffer 中，当光标位于 URL (需要带 http 或 https 前缀)或 File Path 上时，可以按 cmd 来快速打开。
 
 快速选择一个 block：将光标移动到 block 边界字符上，然后按 ctrl-= 来按语法选择。
 
@@ -227,7 +253,7 @@ preview tabs 通过以下方式转换为普通独立 tab：
 
 还可以在配置文件中配置 code nav 和 file finder 使用 preview tabs。
 
-# 按键绑定
+# keybindings
 
 注：使用命令 `debug: Open Key Context View` 查看当前焦点的 context，触发的按键，以及按键匹配情况。
 
@@ -241,13 +267,6 @@ zed 支持灵活的按键 remap：
 - `["workspace::SendKeystrokes", ": task:spawn enter Test Under Cursor enter"]`
 - `["task::Spawn", { "task_name": "Example task" }]`
 - `["assistant::InlineAssist",{ "prompt": "Build a snake game" }]`
-
-不确定是否支持这个语法？
-
-    "shift-down": [
-      "editor::SelectDown",
-      ["editor::MoveUpByLines", { "lines": 5 }]
-    ]
 
 自定义按键绑定覆盖缺省按键绑定，缺省绑定中未覆盖的按键继续有效。所以，如果要确保自己的按键定生效，则可能需要在多个 context 中重复设置。
 
@@ -494,7 +513,7 @@ crate module 通过 actions!() 和 impl_actions!() 宏来定义和暴露给命�
     }
 
 
-# 语言
+# language
 
 使用 file_types 参数为扩展名或文件路径指定语言类型:
 
@@ -599,10 +618,11 @@ zed 也会自动根据项目语言生成一些 task，如对于 rust 项目，�
 - cargo clean
 - cargo run
 
-任务模板可以使用变量（[列表](https://zed.dev/docs/tasks)）来获得文件/位置/选中的内容等信息, 变量支持缺省值 `${ZED_FILE:default_value}`.
+任务模板可以使用变量（[列表](https://zed.dev/docs/tasks)）来获得文件/位置/选中的内容等信息, 变量支持缺省值 `${ZED_FILE:default_value}`， 它们可以在 cwd, args 和 label 中使用。
 
-zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当前 rust 对 work directory 的判断是基于当前 *正在编辑的文件* 为基础的，可能会将普通文件判断为 work directory，从而导致 task 执行静默出错，debug 日志如下：
+env 字段指定添加到 task 的环境变量，不支持变量替换，优先级高，会覆盖 terminal 环境变量。
 
+zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当前 zed 对 work directory 的判断是基于当前 *正在编辑的文件* 为基础的，可能会将普通文件判断为 work directory，从而导致 task 执行静默出错。
 
 例子：
 
@@ -623,7 +643,6 @@ zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当�
       }
     ]
 
-
 执行任务：
 
     {
@@ -636,7 +655,7 @@ zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当�
 
 
 执行 task::Spawn 时，按 tab 选中候选者来修改 task 的命令和参数，也可以输入任意 shell 命令和参数,
-然后执行;
+然后执行：
 - oneshot task："ctrl-enter"，会记录到 task history 中；
 - Ephemeral task："ctrl-cmd-enter"，不会记录到 task history 中；
 
@@ -656,8 +675,136 @@ zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当�
       }
     }
 
+注意：如果修改了 task 定义，则在 task picker 界面应该选择最下面的任务定义，而不是上面执行过的历史任务，否则最新的定义不生效。
+
 
 例如, 计算 zed buffer 中选中内容的字符数：执行 `ctrl-t`， 然后输入：`echo "$ZED_SELECTED_TEXT" | wc -c`， 最后执行 `ctrl-enter`。
+
+## 快速切换输入法 task
+
+定义一个 task：
+
+    ``` json
+    {
+      // 需要事先安装 macism 命令。
+      "label": "switch-input-method",
+      "command": "current=$(macism)",
+      "args": [
+        ";if [[ $current =~ com.sogou.inputmethod.sogou.pinyin ]]; then macism com.apple.keylayout.ABC; else macism com.sogou.inputmethod.sogou.pinyin; fi"
+      ],
+      "reveal": "never", // 执行时不显示终端
+      "use_new_terminal": false, // 复用已有未结束的终端
+      "allow_concurrent_runs": true,
+      "hide": "always" // 任务结束后自动关闭终端
+    }
+    ```
+绑定到快捷键 shift-shift：
+
+    ``` json
+    {
+      "context": "Workspace && !Terminal",
+      "bindings": {
+        "ctrl-t": "task::Spawn",
+        // 重新执行上次的 task
+        "ctrl-cmd-t": "task::Rerun",
+        // 快速切换输入法
+        "shift shift": ["task::Spawn", { "task_name": "switch-input-method" }]
+      }
+    },
+    ```
+
+## lazygit
+
+编辑配置文件 `~/.config/lazygit/config.yml`：
+
+    ``` yaml
+    gui:
+      language: en
+    os:
+      editPreset: "zed" # 使用 zed 编辑文件
+    ```
+
+创建 zed task：需要配置环境变量 `XDG_CONFIG_HOME` 来指定 lazgit 的配置目录。
+
+      ``` json
+      {
+        "label": "Lazygit",
+        "command": "lazygit",
+        "args": [],
+        "env": {
+          "XDG_CONFIG_HOME": "/Users/alizj/.config"
+        },
+        "use_new_terminal": false, // 复用已有未结束的终端
+        "allow_concurrent_runs": true,
+        "hide": "always" // 任务结束后自动关闭终端
+      }
+      ```
+
+
+使用：
+
+全局：
++ [/]: 在一个 block panel 的多个 tab 中切换。
++ <UP>/<DOWN> 或 j/k: 前一个或后一个 item, 也即是前后移动;
++ esc：返回（return）上一级；
++ +/-： 切换当前 tab 的显示方式（全屏、半屏等）；
++ H/L: 左右 scroll;
++ </>: 移动到 buffer 开始或结束；
++ f: 从 remote fetch 最新的更新；
++ P: push
++ p: pull
++ : : 执行 shell 命令。
++ W: 指定 commit ref 来 diff
++ search：在不同 tab 中使用 / 来触发搜索，但语义可能不一致，使用 n/N 来前后搜索。
+  + 使用 C-b 来按 status 过滤文件；
+  + 使用 C-s 来按 path、commit、author 过滤文件；
++ undo/redo：使用 z 来 undo，使用 C-z 来 redo。
++ togglePanel：<tab>
++ 退出（quit）：q 或 C-c
++ 前一个或后一个 page：,/.
++ <left>/<right>: 在 block panel 间跳转，共有编号为 1-5 的 5 个 block；
++ 1-5: 跳转到对应编号的 block；
+
+File Panel：
++ <enter>: 打开当前文件或目录的 unstage diff panel；
++ <SPACE>: stage 当前文件
++ `: 切换文件树的显示方式
++ a: stage 所有文件
++ s：stash 当前文件
++ S: 查看 stash 选项，可以一次 stash 更多的文件
++ i: 忽略当前文件
++ c: commit 当前的 stage 文件；
++ A：amend 上一次 commit
++ C-b: 只显示 stage 或 unstage 的文件；
++ o: 打开文件(如果 open 的是历史 commit 的 file，则显示变更后的文件内容)
++ e：编辑文件
++ r: refresh 文件
++ d：discard 丢弃文件变更
++ g: reset 到 UPSTREAM；
++ D：显示 reset 高级选项，包括 soft、hard 等；
+
+Diff block:
++ {/}： 增加或减少 diff 上下文行数。
++ E: 编辑当前 diff hunk，编辑后保存关闭临时文件。
++ esc: 返回到 file panel。
++ range select：可以批量对选择的项目（file、commit）应用命令，如在 unstage panel 中选择一部分
+  hunk，然后使用 SPACE 命令来进行 stage。反之，在 stage panel 中，使用 v 选择一个 range 后，
+  使用 SPACE 命令来进行 unstage。
+  1. 先按 v，然后使用 up、down 或 j/k 来选择。再次按 v 来 reset 选择；
+  2. 或者按 shift+up 或 shift+down 来选择。再次按不带 shift 的 up、down 来 reset 选择；
++ 前一个或后一个 hunk：<left>/<right> 或 h/l 或 tab 或 backtab
++ TAB: 在 unstage 和 stage panel 之间切换。
+
+Branch Panel：
+- <Enter>: 查看当前 branch 的 commit 历史，在某个 commit 上按 <Enter> 则显示 Commit Panel。
+- <SPACE>: checkout 当前 branch；
+- F：force checkout
+- n：创建新 branch
++ /: 按 branch name 搜索
+
+Commit Panel:
+- <Enter>: 显示该 commit 下的变更文件列表，在文件上按 <Enter> 显示该文件的 Patch。
+- / : 按 commit hash id 或 message summary 搜索；
 
 # assistant
 
@@ -751,6 +898,10 @@ bash/shell code block 需要使用 sh 语言简称, 这样 markdown 才能正确
 对于 rust/json 等 tree-sitter 可以支持的 language, 不能使用 code block, 否则 outline 会显示
 代码的结构,"解决办法是: 使用 2 层缩进。
 
+# theme
+
+执行 `debug: open theme preview` 命令预览当前主题的配色。
+
 # 其它
 
 配置 `"show_whitespaces": "selection"` 后，显示选择区域中的空格。
@@ -832,11 +983,7 @@ json-language-server
 
 # Bugs
 
-1. 在 ark 项目中执行 copy permalink 时报错：
-
-    > 2024-10-22T16:48:33.806939+08:00 [ERROR] failed to parse Git remote URL
-
-2. 网络连接不上时，大量刷日志：
+1. 网络连接不上时，大量刷日志：
 
    > 2024-10-23T11:06:26.657707+08:00 [ERROR] Client(error sending request for
    > url (https://avatars.githubusercontent.com/u/433567?s=128&v=4)
@@ -852,12 +999,12 @@ json-language-server
    > Wed Oct 23 11:06:51 CST 2024
    > 96980 /Users/alizj/Library/Logs/Zed/Zed.log
 
-3. 按键问题
+2. 按键问题
 
   - "ctrl-cmd-d": "editor::DeleteToPreviousWordStart", // 不生效
   - "cmd-q": "editor::Rewrap", // 自动折行，有问题，折行的长度不对。
 
-4. 本地交叉编译 remote_server 报错
+3. 本地交叉编译 remote_server 报错
 
     [2024-10-29T17:14:42+08:00 DEBUG worktree] ignoring event "target/remote_server/debug/incremental/build_script_build-34db12mrzjok5/s-h1avtiisg8-0xfewcx-working" within unloaded directory
     error: linking with `aarch64-linux-gnu-gcc` failed: exit status: 1

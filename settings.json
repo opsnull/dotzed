@@ -1,5 +1,6 @@
 {
   // 不使用缺省的 keymap，只使用自定义 keymap。
+  "theme": "One Dark Pro",
   "base_keymap": "None",
   "assistant": {
     "default_model": {
@@ -31,7 +32,7 @@
   // block 比 bar 显示的更明显
   "cursor_shape": "bar",
   "buffer_font_size": 16,
-  "ui_font_size": 16,
+  "ui_font_size": 18,
   "indent_guides": {
     "coloring": "fixed"
   },
@@ -59,11 +60,11 @@
     "enabled": false
   },
   "project_panel": {
-    "indent_size": 15,
+    "indent_size": 18,
     "dock": "left"
   },
   "outline_panel": {
-    "indent_size": 15,
+    "indent_size": 18,
     "dock": "left"
   },
   "chat_panel": {
@@ -100,9 +101,12 @@
     // 对 code navi 打开的文件启用
     "enable_preview_from_code_navigation": true
   },
-  // 添加到终端的环境变量
-  "env": {},
   "terminal": {
+    // zed 给 task 追加的环境变量，不支持 shell 变量替换。
+    "env": {
+      // lazygit 读取配置的目录。
+      "XDG_CONFIG_HOME": "/Users/alizj/.config"
+    },
     "option_as_meta": true,
     "copy_on_select": true,
     "shell": {
@@ -115,8 +119,7 @@
   "proxy": "socks5://127.0.0.1:1080",
   "git": {
     "inline_blame": {
-      // 按需命令面板开启
-      "enabled": false,
+      "enabled": true,
       "delay_ms": 3000
     }
   },
@@ -152,6 +155,7 @@
     ]
   },
   // by 语言设置配置参数, 可配置的参数列表: https://zed.dev/docs/configuring-zed#languages
+  // 需要先安装 prettier 工具：brew install prettier
   "languages": {
     "Markdown": {
       "tab_size": 2,

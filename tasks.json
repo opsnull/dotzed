@@ -19,8 +19,23 @@
     "label": "Lazygit",
     "command": "lazygit",
     "args": [],
-    "env": {},
-    "use_new_terminal": true,
-    "allow_concurrent_runs": true
+    "env": {
+      "XDG_CONFIG_HOME": "/Users/alizj/.config"
+    },
+    "use_new_terminal": false,
+    "allow_concurrent_runs": true,
+    "hide": "always"
+  },
+  {
+    // 需要事先安装 macism 命令。
+    "label": "switch-input-method",
+    "command": "current=$(macism)",
+    "args": [
+      ";if [[ $current =~ com.sogou.inputmethod.sogou.pinyin ]]; then macism com.apple.keylayout.ABC 12000; else macism com.sogou.inputmethod.sogou.pinyin 12000; fi"
+    ],
+    "reveal": "never", // 执行时不显示终端
+    "use_new_terminal": false, // 复用已有未结束的终端
+    "allow_concurrent_runs": true,
+    "hide": "always" // 任务结束后自动关闭终端
   }
 ]
