@@ -92,9 +92,13 @@
       "ctrl-8": ["pane::ActivateItem", 7],
       "ctrl-9": ["pane::ActivateItem", 8],
 
-      /// 导航历史
+      /// 根据导航历史移动
       "cmd-,": "pane::GoBack",
       "ctrl-cmd-,": "pane::GoForward",
+
+      // 根据选择历史移动
+      "cmd-u": "editor::UndoSelection",
+      "ctrl-cmd-u": "editor::RedoSelection",
 
       /// Pane 操作
       "cmd-o": "workspace::ActivateNextPane",
@@ -106,7 +110,7 @@
       "ctrl-x 3": "pane::SplitRight",
       "ctrl-+": "zed::IncreaseBufferFontSize",
       "ctrl-_": "zed::DecreaseBufferFontSize",
-      "ctrl-cmd-t": "pane::ReopenClosedItem"
+      "cmd-t": "pane::ReopenClosedItem"
     }
   },
   {
@@ -145,9 +149,6 @@
       "cmd->": "editor::MoveToEnd",
       "ctrl-l": "editor::ScrollCursorCenterTopBottom",
       "cmd-%": "editor::MoveToEnclosingBracket",
-      // 根据选择历史移动
-      "ctrl-u": "editor::UndoSelection",
-      "ctrl-cmd-u": "editor::RedoSelection",
 
       /// 选择操作
       // 基础
