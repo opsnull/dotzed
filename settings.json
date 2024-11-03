@@ -1,6 +1,6 @@
 {
+  "theme": "One Light",
   // 不使用缺省的 keymap，只使用自定义 keymap。
-  "theme": "One Dark Pro",
   "base_keymap": "None",
   "assistant": {
     "default_model": {
@@ -24,6 +24,11 @@
   // 关闭全局 soft wrap, 在 languages 中按语言开启（如 markdown 默认开启）。
   "soft_wrap": "none",
   "preferred_line_length": 90,
+  // 在列表中的各宽度位置显示 guide line。
+  "wrap_guides": [80, 120],
+  "indent_guides": {
+    "coloring": "fixed"
+  },
   "show_inline_completions": true,
   "features": {
     "inline_completion_provider": "none" // "copilot"
@@ -33,9 +38,6 @@
   "cursor_shape": "bar",
   "buffer_font_size": 16,
   "ui_font_size": 18,
-  "indent_guides": {
-    "coloring": "fixed"
-  },
   // 在 multibuffer 中双击: 打开文件。
   "double_click_in_multibuffer": "open",
   "gutter": {
@@ -60,6 +62,7 @@
     "enabled": false
   },
   "project_panel": {
+    "auto_fold_dirs": false,
     "indent_size": 18,
     "dock": "left"
   },
@@ -102,10 +105,14 @@
     "enable_preview_from_code_navigation": true
   },
   "terminal": {
+    "font_family": "Zed Plex Mono",
+    "font_size": 14,
     // zed 给 task 追加的环境变量，不支持 shell 变量替换。
     "env": {
       // lazygit 读取配置的目录。
-      "XDG_CONFIG_HOME": "/Users/alizj/.config"
+      "XDG_CONFIG_HOME": "/Users/alizj/.config",
+      // difftastic 在浅色背景下显示的更清晰。
+      "DFT_BACKGROUND": "light"
     },
     "option_as_meta": true,
     "copy_on_select": true,
@@ -114,7 +121,10 @@
         "program": "bash",
         "args": ["--login"]
       }
-    }
+    },
+    // 先使用 workspace 中第一个 project，如果失败则使用 HOME。 用于修复 zed
+    // terminal 可能将 file 识别为 cwd 问题，例如编辑的文件不属于当前打开的任意 project。
+    "working_directory": "first_project_directory"
   },
   "proxy": "socks5://127.0.0.1:1080",
   "git": {

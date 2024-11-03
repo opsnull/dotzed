@@ -559,10 +559,12 @@
       // 基础操作
       "up": ["terminal::SendKeystroke", "up"],
       "down": ["terminal::SendKeystroke", "down"],
+      "left": ["terminal::SendKeystroke", "left"],
+      "right": ["terminal::SendKeystroke", "right"],
       "escape": ["terminal::SendKeystroke", "escape"],
       "enter": ["terminal::SendKeystroke", "enter"],
       "ctrl-c": ["terminal::SendKeystroke", "ctrl-c"],
-      "cmd-x": ["terminal::SendKeystroke", "cmd-x"],
+
       // 创建新终端
       "cmd-enter": "workspace::NewTerminal",
       // 按 word 移动

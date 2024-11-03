@@ -740,71 +740,189 @@ zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当�
       }
       ```
 
-
-使用：
+参考：
+1. https://oliverguenther.de/2021/04/lazygit-an-introduction-series/
+2. https://github.com/jesseduffield/lazygit/blob/master/docs/keybindings/Keybindings_en.md
 
 全局：
-+ [/]: 在一个 block panel 的多个 tab 中切换。
-+ <UP>/<DOWN> 或 j/k: 前一个或后一个 item, 也即是前后移动;
-+ esc：返回（return）上一级；
-+ +/-： 切换当前 tab 的显示方式（全屏、半屏等）；
-+ H/L: 左右 scroll;
-+ </>: 移动到 buffer 开始或结束；
++ C-r：切换最近的项目；
++ @：打开右下角的 git 命令提示面板；
++ ？：打开帮助菜单；
 + f: 从 remote fetch 最新的更新；
 + P: push
 + p: pull
-+ : : 执行 shell 命令。
-+ W: 指定 commit ref 来 diff
-+ search：在不同 tab 中使用 / 来触发搜索，但语义可能不一致，使用 n/N 来前后搜索。
-  + 使用 C-b 来按 status 过滤文件；
-  + 使用 C-s 来按 path、commit、author 过滤文件；
-+ undo/redo：使用 z 来 undo，使用 C-z 来 redo。
-+ togglePanel：<tab>
-+ 退出（quit）：q 或 C-c
-+ 前一个或后一个 page：,/.
++ q 或 C-c：退出（quit）
++ z：undo
++ C-z：redo
++ j/k 或 <UP>/<DOWN>: 前一个或后一个 item, 也即是前后移动;
 + <left>/<right>: 在 block panel 间跳转，共有编号为 1-5 的 5 个 block；
 + 1-5: 跳转到对应编号的 block；
++ [/]: 在一个 block panel 的多个 tab 中切换。
++ esc：返回（return）上一级；
++ +/-： 切换当前 tab 的显示方式（全屏、半屏等），在查看 diff 或 commit 时非常有用。
++ H/L: 左右 scroll;
++ </>: 移动到 buffer 开始或结束；
++ : : 执行 shell 命令。
++ search：在不同 tab 中使用 / 来触发搜索，但语义可能不一致，使用 n/N 来前后搜索。
+  + C-b ：按 status 过滤文件；
+  + C-s ：按 path、commit、author 过滤文件；
++ 前一个或后一个 page：,/.
++ R: 刷新 git 状态（后台执行 git status，git branch 等命令以更新面板，但是不执行 git fetch）；
++ d：discard 丢弃文件变更
++ D：显示 reset 高级选项，包括 soft、hard 等；
++ g: reset 到 UPSTREAM；
++ <SPACE>：在 file panel 中是 stage 当前文件，在 diff panel 中是 stage 当前 hunk；
+
++ o: 使用外部编辑器（external editor）打开文件(显示变更后的文件内容)
++ e：使用系统缺省应用（dfault application）编辑文件。
+
+比较 Commit：
++ W: 在 commit 或 branch 上执行时，将当前 commit 作为标记与后续选择的其它 commit 进行比较，差异
+  显示在 diff panel 中。这时按 <enter> 来显示 diff 的文件列表, 再次按 W 将显示翻转 diff 方向，或者
+  退出 diff mode。
 
 File Panel：
-+ <enter>: 打开当前文件或目录的 unstage diff panel；
++ Untracked(??), Added (A), Deleted(D), or Modified(M)
+  + unstaged (red) and staged (green)
++ <enter>: 打开当前文件或目录的 unstage diff panel，这样可以按 hunks 或 lines 来 stage。
 + <SPACE>: stage 当前文件
-+ `: 切换文件树的显示方式
-+ a: stage 所有文件
++ `: 切换文件树的显示方式（层次或扁平显示）
++ a: stage、unstaged 所有文件
 + s：stash 当前文件
-+ S: 查看 stash 选项，可以一次 stash 更多的文件
+  + S: 查看 stash 选项（e.g. stash all, stash staged, stash unstaged)
 + i: 忽略当前文件
 + c: commit 当前的 stage 文件；
 + A：amend 上一次 commit
 + C-b: 只显示 stage 或 unstage 的文件；
-+ o: 打开文件(如果 open 的是历史 commit 的 file，则显示变更后的文件内容)
-+ e：编辑文件
 + r: refresh 文件
-+ d：discard 丢弃文件变更
-+ g: reset 到 UPSTREAM；
-+ D：显示 reset 高级选项，包括 soft、hard 等；
 
-Diff block:
-+ {/}： 增加或减少 diff 上下文行数。
-+ E: 编辑当前 diff hunk，编辑后保存关闭临时文件。
-+ esc: 返回到 file panel。
+Diff Panel:
++ h/l 或 <left>/<right>: 前一个或后一个 hunk：
++ <SPACE>: stage 当前 hunk line 或 selection，如果已经 staged 了，则 unstage 当前 hunk；
++ a: Toggle hunk selection mode，即一次选择一个 hunk；
 + range select：可以批量对选择的项目（file、commit）应用命令，如在 unstage panel 中选择一部分
   hunk，然后使用 SPACE 命令来进行 stage。反之，在 stage panel 中，使用 v 选择一个 range 后，
   使用 SPACE 命令来进行 unstage。
   1. 先按 v，然后使用 up、down 或 j/k 来选择。再次按 v 来 reset 选择；
   2. 或者按 shift+up 或 shift+down 来选择。再次按不带 shift 的 up、down 来 reset 选择；
-+ 前一个或后一个 hunk：<left>/<right> 或 h/l 或 tab 或 backtab
-+ TAB: 在 unstage 和 stage panel 之间切换。
++ d：discard 丢弃部分文件变更（丢弃文件中 staged、unstaged 部分的变更）
+    + When unstaged change is selected, discard the change using git reset.
+    + When staged change is selected, unstage the change.
++ <TAB>: 在 unstage 和 stage view 之间切换；
++ E: 编辑当前 diff hunk，编辑后保存关闭临时文件。
++ esc: 返回到 file panel。
++ {/}： 增加或减少 diff 上下文行数。
++ c: Commit staged changes.
++ w：Commit changes without pre-commit hook
++ C：Commit changes using git editor
 
 Branch Panel：
-- <Enter>: 查看当前 branch 的 commit 历史，在某个 commit 上按 <Enter> 则显示 Commit Panel。
+- 以 * 开头的 branch 为当前 branch；向上箭头表示 commit ahead，向下箭头表示 commit behind；
 - <SPACE>: checkout 当前 branch；
-- F：force checkout
+- c：checkout by name，按 branch name 来 checkout，如果是 -，则代表 latest branch；
+- <Enter>: 查看当前 branch 的 commit 历史，在某个 commit 上按 <Enter> 则显示 Commit Panel。
+- p：pull 远程分支最新提交并合并到本地
+- f：fast-forward 当前分支到远程分支
+- F：force checkout，会丢弃当前 workspace 所有变更；
 - n：创建新 branch
+- R：rename branch
+- M：将当前光标所在分支 merge 到本地当前分支，显示 merge 选项
+- r：将当前本地分支 rebase 到光标所在分支
 + /: 按 branch name 搜索
++ [/]: 切换到该 panel 的其它 tab，如 remote branch 和 tags；
++ w : 从该 branch 创建 worktree；
 
-Commit Panel:
+Commit Panel: 显示当前本地分支的 commit history list，可以进行 Squash、Fixup、Amend、Reword 等操作。
+- 4：切换到该 Panel
 - <Enter>: 显示该 commit 下的变更文件列表，在文件上按 <Enter> 显示该文件的 Patch。
+   - 和 diff panel 一样，可以对整个文件或部分 hunk 选择，然后生成 custom patch；
+   - 最后执行 Ctrl-p 来显示 custom patch menu；
+     - Reset patch cancel the custom patch, resetting any selections you've made
+     - Apply patch Run git applywith the patch here (this won't do anything if the patch is from this commit)
+     - Apply patch in reverse Run git apply --reverse with the patch here
+     - Remove patch from original commit Removes the selected changes from this commit and discards it! (Results in rebase)
+     - Move patch into new index Removes the selected changes from this commit and adds it to the stash (Results in rebase)
+     - Move patch into new commit Removes the selected changes from this commit and adds a new commit with the changes. The commit message will be "Split from <this commit>"
 - / : 按 commit hash id 或 message summary 搜索；
+
+- i：开始 interactive rebase，对要进行 rebase 的 commit 进行 squash (s), fixup (f),
+   drop (d), edit (e), move up (ctrl+i) or move down (ctrl+j)，然后使用 m 触发
+   rebase options menu，选择 continue。可以使用 v 来选择多个 commit。
+- e：编辑（edit）选中的 commit，会对该 commit 以后的 commit 进行 rebase
+
+- A: amend, 如果 files panel 中有 staged changes 则 amend 会带上。如果对历史 commit 进行
+  amend，会进行 rebase。
+- s：squash，将所在 commit 合并到前一个（below it） commit（保留 commit message），会进行 rebase
+- f：fixup，将所在 commit 合并到后一个 commit（丢弃 commit message），会进行 rebase。
+- d：delete commit，会进行 rebase。
+- r：reword，编辑 commit message，会进行 rebase。
+- R：reword in editor，会进行 rebase。
+
+- F: Create fixup commit，为选择的 commit 创建 fixup！commit，后续在该 commit 上执行 S 来
+  squash all above fixup commits
+- S：Apply fixup commits，Squash all 'fixup!' commits, either above the selected commit,
+  or all in current branch (autosquash).
+
+- t：revert commit
+- T：tag commt
+- B: 将光标所在 commit 标记为 rebase Base commit（不包含光标所在的 commit，往上的所有 commit
+  将被 rebase 到其它分支），然后切换到其它 branch 执行 rebase；
+- a：Set/Reset commit author or set co-author.
+- <c-l>: 设置 commit log graph 显示选项；
+- <c-t> 	Open external diff tool (git difftool)
+- <SPACE>: Checkout the selected commit as a detached HEAD.
+- y：Copy commit attribute to clipboard (e.g. hash, URL, diff, message, author).
+- o：Open commit in browser
+- n：Create new branch off of commit
+- g：View reset options (soft/mixed/hard) for resetting onto selected item.
+
+Cherry picking：
+1. 在 commit panel 中使用 C（copy cherry-pick） 选中一个或多个 commit；
+2. 然后切换或选择另一个分支，使用 V（paste cherry-pick）来生效；
+
+Stash panel：stash 将当前 worktree 的变更保存到 stash 空间，然后将 worktree 恢复到上一次 commit 的干净状态。
+- 使用 5 来切换到该 panel
+- 在 files tab 中使用 s 命令将 staged 或 unstaged 的内容保存到 stash；
+- <SPACE>: apply stash 但是不 popup；
+- g：popup stash
+- n：从 stash 创建一个 branch；
+- d：delete stash entry；
+
+Interactive Rebase 操作（修改当前分支的 commit）：
++ https://github.com/jesseduffield/lazygit/wiki/Interactive-Rebasing
+1. 按 4 切换到 commit panel；
+2. 在要开始 interactive rebase 的 commit 上按 e（Edit），这时会从该 commit parent 开始
+  rebase，光标所在 commit 是 edit 状态，以后的（above）的 commit 都会被 pick 选中。
+  - 如果执行的是 i 命令，则可以对整个 commit history 的 commit 进行标记，而不是像 edit 那样
+    从标记的 commit 开始 rebase。
+3. lazygit 提示 YOU ARE HERE，这时 git 暂停在该 commit，等待用户修改该 commit（即 edit 语义）：
+  - 可以对 above commit 进行修改，'squash（s）', 'drop（d）', 'edit（e）', 'pick（p）', and 'fixup（f）'；
+4. 修改 commit：在 worktree 中修改文件，然后 stage（<SPACE>)，再 amend 该 commit (shift-A)，
+   这时在 commit diff 中可以看到该修改被合并到那个 commit 中。
+4. 回到 commit panel，按 m 来触发 merge or rebase options，然后选择 continue。
+5. 然后从 edit 开始的 commit 到最新的 commit 都会被重新提交，生成新的 commit id。
+
+Rebase onto 操作（将其它分支 commit rebase 到任意分支）：
+1. 在 branch panel 中选择 bugfix 分支，commit panel 中显示该分支的 commit；
+2. 在 commit panel 中选择要 Rebase 的 Base Commit，按 B，该 commit 后续（不包含该 commit）的
+   commits 都会被 rebase 到后续其它分支；
+3. 在 branch panel 中选择要 rebase 到的其它分支，按 r，这时会出现 rebase dialog，可以进行 simple
+   或 iteractive rebasing。
+
+注：amend 操作用于修改 commit，将当前 workspace 中要做的修改 stage，然后 git commit --amend 时会
+合并到该 commit 中。
+
+Bisect
+- Press b in the commits view to mark a commit as good/bad in order to begin a git bisect.
+
+What's the difference between git reflog and log?
++ https://stackoverflow.com/a/17860179/19867059
+
+   git log shows the current HEAD and its ancestry. That is, it prints the commit HEAD points to, then its parent, its parent, and so on. It traverses back through the repo's ancestry, by recursively looking up each commit's parent.
+
+   (In practice, some commits have more than one parent. To see a more representative log, use a command like git log --oneline --graph --decorate.)
+
+   git reflog doesn't traverse HEAD's ancestry at all. The reflog is an ordered list of the commits that HEAD has pointed to: it's undo history for your repo. The reflog isn't part of the repo itself (it's stored separately to the commits themselves) and isn't included in pushes, fetches or clones; it's purely local.
 
 # assistant
 

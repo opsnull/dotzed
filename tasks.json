@@ -1,22 +1,22 @@
 [
+  // {
+  //   "label": "emacs-daemon",
+  //   "command": "emacs",
+  //   "args": ["--daemon", "-nw", "-q", "-l", "~/emacs/minimal.el"],
+  //   "env": {},
+  //   "use_new_terminal": true,
+  //   "allow_concurrent_runs": true
+  // },
+  // {
+  //   "label": "magit",
+  //   "command": "emacsclient",
+  //   "args": ["-nw", "-u", "-e", "'(magit-status)'"],
+  //   "env": {},
+  //   "use_new_terminal": true,
+  //   "allow_concurrent_runs": false
+  // },
   {
-    "label": "emacs-daemon",
-    "command": "emacs",
-    "args": ["--daemon", "-nw", "-q", "-l", "~/emacs/minimal.el"],
-    "env": {},
-    "use_new_terminal": true,
-    "allow_concurrent_runs": true
-  },
-  {
-    "label": "magit",
-    "command": "emacsclient",
-    "args": ["-nw", "-u", "-e", "'(magit-status)'"],
-    "env": {},
-    "use_new_terminal": true,
-    "allow_concurrent_runs": false
-  },
-  {
-    "label": "Lazygit",
+    "label": "lazygit",
     "command": "lazygit",
     "args": [],
     "env": {
@@ -31,11 +31,12 @@
     "label": "switch-input-method",
     "command": "current=$(macism)",
     "args": [
-      ";if [[ $current =~ com.sogou.inputmethod.sogou.pinyin ]]; then macism com.apple.keylayout.ABC 12000; else macism com.sogou.inputmethod.sogou.pinyin 12000; fi"
+      ";if [[ $current =~ com.sogou.inputmethod.sogou.pinyin ]]; then macism com.apple.keylayout.ABC; else macism com.sogou.inputmethod.sogou.pinyin; fi"
     ],
     "reveal": "never", // 执行时不显示终端
     "use_new_terminal": false, // 复用已有未结束的终端
     "allow_concurrent_runs": true,
-    "hide": "always" // 任务结束后自动关闭终端
+    "hide": "always", // 任务结束后自动关闭终端
+    "cwd": "/Users/alizj" // 避免 zed 搞错 cwd 引起 task 执行失败的 bug，不支持 shell 变量扩展。
   }
 ]
