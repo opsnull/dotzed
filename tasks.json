@@ -17,14 +17,14 @@
   // },
   {
     "label": "lazygit",
-    "command": "lazygit",
+    "command": "macism com.apple.keylayout.ABC; lazygit",
     "args": [],
     "env": {
       "XDG_CONFIG_HOME": "/Users/alizj/.config"
     },
     "use_new_terminal": false,
     "allow_concurrent_runs": true,
-    "hide": "always"
+    "hide": "never"
   },
   {
     // 需要事先安装 macism 命令。
