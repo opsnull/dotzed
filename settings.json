@@ -105,7 +105,8 @@
     "enable_preview_from_code_navigation": true
   },
   "terminal": {
-    "font_family": "Zed Plex Mono",
+    // Monaco 和 Noto Sans Mono 字体显示终端图形字符时更清晰
+    "font_family": "Noto Sans Mono",
     "font_size": 14,
     // zed 给 task 追加的环境变量，不支持 shell 变量替换。
     "env": {
