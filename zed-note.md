@@ -624,6 +624,11 @@ env 字段指定添加到 task 的环境变量，不支持变量替换，优先�
 
 zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当前 zed 对 work directory 的判断是基于当前 *正在编辑的文件* 为基础的，可能会将普通文件判断为 work directory，从而导致 task 执行静默出错。
 
+注意：
+1. 不支持物理换行，即使前面加 \ 转义字符也不行；
+2. cwd 和 env 不支持 shell 扩展，如不能使用 ~ 字符；
+3. 字符串支持 \ 转义，如果要把转义字符传给 shell，需要连用 \\;
+
 例子：
 
     [
@@ -680,7 +685,27 @@ zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当�
 
 例如, 计算 zed buffer 中选中内容的字符数：执行 `ctrl-t`， 然后输入：`echo "$ZED_SELECTED_TEXT" | wc -c`， 最后执行 `ctrl-enter`。
 
-## 快速切换输入法 task
+## 切换 org-mode src block 语言名称
+
+临时解决，解析后的 src block 代码显示在 Outline 的问题：
+
+    ``` json
+    // Static tasks configuration.
+    //
+    [
+      {
+        "label": "toggle org-mode src block",
+        "command": "lines=$(grep 'begin_src rust,' ${ZED_FILE} 2>/dev/null | wc -l); if [[ $lines > 10 ]]; then sed -i  -E -e 's/begin_src ([[:alnum:]]+),/begin_src \\1/g' ${ZED_FILE}; else sed -i -E -e 's/begin_src ([[:alnum:]]+)/begin_src \\1,/g' ${ZED_FILE}; fi",
+        "use_new_terminal": false,
+        "allow_concurrent_runs": false,
+        "reveal": "always",
+        "hide": "always",
+        "cwd": "/Users/alizj/docs/"
+      }
+    ]
+    ```
+
+## 快速切换输入法
 
 定义一个 task：
 
@@ -1008,6 +1033,7 @@ extensions 使用 Rust 开发，但被编译为 WebAssembly 后被 zed 执行。
 
 1. [FireCrawl Zed Extension](https://github.com/notpeter/firecrawl-zed)
 2. [RFC Zed Extension](https://github.com/notpeter/rfc-zed)
+3. [安装 extension 的脚本](https://gist.github.com/srghma/1a53015ed2c26f725119b1c9dc43a3ab)
 
 # markdown
 
