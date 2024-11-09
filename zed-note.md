@@ -202,7 +202,7 @@ File Path 上时， 可以按 cmd 来快速打开。
 1. 如果当前输入一部分中文，但是需要键入英文，可以按 shift 键，这样输入的部分内容会被作为
    英文输入。
 
-使用更符合编程体验的 "Sarasa Mono SC" 字体（基于 Iosevka 编程字体的中文等距更纱黑体）。
+buffer 和 terminal 都设置为更符合编程体验的 "Sarasa Mono SC" 字体，它是 Iosevka 编程字体的中文版本，名称为等距更纱黑体。
 
 光标位于 URL 上, 执行 editor::open url 命令可以快速打开该 URL.
 

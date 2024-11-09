@@ -95,8 +95,8 @@
   },
   "toolbar": {
     // 显示搜索、AI、Inlay 等快速操作按钮。
-    "quick_actions": true,
-    "breadcrumbs": true
+    "quick_actions": false,
+    "breadcrumbs": false
   },
   "scrollbar": { "show": "auto" },
   // preview tabs: 在一个公共 tab 中自动切换显示多个文件，避免打开过多 tab。
@@ -108,7 +108,7 @@
   },
   "terminal": {
     // Monaco 和 Noto Sans Mono 字体显示终端图形字符时更清晰
-    "font_family": "Noto Sans Mono",
+    "font_family": "Sarasa Term SC",
     "font_size": 14,
     // zed 给 task 追加的环境变量，不支持 shell 变量替换。
     "env": {
