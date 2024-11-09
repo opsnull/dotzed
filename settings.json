@@ -34,23 +34,23 @@
     "inline_completion_provider": "none" // "copilot"
   },
   "confirm_quit": true,
-  // block 比 bar 显示的更明显
   "cursor_shape": "bar",
-  // 使用基于 Isoveka 的中英文编程字体
+  // 使用基于 Isoveka 的中英文编程字体。
   "buffer_font_family": "Sarasa Mono SC",
   "buffer_font_size": 16,
-  "ui_font_size": 18,
+  // 减小 UI 元素的字体大小，这样留更多空间给编辑区。
+  "ui_font_size": 14,
   // 在 multibuffer 中双击: 打开文件。
   "double_click_in_multibuffer": "open",
   "gutter": {
-    // 打开 line number，这样看当前高亮的行更清晰。
-    "line_numbers": true,
-    // 关闭一些不常用显示，节省左侧空间。
+    // 是否显示 line number。
+    "line_numbers": false,
+    // 关闭一些不常用的功能，节省左侧空间。
     "code_actions": false,
     "runnables": false
   },
   // 开启后，搜索字符包含大写时区分大小写（未开启时不区分大小写）。
-  "use_smartcase_search": false,
+  "use_smartcase_search": true,
   "centered_layout": {
     "left_padding": 0.15,
     "right_padding": 0.15
@@ -65,11 +65,11 @@
   },
   "project_panel": {
     "auto_fold_dirs": false,
-    "indent_size": 18,
+    "indent_size": 16,
     "dock": "left"
   },
   "outline_panel": {
-    "indent_size": 18,
+    "indent_size": 16,
     "dock": "left"
   },
   "chat_panel": {
@@ -85,16 +85,17 @@
   "vim_mode": false,
   //   "default_dock_anchor": "expanded",
   "tabs": {
-    "git_status": true,
+    "git_status": false,
     // 不显示 icon，节省 tab 空间。
     "file_icons": false,
     "close_position": "left"
   },
   "tab_bar": {
-    "show": true
+    "show": true,
+    "show_nav_history_buttons": false
   },
   "toolbar": {
-    // 显示搜索、AI、Inlay 等快速操作按钮。
+    // 是否显示搜索、AI、Inlay 等快速操作按钮。
     "quick_actions": false,
     "breadcrumbs": false
   },
