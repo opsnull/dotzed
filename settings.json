@@ -112,11 +112,15 @@
     "font_family": "Sarasa Term SC",
     "font_size": 14,
     // zed 给 task 追加的环境变量，不支持 shell 变量替换。
+    // 这里的环境变量优先级较低，~/.bashrc 和 project envs 都会覆盖这里的同名
+    // 变量。
     "env": {
       // lazygit 读取配置的目录。
       "XDG_CONFIG_HOME": "/Users/alizj/.config",
       // difftastic 在浅色背景下显示的更清晰。
-      "DFT_BACKGROUND": "light"
+      "DFT_BACKGROUND": "light",
+      "ALL_PROXY": "socks5h://127.0.0.1:1080",
+      "all_proxy": "socks5h://127.0.0.1:1080"
     },
     "option_as_meta": true,
     "copy_on_select": true,
@@ -130,7 +134,7 @@
     // terminal 可能将 file 识别为 cwd 问题，例如编辑的文件不属于当前打开的任意 project。
     "working_directory": "first_project_directory"
   },
-  "proxy": "socks5://127.0.0.1:1080",
+  "proxy": "socks5h://127.0.0.1:1080",
   "git": {
     "inline_blame": {
       "enabled": true,
