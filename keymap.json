@@ -334,9 +334,9 @@
     "bindings": {
       "ctrl-t": "task::Spawn",
       // 重新执行上次的 task
-      "ctrl-cmd-t": "task::Rerun",
+      "ctrl-cmd-t": "task::Rerun"
       // 快速切换输入法
-      "shift shift": ["task::Spawn", { "task_name": "switch-input-method" }]
+      //"shift shift": ["task::Spawn", { "task_name": "switch-input-method" }]
     }
   },
   {
@@ -442,10 +442,14 @@
     "bindings": {
       "escape": "menu::Cancel",
       // 在新 tab 中打开文件, 焦点还位于 outline panel。
+      //"ctrl-o": "outline_panel::Open",
+      //"tab": "outline_panel::Open",
       "ctrl-o": ["outline_panel::Open", { "change_selection": false }],
       "tab": ["outline_panel::Open", { "change_selection": false }],
+
       // 在新 tab 中打开文件，将焦点移动到文件中。
-      "enter": ["outline_panel::Open", { "change_selection": true }],
+      //"enter": ["outline_panel::Open", { "change_selection": true }],
+      "enter": "outline_panel::Open",
       "ctrl-n": "menu::SelectNext",
       "ctrl-p": "menu::SelectPrev",
       "^": "outline_panel::SelectParent",

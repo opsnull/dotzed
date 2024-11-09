@@ -1,5 +1,5 @@
 {
-  "theme": "One Dark Pro",
+  "theme": "JetBrains New Dark",
   // 不使用缺省的 keymap，只使用自定义 keymap。
   "base_keymap": "None",
   "assistant": {
@@ -36,6 +36,8 @@
   "confirm_quit": true,
   // block 比 bar 显示的更明显
   "cursor_shape": "bar",
+  // 使用基于 Isoveka 的中英文编程字体
+  "buffer_font_family": "Sarasa Mono SC",
   "buffer_font_size": 16,
   "ui_font_size": 18,
   // 在 multibuffer 中双击: 打开文件。
@@ -131,7 +133,8 @@
   "git": {
     "inline_blame": {
       "enabled": true,
-      "delay_ms": 3000
+      "delay_ms": 500,
+      "show_commit_summary": true
     }
   },
   "ssh_connections": [
@@ -223,6 +226,10 @@
     },
     "rust-analyzer": {
       "initialization_options": {
+        // cargo fmt 的很多特性依赖于 +nightly toolchain。
+        "rustfmt": {
+          "extraArgs": ["+nightly"]
+        },
         // 从 rust-analyzer 获得更多的诊断信息（因为后续关闭了cargo check 检查）。
         "diagnostics": {
           "experimental": {

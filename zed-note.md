@@ -56,8 +56,7 @@ zj@a:~/go/src/github.com/zed-industries/zed$ ls -l target/debug/WebRTC.framework
    </dict>
 ```
 
-本地开发构建使用 `dev profile`，zed 内部会识别当前是否 dev 版本（通过宏 `cfg!(not(debug_assertions))`
-），会做一些 dev 特殊处理逻辑。
+本地开发构建使用 `dev profile`，zed 内部会识别当前是否 dev 版本（通过宏 `cfg!(not(debug_assertions))`），会做一些 dev 特殊处理逻辑。
 
 ```sh
 # 构建 MacOS bundle DMG 并安装
@@ -127,8 +126,7 @@ zed 本地构建 remote server bianry 时执行的命令：
 2. 异构：triple=aarch64-linux cargo install cross --git "https://github.com/cross-rs/cross"
 cross build --package remote_server --features debug-embed --target-dir target/remote_server --target ${triple}
 
-在 zed server 运行过程中，会自动[从网络下载 lsp language 并安装
-](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/languages/src/rust.rs#L100)
+在 zed server 运行过程中，会自动[从网络下载 lsp language 并安装](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/languages/src/rust.rs#L100)
 到 ~/.local/share/zed/languages/ 目录下：
 
 # launch
@@ -188,16 +186,23 @@ pane 有自己的 tool bar 和导航 history（前进、后退）。光标在 Pa
 zed 打开系统文件对话框后，按 Command-Shift-g 可以按照文件路径来打开。也可以在终
 端使用 `zed cli` 来按照文件路径打开文 件。
 
-在 editor 或 terminal buffer 中，当光标位于 URL (需要带 http 或
-https 前缀)或 File Path 上时， 可以按 cmd 来快速打开。
+在 editor 或 terminal buffer 中，当光标位于 URL (需要带 http 或 https 前缀)或
+File Path 上时， 可以按 cmd 来快速打开。
 
 快速选择一个 block：将光标移动到 block 边界字符上，然后按 ctrl-= 来按语法选择。
 
-搜狗输入法设置:
-1. 全局默认中文标点。
-2. 定义中英文标点切换按键: ctrl-. , zed 不能使用该按键。
-3. 使用 ctrl 切换中英文, 它比右 shift 更容易按，而且在 zed 中是修饰键，需要和
-其它按键一起才生效。
+输入法设置:
+1. 不使用 MacOS 内置的拼音输入法，因为它使用中文标点，导致快捷键 ctrl-] 使用中文标点
+   】，从而与 zed 快捷键绑定不兼容；
+2. 使用微信输入法；
+3. 启用微信输入法的 shift 中英文切换快捷键。
+4. 关闭 “自动编号”；
+
+微信输入法小技巧：
+1. 如果当前输入一部分中文，但是需要键入英文，可以按 shift 键，这样输入的部分内容会被作为
+   英文输入。
+
+使用更符合编程体验的 "Sarasa Mono SC" 字体（基于 Iosevka 编程字体的中文等距更纱黑体）。
 
 光标位于 URL 上, 执行 editor::open url 命令可以快速打开该 URL.
 
@@ -291,12 +296,9 @@ preview tabs 通过以下方式转换为普通独立 tab：
 
 注：使用命令 `debug: Open Key Context View` 查看当前焦点的 context，触发的按键，以及按键匹配情况。
 
-zed 按键绑定（`/.config/zed/keymap.json`）不区分相同按键序列但不同顺序的情况，如 `ctrl-cmd-a` 和
-`cmd-ctrl-a` 是相同的按键，但 zed 不提示重复的按键绑定。解决办法：使用固定的顺序来写按键，如
-`ctrl-cmd-alt-shift`。
+zed 按键绑定（`/.config/zed/keymap.json`）不区分相同按键序列但不同顺序的情况，如`ctrl-cmd-a` 和 `cmd-ctrl-a` 是相同的按键，但 zed 不提示重复的按键绑定。解决办法：使用固定的顺序来写按键，如 `ctrl-cmd-alt-shift`。
 
-统一规划一些前缀快捷键，如 `ctrl-x`, 它们只用于前缀场景，而不单独使用，否则会导致按键响应延迟。（因为 zed 会等待一段时间来接收前缀后续 的按键，
-当超时后，才认为是致独立绑定语义）。
+统一规划一些前缀快捷键，如 `ctrl-x`, 它们只用于前缀场景，而不单独使用，否则会导致按键响应延迟。（因为 zed 会等待一段时间来接收前缀后续 的按键，当超时后，才认为是致独立绑定语义）。
 
 zed 支持灵活的按键 remap：
 
@@ -307,11 +309,9 @@ zed 支持灵活的按键 remap：
 
 自定义按键绑定覆盖缺省按键绑定，缺省绑定中未覆盖的按键继续有效。所以，如果要确保自己的按键定生效，则可能需要在多个 context 中重复设置。
 
-不是所有 action 在所有 context 中都有效， 如果高优 context 中的按键绑定 action 无效， 则会 fallback 到低
-优 context 中该按键绑定的 action，以此类推直到第一个有效 action。
+不是所有 action 在所有 context 中都有效， 如果高优 context 中的按键绑定 action 无效， 则会 fallback 到低优 context 中该按键绑定的 action，以此类推直到第一个有效 action。
 
-例如， Editor 和 Editor && mode == full 的 context 都定义了 ctrl-o 快捷键，但是后者的 excerpt
-只在 multibuffer 中有效，所以 fallback 到 Editor 中的 buffer symbol：
+例如， Editor 和 Editor && mode == full 的 context 都定义了 ctrl-o 快捷键，但是后者的 excerpt 只在 multibuffer 中有效，所以 fallback 到 Editor 中的 buffer symbol：
 
     {
       "context": "Editor && mode == full",
@@ -349,8 +349,7 @@ zed 窗口是由层次化的 UI 元素节点组成的，节点间有父子、兄
 
 Workspace > Pane > BufferSearchBar > Editor(搜索框)
 
-zed 从配置中加载所有按键绑定，然后用户输入对应按键绑定时，过滤 context 条件符合要求的 actions 列表，
-然后根据 context 所在的 UI 节点深度，选择最深层次上定义的 action。
+zed 从配置中加载所有按键绑定，然后用户输入对应按键绑定时，过滤 context 条件符合要求的 actions 列表，然后根据 context 所在的 UI 节点深度，选择最深层次上定义的 action。
 
 当没有打开的文件时，即没有 panel tab 处于 focus 时，处于 Workspace 或 Global 上下文。
 
@@ -434,7 +433,7 @@ Editor 有三种模式 mode:
 2. AutoHeight：inline assistant，terminal inline assistant，chat panel
 3. Full：绝大部分编辑场景，如占据整个 pane tab 的编辑窗口；
 
-单行输入框上下文，例如搜索框、替换框、过滤框等，可以用 Editor && mode== single_line 匹配.
+单行输入框上下文，例如搜索框、替换框、过滤框等，可以用 Editor && mode== single_line 匹配。
 
 编辑普通文件、编辑 assistant/multibuffer 时 mode == full。
 
@@ -720,7 +719,6 @@ zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当�
     }
 
 注意：如果修改了 task 定义，则在 task picker 界面应该选择最下面的任务定义，而不是上面执行过的历史任务，否则最新的定义不生效。
-
 
 例如, 计算 zed buffer 中选中内容的字符数：执行 `ctrl-t`， 然后输入：`echo "$ZED_SELECTED_TEXT" | wc -c`， 最后执行 `ctrl-enter`。
 
