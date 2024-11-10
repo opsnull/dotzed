@@ -49,6 +49,10 @@
     "code_actions": false,
     "runnables": false
   },
+  "hard_tabs": false,
+  "formatter": "auto",
+  "remove_trailing_whitespace_on_save": true,
+  "ensure_final_newline_on_save": true,
   // 开启后，搜索字符包含大写时区分大小写（未开启时不区分大小写）。
   "use_smartcase_search": true,
   "centered_layout": {
@@ -257,6 +261,7 @@
         "cargo": {
           "allTargets": false
         }
+        //"linkedProjects": ["./path/to/a/Cargo.toml", "./path/to/b/Cargo.toml"]
       }
     }
     // "clangd": {
