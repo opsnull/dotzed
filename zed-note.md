@@ -168,7 +168,9 @@ zed 获得环境变量的两种方式：
 2. 通过 dock 启动, 先切换到 HOME 目录 spawn 一个 login shell 来获得用户环境变量, 然后被所有 zed 窗口继承;
 
 zed 打开 project 时, 会使用 direnv/editorconfig 等机制来获得项目相关的环境变量, 并被项目的
-task/lsp/terminal 继承;
+task/lsp/terminal 继承。
+
+
 
 # layout
 

@@ -1,0 +1,7 @@
+{
+  "add rust src block": {
+    "prefix": "rust",
+    "body": ["#+begin_src rust,", "$0", "#+end_src"],
+    "description": "addr #+begin_src rust, block"
+  }
+}
