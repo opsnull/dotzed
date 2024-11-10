@@ -132,7 +132,9 @@
     },
     // 先使用 workspace 中第一个 project，如果失败则使用 HOME。 用于修复 zed
     // terminal 可能将 file 识别为 cwd 问题，例如编辑的文件不属于当前打开的任意 project。
-    "working_directory": "first_project_directory"
+    "working_directory": "first_project_directory",
+    // standard 适用于 TUI 程序。
+    "line_height": "standard"
   },
   "proxy": "socks5h://127.0.0.1:1080",
   "git": {
