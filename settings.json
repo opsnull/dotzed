@@ -1,5 +1,5 @@
 {
-  "theme": "Gruvbox Dark",
+  "theme": "JetBrains New Dark",
   // 不使用缺省的 keymap，只使用自定义 keymap。
   "base_keymap": "None",
   // open 和 save as 使用 zed 内置的文件选择，更高效。
@@ -42,6 +42,12 @@
   "buffer_font_size": 16,
   // 减小 UI 元素的字体大小，这样留更多空间给编辑区。
   "ui_font_size": 14,
+  // comfortable 是 1.618 倍行距，便于阅读。
+  "buffer_line_height": "comfortable",
+  "buffer_font_features": {
+    // 关闭 ligatures
+    "calt": false
+  },
   // 在 multibuffer 中双击: 打开文件。
   "double_click_in_multibuffer": "open",
   "gutter": {
@@ -62,13 +68,21 @@
     "left_padding": 0.15,
     "right_padding": 0.15
   },
+  "current_line_highlight": "all",
   "auto_signature_help": true,
   "hover_popover_enabled": true,
+  "scroll_sensitivity": 0.6,
   // 空闲超过指定时间后自动保存。
   "autosave": { "after_delay": { "milliseconds": 5000 } },
   "inlay_hints": {
     // 关闭，提升性能
     "enabled": false
+  },
+  // 激活 pane 后，调整 pane 的大小、边框和透明度，从而容易区分。
+  "active_pane_modifiers": {
+    "magnification": 1.5,
+    "border_size": 2,
+    "inactive_opacity": 0.8
   },
   "project_panel": {
     "auto_fold_dirs": false,
@@ -106,7 +120,11 @@
     "quick_actions": false,
     "breadcrumbs": false
   },
-  "scrollbar": { "show": "auto" },
+  "scrollbar": {
+    "show": "auto",
+    // 不高亮显示 git diff
+    "git_diff": false
+  },
   // preview tabs: 在一个公共 tab 中自动切换显示多个文件，避免打开过多 tab。
   "preview_tabs": {
     // 对 file finder 打开的文件启用
