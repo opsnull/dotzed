@@ -170,7 +170,18 @@ zed 获得环境变量的两种方式：
 zed 打开 project 时, 会使用 direnv/editorconfig 等机制来获得项目相关的环境变量, 并被项目的
 task/lsp/terminal 继承。
 
+# 本地目录
 
+本地安装的扩展、LSP Server、Remote binary 等位于 ~/Library/Application\ Support/Zed/
+目录下：
+
+``` sh
+$ ls ~/Library/Application\ Support/Zed/
+copilot/  db/  docs/  extensions/  languages/  node/  prettier/  remote_servers/
+
+$ ls ~/Library/Application\ Support/Zed/languages/
+eslint/  json-language-server/  package-version-server/  pyright/  rust-analyzer/  tailwindcss-language-server/  vscode-css-language-server/  vtsls/  yaml-language-server/
+```
 
 # layout
 
@@ -200,9 +211,16 @@ File Path 上时， 可以按 cmd 来快速打开。
 3. 启用微信输入法的 shift 中英文切换快捷键。
 4. 关闭 “自动编号”；
 
+输入法 keylayout：
+- 微信和搜狗中英文输入法：com.apple.keylayout.US
+- APPLE 英文：com.apple.keylayout.ABC
+- APPLE 中文：com.apple.keylayout.PinyinKeyboard
+
 微信输入法小技巧：
-1. 如果当前输入一部分中文，但是需要键入英文，可以按 shift 键，这样输入的部分内容会被作为
-   英文输入。
+1. 如果当前是中文输入状态，但需要上屏英文，可以按 shift 键，这样输入的部分内容会被作为
+   英文输入；
+2. 输入 “日期” 或 “时间” 时会自动提示插入各种格式的日期和时间；
+3. 有些 emoji 字符有多种选择，可以使用上下箭头来选择；
 
 buffer 和 terminal 都设置为更符合编程体验的 "Sarasa Mono SC" 字体，它是 Iosevka 编程字体的中文版本，名称为等距更纱黑体。
 

@@ -1,7 +1,9 @@
 {
-  "theme": "JetBrains New Dark",
+  "theme": "Gruvbox Dark",
   // 不使用缺省的 keymap，只使用自定义 keymap。
   "base_keymap": "None",
+  // open 和 save as 使用 zed 内置的文件选择，更高效。
+  "use_system_path_prompts": false,
   "assistant": {
     "default_model": {
       "provider": "zed.dev",
@@ -209,6 +211,23 @@
   },
   "lsp": {
     // key 为 language server 名称。
+    "cargo-tom": {
+      "binary": {
+        "path": "/Users/alizj/go/bin/cargotom-aarch64-apple-darwin",
+        "arguments": ["--storage", "."]
+      },
+      "initialization_options": {
+        "offline": false,
+        "stable": false,
+        "per_page_web": 50
+      }
+    },
+    "cargo-appraiser": {
+      "binary": {
+        "path": "/Users/alizj/go/bin/cargo-appraiser",
+        "arguments": ["--renderer", "inlayHint"]
+      }
+    },
     "gopls": {
       // 需要配置 -debug 地址为 127.0.0.1，防止被 proxy 代理导致出错。
       "binary": {
