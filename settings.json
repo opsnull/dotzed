@@ -49,7 +49,8 @@
     "line_numbers": false,
     // 关闭一些不常用的功能，节省左侧空间。
     "code_actions": false,
-    "runnables": false
+    "runnables": false,
+    "folds": false
   },
   "hard_tabs": false,
   "formatter": "auto",
@@ -144,6 +145,8 @@
   },
   "proxy": "socks5h://127.0.0.1:1080",
   "git": {
+    // git gutter 已经在 side scroll 中显式，故关闭，节省左侧空间。
+    "git_gutter": "hide",
     "inline_blame": {
       "enabled": true,
       "delay_ms": 500,
