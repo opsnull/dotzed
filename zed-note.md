@@ -250,7 +250,7 @@ if let Some(language_scope) = buffer.language_scope_at(selection.head()) {
 
 # search
 
-搜索分为 buffer search 和 project search，支持关键字、word 和正则搜索方式， 也可以
+搜索分为 和 project search，支持关键字、word 和正则搜索方式， 也可以
 忽略大小写。
 
 buffer search 是每输入一个字符就触发的实时增量搜索, 而 project search 是输入完所有

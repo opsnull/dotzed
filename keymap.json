@@ -216,9 +216,11 @@
       "ctrl-/": "editor::Undo",
       "ctrl-cmd-/": "editor::Redo",
 
-      /// 搜索和导航
+      // buffer 内搜索
       "ctrl-s": "buffer_search::Deploy",
+      // project 项目搜索
       "ctrl-cmd-s": "pane::DeploySearch",
+      // 显式项目大纲
       "ctrl-o": "outline::Toggle",
       "ctrl-cmd-o": "project_symbols::Toggle",
 
@@ -509,6 +511,23 @@
     }
   },
   {
+    "context": "FileFinder",
+    "bindings": {
+      "ctrl-shift-p": "file_finder::SelectPrev",
+      // 打开目录
+      "ctrl-o": "file_finder::OpenMenu"
+    }
+  },
+  {
+    "context": "FileFinder && menu_open",
+    "bindings": {
+      "k": "pane::SplitUp",
+      "j": "pane::SplitDown",
+      "h": "pane::SplitLeft",
+      "l": "pane::SplitRight"
+    }
+  },
+  {
     // AI助手面板
     "context": "AssistantPanel",
     "bindings": {
@@ -569,6 +588,9 @@
       "escape": ["terminal::SendKeystroke", "escape"],
       "enter": ["terminal::SendKeystroke", "enter"],
       "ctrl-c": ["terminal::SendKeystroke", "ctrl-c"],
+
+      // 终端文本搜索
+      "ctrl-s": "buffer_search::Deploy",
 
       // 创建新终端
       "cmd-enter": "workspace::NewTerminal",

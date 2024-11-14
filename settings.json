@@ -65,8 +65,8 @@
   // 开启后，搜索字符包含大写时区分大小写（未开启时不区分大小写）。
   "use_smartcase_search": true,
   "centered_layout": {
-    "left_padding": 0.15,
-    "right_padding": 0.15
+    "left_padding": 0.3,
+    "right_padding": 0.3
   },
   "current_line_highlight": "all",
   "auto_signature_help": true,
@@ -295,7 +295,7 @@
         // 默认 cargo check --workspace --all-targets 影响性能，关闭 --workspace
         // 和 --all-targets。
         "check": {
-          "command": "clippy",
+          "command": "clippy", // cargo check 使用 clippy
           "workspace": false
         },
         "cargo": {
