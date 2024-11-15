@@ -229,6 +229,15 @@
       "preferred_line_length": 100,
       "formatter": "prettier"
     }
+    // "C": {
+    //   "format_on_save": "on",
+    //   "tab_size": 4,
+    //   "formatter": {
+    //     "external": {
+    //       "command": "clang-format",
+    //       "arguments": ["-style={IndentWidth: 4, ColumnLimit: 0}"]
+    //     }
+    // }
   },
   "lsp": {
     // key 为 language server 名称。

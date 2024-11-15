@@ -17,6 +17,8 @@
 //
 // 不使用 Macos 全局快捷键，如输入法切换等。
 //
+// 使用 > 来定义嵌套 context，父子 context 是直接的关系，使用 debug: open key contex view 命令来查看。
+//
 // Context 优先级：
 // 1. Editor > Pane > Workspace > Global
 // 2. Terminal > Pane > Workspace > Global
@@ -225,19 +227,19 @@
       "ctrl-cmd-o": "project_symbols::Toggle",
 
       /// 代码开发功能
-      // 基础
       "ctrl-\\": "editor::ShowCompletions",
-      "ctrl-:": "editor::ToggleInlayHints",
-      "cmd-a": "editor::ToggleCodeActions",
-      "cmd-i": "editor::Hover",
-      "ctrl-cmd-i": "editor::ShowSignatureHelp",
-      // 诊断
-      "cmd-e": "diagnostics::Deploy",
+      "ctrl-c ctrl-h": "editor::ToggleInlayHints",
+      "ctrl-c ctrl-a": "editor::ToggleCodeActions",
+      "ctrl-c ctrl-d": "editor::Hover",
+      "ctrl-cmd-d": "editor::ShowSignatureHelp",
+      "ctrl-c ctrl-e": "diagnostics::Deploy",
       "cmd-n": "editor::GoToDiagnostic",
       "cmd-p": "editor::GoToPrevDiagnostic",
+
       // 根据 git 变更移动
       "cmd-j": "editor::GoToHunk",
       "cmd-k": "editor::GoToPrevHunk",
+
       // xref
       "cmd-.": "editor::GoToDefinition",
       "ctrl-cmd-.": "editor::GoToDefinitionSplit",
@@ -498,6 +500,8 @@
     }
   },
   {
+    // FileFinder、ProjectFinder、Task 等带输入框和候选列表的面板。
+    // 光标位于 FileFinder 输入框时，UI 层次是：FileFinder -> Picker > Editor。
     "context": "Picker > Editor",
     "bindings": {
       // 选中候选者。
@@ -507,11 +511,20 @@
       "ctrl-enter": ["picker::ConfirmInput", { "secondary": false }],
       // 如果焦点位于 task::Spawn 面板，则执行 Ephemeral tasks shell 命令，
       // 该命令不会记录到 task history 中。
-      "ctrl-cmd-enter": ["picker::ConfirmInput", { "secondary": true }]
+      "ctrl-cmd-enter": ["picker::ConfirmInput", { "secondary": true }],
+
+      // FileFinder 面板快捷键，不能直接在 FileFinder 中配置，因为它的优先级比
+      //  Editor 低。
+      "ctrl-cmd-o": "file_finder::OpenMenu",
+      "ctrl-cmd-j": "pane::SplitDown",
+      "ctrl-cmd-k": "pane::SplitUp",
+      "ctrl-cmd-h": "pane::SplitLeft",
+      "ctrl-cmd-l": "pane::SplitRight"
     }
   },
   {
-    "context": "FileFinder",
+    // 光标位于 FileFinder 输入框时，UI 层次是：FileFinder -> Picker > Editor。
+    "context": "FileFinder && !menu_open",
     "bindings": {
       "ctrl-shift-p": "file_finder::SelectPrev",
       // 打开目录
