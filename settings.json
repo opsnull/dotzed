@@ -27,7 +27,7 @@
   "soft_wrap": "none",
   "preferred_line_length": 90,
   // 在列表中的各宽度位置显示 guide line。
-  "wrap_guides": [80, 120],
+  "wrap_guides": [90, 120],
   "indent_guides": {
     "coloring": "fixed"
   },
@@ -65,8 +65,8 @@
   // 开启后，搜索字符包含大写时区分大小写（未开启时不区分大小写）。
   "use_smartcase_search": true,
   "centered_layout": {
-    "left_padding": 0.3,
-    "right_padding": 0.3
+    "left_padding": 0.2,
+    "right_padding": 0.2
   },
   "current_line_highlight": "all",
   "auto_signature_help": true,
@@ -80,7 +80,7 @@
   },
   // 激活 pane 后，调整 pane 的大小、边框和透明度，从而容易区分。
   "active_pane_modifiers": {
-    "magnification": 1.5,
+    "magnification": 1,
     "border_size": 2,
     "inactive_opacity": 0.8
   },

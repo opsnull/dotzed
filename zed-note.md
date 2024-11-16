@@ -958,6 +958,10 @@ Commit Panel: 显示当前本地分支的 commit history list，可以进行 Squ
 - n：Create new branch off of commit
 - g：View reset options (soft/mixed/hard) for resetting onto selected item.
 
+Push 到远程不同的分支：
+1. 需要本地先建一个后续 push 到远程的分支；
+2. 执行 P 来 push 到远程。
+
 Merge conflict 解决：
 1. 有 conflict 的文件会显示 U 字母，这时 lazygit 会显示冲突列表；
 2. 使用 j/k 来在冲突列表中移动，然后 <SPACE> 来选择某一个版本。也可以使用 e/o 打开编辑器, 来编辑解决冲突。

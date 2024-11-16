@@ -330,6 +330,14 @@
     }
   },
   {
+    "context": "Picker > Editor",
+    "bindings": {
+      "tab": "picker::ConfirmCompletion",
+      "alt-enter": ["picker::ConfirmInput", { "secondary": false }],
+      "cmd-alt-enter": ["picker::ConfirmInput", { "secondary": true }]
+    }
+  },
+  {
     "context": "Pane || EmptyPane",
     "bindings": {}
   },
@@ -502,6 +510,7 @@
   {
     // FileFinder、ProjectFinder、Task 等带输入框和候选列表的面板。
     // 光标位于 FileFinder 输入框时，UI 层次是：FileFinder -> Picker > Editor。
+    // Editor 的优先级比 Picker>Editor 低。
     "context": "Picker > Editor",
     "bindings": {
       // 选中候选者。
