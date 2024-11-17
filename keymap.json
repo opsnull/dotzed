@@ -231,7 +231,9 @@
       "ctrl-c ctrl-h": "editor::ToggleInlayHints",
       "ctrl-c ctrl-a": "editor::ToggleCodeActions",
       "ctrl-c ctrl-d": "editor::Hover",
-      "ctrl-cmd-d": "editor::ShowSignatureHelp",
+      "ctrl-c ctrl-s": "editor::ShowSignatureHelp",
+      // 在浏览器打开符号文档（如果使用 cargo doc 生成本地文档，则打开本地文档）。
+      "ctrl-cmd-d": "editor::OpenDocs",
       "ctrl-c ctrl-e": "diagnostics::Deploy",
       "cmd-n": "editor::GoToDiagnostic",
       "cmd-p": "editor::GoToPrevDiagnostic",

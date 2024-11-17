@@ -26,6 +26,56 @@ index bc95e1dd6a..a20fd09268 100755
      cp crates/zed/contents/$channel/embedded.provisionprofile "${app_path}/Contents/"
 ```
 
+解决构建 webrtc-sys 失败的问题：
++ 将 reqwest 升级到最新的 v0.12 版本；
++ 启用 reqwest 的 socks feature；
+
+``` sh
+zj@a:~/go/src/github.com/zed-industries/zed$ ./script/bundle-mac -ldi
+~/go/src/github.com/zed-industries/zed/crates/zed ~/go/src/github.com/zed-industries/zed
+~/go/src/github.com/zed-industries/zed
+Building for local target only.
+   Compiling webrtc-sys v0.3.5 (https://github.com/zed-industries/rust-sdks?rev=4262308983646ab5b0e0802c3d8bc52154f99aab#42623089)
+error: failed to run custom build command for `webrtc-sys v0.3.5 (https://github.com/zed-industries/rust-sdks?rev=4262308983646ab5b0e0802c3d8bc52154f99aab#42623089)`
+
+Caused by:
+  process didn't exit successfully: `/Users/alizj/go/src/github.com/zed-industries/zed/target/debug/build/webrtc-sys-bf3c821455d0b783/build-script-build` (exit status: 101)
+  --- stdout
+  cargo:rerun-if-env-changed=LK_DEBUG_WEBRTC
+  cargo:rerun-if-env-changed=LK_CUSTOM_WEBRTC
+  cargo:CXXBRIDGE_PREFIX=webrtc-sys
+  cargo:CXXBRIDGE_DIR0=/Users/alizj/go/src/github.com/zed-industries/zed/target/debug/build/webrtc-sys-5584bf7f821ea101/out/cxxbridge/include
+  cargo:CXXBRIDGE_DIR1=/Users/alizj/go/src/github.com/zed-industries/zed/target/debug/build/webrtc-sys-5584bf7f821ea101/out/cxxbridge/crate
+
+  --- stderr
+
+  CXX include path:
+    /Users/alizj/go/src/github.com/zed-industries/zed/target/debug/build/webrtc-sys-5584bf7f821ea101/out/cxxbridge/include
+    /Users/alizj/go/src/github.com/zed-industries/zed/target/debug/build/webrtc-sys-5584bf7f821ea101/out/cxxbridge/crate
+  thread 'main' panicked at /Users/alizj/.cargo/git/checkouts/rust-sdks-e9c3cb1fc511908e/4262308/webrtc-sys/build.rs:85:45:
+  called `Result::unwrap()` on an `Err` value: reqwest::Error { kind: Request, url: "https://github.com/livekit/client-sdk-rust/releases/download/webrtc-dac8015-5/webrtc-mac-arm64-release.zip", source: hyper_util::client::legacy::Error(Connect, ConnectError("tcp connect error", Os { code: 61, kind: ConnectionRefused, message: "Connection refused" })) }
+  ```
+
+修改 /Users/alizj/.cargo/git/checkouts/rust-sdks-e9c3cb1fc511908e/4262308/webrtc-sys/build/Cargo.toml，使用 0.12 版本，并且添加 socks features：
+
+    ``` toml
+    [dependencies]
+    reqwest = { version = "0.12", default-features = false, features = ["rustls-tls-native-roots", "blocking", "socks"] }
+    ```
+
+ 修改 /Users/alizj/.cargo/git/checkouts/rust-sdks-e9c3cb1fc511908e/4262308/webrtc-sys/build/src/lib.rs 中的 reqwest get 方法，使用 socks5 proxy。
+
+    ``` rust
+    let mut client = reqwest::blocking::ClientBuilder::new()
+        .proxy(reqwest::Proxy::all("socks5h://127.0.0.1:1080")?)
+        .build()?;
+    let mut resp = client.execute(client.get(download_url()).build()?)?;
+    //let mut resp = reqwest::blocking::get(download_url())?;
+    if resp.status() != StatusCode::OK {
+        return Err(format!("failed to download webrtc: {}", resp.status()).into());
+    }
+    ```
+
 解决 mac bundle 构建报错：
 > An SSL error has occurred and a secure connection to the server cannot be made
 
@@ -662,6 +712,10 @@ zed 支持 by 语言参数[参数列表](https://zed.dev/docs/configuring-langua
       "./path/to/a/Cargo.toml",
       "./path/to/b/Cargo.toml"
     ]
+
+在浏览器打开符号本地文档：
+1. 先使用 cargo doc 生成本地文档，否则后续打开的是 https://crates.io/ 的在线文档；
+2.  执行命令："editor::OpenDocs"；
 
 # task
 

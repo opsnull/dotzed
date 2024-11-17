@@ -132,6 +132,9 @@
     // 对 code navi 打开的文件启用
     "enable_preview_from_code_navigation": true
   },
+  "file_finder": {
+    "modal_width": "medium"
+  },
   "terminal": {
     // Monaco 和 Noto Sans Mono 字体显示终端图形字符时更清晰
     "font_family": "Sarasa Term SC",
@@ -152,12 +155,12 @@
     "shell": {
       "with_arguments": {
         "program": "bash",
-        "args": ["--login"]
+        "args": ["-l", "-i"]
       }
     },
     // 先使用 workspace 中第一个 project，如果失败则使用 HOME。 用于修复 zed
     // terminal 可能将 file 识别为 cwd 问题，例如编辑的文件不属于当前打开的任意 project。
-    "working_directory": "first_project_directory",
+    "working_directory": "current_project_directory",
     // standard 适用于 TUI 程序。
     "line_height": "standard"
   },
@@ -186,15 +189,15 @@
     "**/Thumbs.db",
     "**/.classpath",
     "**/.settings",
-    // rust target 缓存目录
+    "**/.cargo", // rust
+    "**/.rustup",
     "**/target/debug",
     "**/target/release",
     "**/target/release-fast",
     "**/target/aarch64-apple-darwin",
     "**/target/remote_server",
     "**/vendor", // go
-    "**/pkg/mod",
-    "**/.cargo"
+    "**/pkg/mod"
   ],
   "file_types": {
     "JSONC": [
@@ -202,6 +205,7 @@
       "**/*.json"
     ]
   },
+  "load_direnv": "shell_hook",
   // by 语言设置配置参数, 可配置的参数列表: https://zed.dev/docs/configuring-zed#languages
   // 需要先安装 prettier 工具：brew install prettier
   "languages": {
@@ -237,27 +241,42 @@
     //       "command": "clang-format",
     //       "arguments": ["-style={IndentWidth: 4, ColumnLimit: 0}"]
     //     }
+    // },
+    // "Shell Script": { // 注意：语言名称不是 Bash 或 Shell
+    //   "format_on_save": "on",
+    //   "formatter": {
+    //     "external": {
+    //       "command": "shfmt",
+    //       "arguments": [
+    //         "-bn",
+    //         "-ci",
+    //         "-sr",
+    //         "-i",
+    //         "2"
+    //       ]
+    //     }
+    //   }
     // }
   },
   "lsp": {
     // key 为 language server 名称。
-    "cargo-tom": {
-      "binary": {
-        "path": "/Users/alizj/go/bin/cargotom-aarch64-apple-darwin",
-        "arguments": ["--storage", "."]
-      },
-      "initialization_options": {
-        "offline": false,
-        "stable": false,
-        "per_page_web": 50
-      }
-    },
-    "cargo-appraiser": {
-      "binary": {
-        "path": "/Users/alizj/go/bin/cargo-appraiser",
-        "arguments": ["--renderer", "inlayHint"]
-      }
-    },
+    // "cargo-tom": {
+    //   "binary": {
+    //     "path": "/Users/alizj/go/bin/cargotom-aarch64-apple-darwin",
+    //     "arguments": ["--storage", "."]
+    //   },
+    //   "initialization_options": {
+    //     "offline": false,
+    //     "stable": false,
+    //     "per_page_web": 50
+    //   }
+    // },
+    // "cargo-appraiser": {
+    //   "binary": {
+    //     "path": "/Users/alizj/go/bin/cargo-appraiser",
+    //     "arguments": ["--renderer", "inlayHint"]
+    //   }
+    // },
     "gopls": {
       // 需要配置 -debug 地址为 127.0.0.1，防止被 proxy 代理导致出错。
       "binary": {
@@ -285,7 +304,17 @@
       }
     },
     "rust-analyzer": {
+      // "binary": {
+      //   "path": "/Users/alizj/.cargo/bin/rust-analyzer",
+      //   "arguments": ["-v"]
+      // },
       "initialization_options": {
+        // server.extraEnv 只是 vs-code 支持，zed 不支持。
+        // "server": {
+        //   "extraEnv": {
+        //     "RA_LOG": "info"
+        //   }
+        // },
         // cargo fmt 的很多特性依赖于 +nightly toolchain。
         "rustfmt": {
           "extraArgs": ["+nightly"]
@@ -293,6 +322,14 @@
         // 从 rust-analyzer 获得更多的诊断信息（因为后续关闭了cargo check 检查）。
         "diagnostics": {
           "experimental": {
+            "enable": false
+          }
+        },
+        "files": {
+          "excludeDirs": ["/Users/alizj/.cargo", "/Users/alizj/.rustup"]
+        },
+        "completion": {
+          "fullFunctionSignatures": {
             "enable": true
           }
         },
@@ -308,7 +345,10 @@
           "workspace": false
         },
         "cargo": {
-          "allTargets": false
+          "allTargets": false,
+          "extraEnv": {
+            //"RA_LOG": "info" //  对于 RA 无效，因为它不是 cargo 启动的。
+          }
         }
         //"linkedProjects": ["./path/to/a/Cargo.toml", "./path/to/b/Cargo.toml"]
       }
