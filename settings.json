@@ -1,5 +1,5 @@
 {
-  "theme": "JetBrains New Dark",
+  "theme": "Gruvbox Dark Hard",
   // 不使用缺省的 keymap，只使用自定义 keymap。
   "base_keymap": "None",
   // open 和 save as 使用 zed 内置的文件选择，更高效。
@@ -41,7 +41,7 @@
   "buffer_font_family": "Sarasa Mono SC",
   "buffer_font_size": 16,
   // 减小 UI 元素的字体大小，这样留更多空间给编辑区。
-  "ui_font_size": 14,
+  "ui_font_size": 18,
   // comfortable 是 1.618 倍行距，便于阅读。
   "buffer_line_height": "comfortable",
   "buffer_font_features": {
@@ -118,7 +118,7 @@
   "toolbar": {
     // 是否显示搜索、AI、Inlay 等快速操作按钮。
     "quick_actions": false,
-    "breadcrumbs": false
+    "breadcrumbs": true
   },
   "scrollbar": {
     "show": "auto",
@@ -138,7 +138,7 @@
   "terminal": {
     // Monaco 和 Noto Sans Mono 字体显示终端图形字符时更清晰
     "font_family": "Sarasa Term SC",
-    "font_size": 14,
+    "font_size": 16,
     // zed 给 task 追加的环境变量，不支持 shell 变量替换。
     // 这里的环境变量优先级较低，~/.bashrc 和 project envs 都会覆盖这里的同名
     // 变量。
@@ -199,6 +199,7 @@
     "**/vendor", // go
     "**/pkg/mod"
   ],
+  "file_scan_inclusions": [".env*", "docker-compose.*.yml"],
   "file_types": {
     "JSONC": [
       // 所有 JSON 文件均使用 jsonc
@@ -209,6 +210,9 @@
   // by 语言设置配置参数, 可配置的参数列表: https://zed.dev/docs/configuring-zed#languages
   // 需要先安装 prettier 工具：brew install prettier
   "languages": {
+    "Python": {
+      "language_servers": ["pyright", "!pylsp"]
+    },
     "Markdown": {
       "tab_size": 2,
       "formatter": "prettier",
@@ -277,6 +281,14 @@
     //     "arguments": ["--renderer", "inlayHint"]
     //   }
     // },
+    "pyright": {
+      "binary": {
+        // 使用微软官方提供的安装方式：sudo npm install -g pyright
+        // pip 为社区维护的安装方式。
+        "path": "/opt/homebrew/bin/pyright-langserver",
+        "arguments": ["--stdio"]
+      }
+    },
     "gopls": {
       // 需要配置 -debug 地址为 127.0.0.1，防止被 proxy 代理导致出错。
       "binary": {
@@ -304,10 +316,10 @@
       }
     },
     "rust-analyzer": {
-      // "binary": {
-      //   "path": "/Users/alizj/.cargo/bin/rust-analyzer",
-      //   "arguments": ["-v"]
-      // },
+      "binary": {
+        "path": "/Users/alizj/.cargo/bin/rust-analyzer",
+        "arguments": []
+      },
       "initialization_options": {
         // server.extraEnv 只是 vs-code 支持，zed 不支持。
         // "server": {
@@ -319,6 +331,10 @@
         "rustfmt": {
           "extraArgs": ["+nightly"]
         },
+        // proc-macro-srv 必须要和 toolchain 版本一致，否则会报 ABI 兼容性问题。
+        // "procMacro": {
+        //   "server": "/Users/alizj/.cargo/bin/rust-analyzer-proc-macro-srv"
+        // },
         // 从 rust-analyzer 获得更多的诊断信息（因为后续关闭了cargo check 检查）。
         "diagnostics": {
           "experimental": {

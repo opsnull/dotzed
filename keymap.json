@@ -11,10 +11,6 @@
 // 1. 如果 shift 后面是字母，OK。
 // 2. 如果 shift 后面是第二按键，则直接使用第二按键（如 }) 而不要使用 shift（如不使用 shift-})。
 //
-// 按键绑定尽量不要使用单字母（非字母字符 OK，如数字 0 或符号 /)，否则会被搜狗中文输入法捕获，导致输入中断，
-//  1. OK：ctrl-x ctrl-p。
-//  2. BAD：ctrl-x p，第二个 p 会被搜狗中文输入法截取。
-//
 // 不使用 Macos 全局快捷键，如输入法切换等。
 //
 // 使用 > 来定义嵌套 context，父子 context 是直接的关系，使用 debug: open key contex view 命令来查看。
@@ -50,8 +46,8 @@
       "ctrl-x ctrl-t": "terminal_panel::ToggleFocus",
       "ctrl-x ctrl-`": "terminal_panel::ToggleFocus",
       "cmd-1": "workspace::ToggleLeftDock",
-      "cmd-2": "workspace::ToggleRightDock",
-      "cmd-3": "workspace::ToggleBottomDock",
+      "cmd-2": "workspace::ToggleBottomDock",
+      "cmd-3": "workspace::ToggleRightDock",
       "ctrl-`": "workspace::ToggleBottomDock",
 
       /// 文件操作
@@ -59,14 +55,17 @@
       "ctrl-x ctrl-s": "workspace::Save",
       "ctrl-x ctrl-w": "workspace::SaveAs",
       "ctrl-x ctrl-n": "workspace::NewFile",
+      "ctrl-x 4 b": "workspace::NewFile",
+      "cmd-t": "workspace::NewFile",
 
       /// 命令和工具
-      "ctrl-cmd-b": "branches::OpenRecent",
-      "ctrl-cmd-f": "file_finder::Toggle",
-      "ctrl-cmd-p": "projects::OpenRecent",
-      "ctrl-cmd-n": "workspace::NewWindow",
-      "ctrl-cmd-w": "workspace::CloseWindow",
+      "ctrl-x p b": "branches::OpenRecent",
+      "ctrl-x p f": "file_finder::Toggle",
+      "ctrl-x p p": "projects::OpenRecent",
+      "ctrl-x 5 b": "workspace::NewWindow",
+      "ctrl-x 5 0": "workspace::CloseWindow",
       "ctrl-tab": "tab_switcher::Toggle",
+      "ctrl-x b": "tab_switcher::Toggle",
       "ctrl-x ctrl-c": "zed::Quit",
       "ctrl-x ctrl-r": "editor::RevealInFileManager",
       "cmd-x": "command_palette::Toggle"
@@ -94,25 +93,36 @@
       "ctrl-8": ["pane::ActivateItem", 7],
       "ctrl-9": ["pane::ActivateItem", 8],
 
-      /// 根据导航历史移动
+      /// 根据导航历史移动(高频操作）
+      "cmd-p": "pane::GoBack",
+      "cmd-n": "pane::GoForward",
       "cmd-,": "pane::GoBack",
       "ctrl-cmd-,": "pane::GoForward",
 
       // 根据选择历史移动
-      "cmd-u": "editor::UndoSelection",
-      "ctrl-cmd-u": "editor::RedoSelection",
+      "ctrl-u ctrl-space": "editor::UndoSelection",
+      "ctrl-,": "editor::UndoSelection",
+      "ctrl-u ctrl-cmd-space": "editor::RedoSelection",
+      "ctrl-.": "editor::RedoSelection",
 
       /// Pane 操作
       "cmd-o": "workspace::ActivateNextPane",
       "ctrl-x o": "workspace::ActivateNextPane",
       "cmd-shift-o": "workspace::ActivatePreviousPane",
+      "ctrl-x k": "pane::CloseActiveItem",
       "ctrl-x 0": "pane::CloseActiveItem",
+      "cmd-0": "pane::CloseActiveItem",
       "ctrl-x 1": "workspace::ToggleZoom",
       "ctrl-x 2": "pane::SplitDown",
       "ctrl-x 3": "pane::SplitRight",
-      "ctrl-+": "zed::IncreaseBufferFontSize",
-      "ctrl-_": "zed::DecreaseBufferFontSize",
-      "cmd-t": "pane::ReopenClosedItem"
+      "ctrl-x t r": "pane::ReopenClosedItem",
+      "cmd-shift-t": "pane::ReopenClosedItem",
+      "ctrl-x t p": "pane::RevealInProjectPanel",
+      "ctrl-x t 0": "pane::CloseInactiveItems",
+      "ctrl-x t l": "pane::ActivateItem",
+      "ctrl-x ctrl-=": "zed::IncreaseBufferFontSize",
+      "ctrl-x ctrl--": "zed::DecreaseBufferFontSize",
+      "ctrl-x ctrl-0": "zed::ResetBufferFontSize"
     }
   },
   {
@@ -137,8 +147,8 @@
       // 单词
       "cmd-b": "editor::MoveToPreviousWordStart",
       "cmd-f": "editor::MoveToNextWordEnd",
-      "ctrl-c cmd-b": "editor::MoveToPreviousSubwordStart",
-      "ctrl-c cmd-f": "editor::MoveToNextSubwordEnd",
+      "ctrl-cmd-b": "editor::MoveToPreviousSubwordStart",
+      "ctrl-cmd-f": "editor::MoveToNextSubwordEnd",
       // 行
       "ctrl-a": "editor::MoveToBeginningOfLine",
       "ctrl-e": "editor::MoveToEndOfLine",
@@ -156,8 +166,11 @@
       // 基础
       "ctrl-shift-b": "editor::SelectLeft",
       "ctrl-shift-f": "editor::SelectRight",
+      "ctrl-cmd-shift-f": "editor::SelectToNextWordEnd",
       "cmd-shift-f": "editor::SelectToNextWordEnd",
+      "ctrl-cmd-shift-b": "editor::SelectToPreviousWordStart",
       "cmd-shift-b": "editor::SelectToPreviousWordStart",
+      "ctrl-space": "editor::SelectToNextWordEnd",
       "ctrl-cmd-space": "editor::SelectToNextWordEnd",
       // 复杂
       "cmd-l": "editor::SelectLine",
@@ -167,17 +180,15 @@
       "ctrl-shift-n": "editor::SelectDown",
       "ctrl-cmd-{": "editor::SelectToStartOfParagraph",
       "ctrl-cmd-}": "editor::SelectToEndOfParagraph",
-      "cmd-h": "editor::SelectToStartOfParagraph",
-      "ctrl-cmd-shift-h": "editor::SelectToEndOfParagraph",
       // 选中整个段落。
-      "ctrl-cmd-h": ["workspace::SendKeystrokes", "cmd-{ ctrl-cmd-shift-h"],
+      "cmd-h": ["workspace::SendKeystrokes", "cmd-{ ctrl-cmd-}"],
       "ctrl-cmd-<": "editor::SelectToBeginning",
       "ctrl-cmd->": "editor::SelectToEnd",
       "ctrl-x h": "editor::SelectAll",
       // 按语法选择
       "ctrl-=": "editor::SelectLargerSyntaxNode",
       "ctrl--": "editor::SelectSmallerSyntaxNode",
-      "ctrl-cmd-%": "editor::SelectEnclosingSymbol",
+      "cmd-@": "editor::SelectEnclosingSymbol",
 
       /// 多光标操作
       "ctrl-c ctrl-p": "editor::AddSelectionAbove",
@@ -188,11 +199,12 @@
       "cmd-w": "editor::Copy",
       "ctrl-y": "editor::Paste",
 
+      "ctrl-h k": "debug::OpenKeyContextView",
+
       /// 删除操作
       "backspace": "editor::Backspace",
       "cmd-backspace": "editor::DeleteToPreviousSubwordStart",
       "delete": "editor::Delete",
-      "ctrl-h": "editor::Backspace",
       "ctrl-d": "editor::Delete",
       "cmd-d": "editor::DeleteToNextWordEnd",
       "ctrl-k": "editor::CutToEndOfLine",
@@ -212,7 +224,7 @@
       "cmd-down": "editor::MoveLineDown",
       "ctrl-cmd-l": "editor::DuplicateLineUp",
       "cmd-^": "editor::JoinLines",
-      "cmd-g cmd-g": "go_to_line::Toggle",
+      "cmd-g g": "go_to_line::Toggle",
 
       /// 撤销和重做
       "ctrl-/": "editor::Undo",
@@ -222,9 +234,10 @@
       "ctrl-s": "buffer_search::Deploy",
       // project 项目搜索
       "ctrl-cmd-s": "pane::DeploySearch",
+
       // 显式项目大纲
-      "ctrl-o": "outline::Toggle",
-      "ctrl-cmd-o": "project_symbols::Toggle",
+      "cmd-g o": "outline::Toggle",
+      "cmd-g cmd-o": "project_symbols::Toggle",
 
       /// 代码开发功能
       "ctrl-\\": "editor::ShowCompletions",
@@ -232,21 +245,26 @@
       "ctrl-c ctrl-a": "editor::ToggleCodeActions",
       "ctrl-c ctrl-d": "editor::Hover",
       "ctrl-c ctrl-s": "editor::ShowSignatureHelp",
+      "ctrl-c ctrl-r": "editor::Rename",
       // 在浏览器打开符号文档（如果使用 cargo doc 生成本地文档，则打开本地文档）。
-      "ctrl-cmd-d": "editor::OpenDocs",
-      "ctrl-c ctrl-e": "diagnostics::Deploy",
-      "cmd-n": "editor::GoToDiagnostic",
-      "cmd-p": "editor::GoToPrevDiagnostic",
+      "ctrl-c d .": "editor::OpenDocs",
+      "ctrl-c d s": ["task::Spawn", { "task_name": "open-rust-std-doc" }],
+      "ctrl-c d w": ["task::Spawn", { "task_name": "open-rust-docs-rs" }],
+      "ctrl-c d p": ["task::Spawn", { "task_name": "open-rust-crates-io" }],
+      "cmd-g e": "diagnostics::Deploy",
+      "cmd-g l": "diagnostics::Deploy",
+      "cmd-g n": "editor::GoToDiagnostic",
+      "cmd-g p": "editor::GoToPrevDiagnostic",
 
       // 根据 git 变更移动
-      "cmd-j": "editor::GoToHunk",
-      "cmd-k": "editor::GoToPrevHunk",
+      "ctrl-c g n": "editor::GoToHunk",
+      "ctrl-c g p": "editor::GoToPrevHunk",
 
       // xref
       "cmd-.": "editor::GoToDefinition",
       "ctrl-cmd-.": "editor::GoToDefinitionSplit",
-      "cmd-shift-i": "editor::GoToImplementation",
-      "ctrl-cmd-shift-i": "editor::GoToImplementationSplit",
+      // "cmd-,": "editor::GoToImplementation",
+      // "ctrl-cmd-,": "editor::GoToImplementationSplit",
       "cmd-?": "editor::FindAllReferences",
 
       // 注释和格式化
@@ -259,13 +277,13 @@
 
       /// 折叠
       "cmd-q": "editor::Rewrap",
-      "cmd-[ cmd-[": "editor::ToggleFold",
-      "cmd-] cmd-]": "editor::UnfoldAll",
-      "cmd-[ cmd-1": ["editor::FoldAtLevel", { "level": 1 }],
-      "cmd-[ cmd-2": ["editor::FoldAtLevel", { "level": 2 }],
-      "cmd-[ cmd-3": ["editor::FoldAtLevel", { "level": 3 }],
-      "cmd-[ cmd-4": ["editor::FoldAtLevel", { "level": 4 }],
-      "cmd-[ cmd-5": ["editor::FoldAtLevel", { "level": 5 }]
+      "ctrl-c f t": "editor::ToggleFold",
+      "ctrl-c f u": "editor::UnfoldAll",
+      "ctrl-c f 1": ["editor::FoldAtLevel", { "level": 1 }],
+      "ctrl-c f 2": ["editor::FoldAtLevel", { "level": 2 }],
+      "ctrl-c f 3": ["editor::FoldAtLevel", { "level": 3 }],
+      "ctrl-c f 4": ["editor::FoldAtLevel", { "level": 4 }],
+      "ctrl-c f 5": ["editor::FoldAtLevel", { "level": 5 }]
     }
   },
   {
@@ -286,6 +304,7 @@
       "ctrl-cmd-]": "assistant::QuoteSelection",
       // 将 assistant editor 选择内容粘贴到 Editor 中当前位置
       "ctrl-cmd-[": "assistant::InsertIntoEditor",
+
       // AI inline 补全(在当前行插入一个 AI 输入行)。
       "ctrl-enter": "assistant::InlineAssist"
     }
@@ -329,14 +348,6 @@
     "context": "Editor && renaming",
     "bindings": {
       "enter": "editor::ConfirmRename"
-    }
-  },
-  {
-    "context": "Picker > Editor",
-    "bindings": {
-      "tab": "picker::ConfirmCompletion",
-      "alt-enter": ["picker::ConfirmInput", { "secondary": false }],
-      "cmd-alt-enter": ["picker::ConfirmInput", { "secondary": true }]
     }
   },
   {
@@ -452,25 +463,27 @@
   {
     // 大纲面板。
     // 加 not_editing 条件可以避免 rename 编辑时不能输入单字母绑定的按键。
+    // 第一次打开大纲面板时焦点位于 Filter 输入框中，可以按 ctrl-n/p 等选择。
+    // 如果要使用单大写字母，如 N，需要使用 shift-n 而非 N。
     "context": "OutlinePanel && not_editing",
     "bindings": {
       "escape": "menu::Cancel",
+      "q": "workspace::ToggleLeftDock",
       // 在新 tab 中打开文件, 焦点还位于 outline panel。
       //"ctrl-o": "outline_panel::Open",
       //"tab": "outline_panel::Open",
-      "ctrl-o": ["outline_panel::Open", { "change_selection": false }],
+      "o": ["outline_panel::Open", { "change_selection": false }],
       "tab": ["outline_panel::Open", { "change_selection": false }],
-
       // 在新 tab 中打开文件，将焦点移动到文件中。
       //"enter": ["outline_panel::Open", { "change_selection": true }],
       "enter": "outline_panel::Open",
-      "ctrl-n": "menu::SelectNext",
-      "ctrl-p": "menu::SelectPrev",
+      "n": "menu::SelectNext",
+      "p": "menu::SelectPrev",
       "^": "outline_panel::SelectParent",
       // 路径操作(焦点必须位于文件或目录上）
-      "cmd-w": "outline_panel::CopyPath",
-      "ctrl-cmd-w": "outline_panel::CopyRelativePath",
-      "ctrl-r": "outline_panel::RevealInFileManager"
+      "w": "outline_panel::CopyPath",
+      "shift-w": "outline_panel::CopyRelativePath",
+      "r": "outline_panel::RevealInFileManager"
     }
   },
   {
@@ -478,6 +491,7 @@
     "context": "ProjectPanel && not_editing",
     "bindings": {
       "escape": "menu::Cancel",
+      "q": "workspace::ToggleLeftDock",
       // 目录展开/折叠
       "left": "project_panel::CollapseSelectedEntry",
       "right": "project_panel::ExpandSelectedEntry",
@@ -485,13 +499,13 @@
       // OpenPermanent 支持 toggle 展开和关闭, 在固定 tab 打开文件。
       "tab": "project_panel::OpenPermanent",
       "space": "project_panel::OpenPermanent",
-      "ctrl-o": "project_panel::OpenPermanent",
+      "o": "project_panel::OpenPermanent",
       "enter": "project_panel::OpenPermanent",
       // 在 preview tab 中打开文件
-      "ctrl-cmd-o": "project_panel::Open",
+      "ctrl-o": "project_panel::Open",
       // 导航
-      "ctrl-n": "menu::SelectNext",
-      "ctrl-p": "menu::SelectPrev",
+      "n": "menu::SelectNext",
+      "p": "menu::SelectPrev",
       "^": "project_panel::SelectParent",
       // 编辑
       "ctrl-w": "project_panel::Cut",
@@ -501,11 +515,12 @@
       "+": "project_panel::NewDirectory",
       "shift-n": "project_panel::NewFile",
       "shift-r": "project_panel::Rename",
-      "shift-d": ["project_panel::Trash", { "skip_prompt": false }],
+      "d": ["project_panel::Trash", { "skip_prompt": false }],
       "backspace": ["project_panel::Trash", { "skip_prompt": false }],
       // 路径操作（焦点必须位于目录或文件中）
-      "ctrl-cmd-w": "project_panel::CopyRelativePath",
-      "ctrl-r": "project_panel::RevealInFileManager",
+      "w": "project_panel::CopyPath",
+      "shift-w": "project_panel::CopyRelativePath",
+      "r": "project_panel::RevealInFileManager",
       "ctrl-s": "project_panel::NewSearchInDirectory"
     }
   },
@@ -520,12 +535,11 @@
       "tab": "picker::ConfirmCompletion",
       // 如果焦点位于 task::Spawn 面板，则执行 oneshot shell 命令。
       "ctrl-enter": ["picker::ConfirmInput", { "secondary": false }],
-      // 如果焦点位于 task::Spawn 面板，则执行 Ephemeral tasks shell 命令，
-      // 该命令不会记录到 task history 中。
+      // 如果焦点位于 task::Spawn 面板，则执行 Ephemeral tasks shell 命令，该命令不会
+      // 记录到 task history 中。
       "ctrl-cmd-enter": ["picker::ConfirmInput", { "secondary": true }],
 
-      // FileFinder 面板快捷键，不能直接在 FileFinder 中配置，因为它的优先级比
-      //  Editor 低。
+      // FileFinder 面板快捷键，不能直接在 FileFinder 中配置，因为它的优先级比 Editor 低。
       "ctrl-cmd-o": "file_finder::OpenMenu",
       "ctrl-cmd-j": "pane::SplitDown",
       "ctrl-cmd-k": "pane::SplitUp",
@@ -635,6 +649,12 @@
       "cmd->": "terminal::ScrollToBottom",
       // AI inline 补全
       "ctrl-enter": "assistant::InlineAssist"
+    }
+  },
+  {
+    "context": "KeyContextView",
+    "bindings": {
+      "q": "pane::CloseActiveItem"
     }
   }
 ]

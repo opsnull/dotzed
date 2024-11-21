@@ -2,7 +2,7 @@
 
 对 `script/bundle-mac` 文件做如下修改:
 
-``` sh
+```sh
 zj@a:~/go/src/github.com/zed-industries/zed$ git diff script/bundle-mac
 diff --git a/script/bundle-mac b/script/bundle-mac
 index bc95e1dd6a..a20fd09268 100755
@@ -27,10 +27,11 @@ index bc95e1dd6a..a20fd09268 100755
 ```
 
 解决构建 webrtc-sys 失败的问题：
-+ 将 reqwest 升级到最新的 v0.12 版本；
-+ 启用 reqwest 的 socks feature；
 
-``` sh
+- 将 reqwest 升级到最新的 v0.12 版本；
+- 启用 reqwest 的 socks feature；
+
+```sh
 zj@a:~/go/src/github.com/zed-industries/zed$ ./script/bundle-mac -ldi
 ~/go/src/github.com/zed-industries/zed/crates/zed ~/go/src/github.com/zed-industries/zed
 ~/go/src/github.com/zed-industries/zed
@@ -54,7 +55,7 @@ Caused by:
     /Users/alizj/go/src/github.com/zed-industries/zed/target/debug/build/webrtc-sys-5584bf7f821ea101/out/cxxbridge/crate
   thread 'main' panicked at /Users/alizj/.cargo/git/checkouts/rust-sdks-e9c3cb1fc511908e/4262308/webrtc-sys/build.rs:85:45:
   called `Result::unwrap()` on an `Err` value: reqwest::Error { kind: Request, url: "https://github.com/livekit/client-sdk-rust/releases/download/webrtc-dac8015-5/webrtc-mac-arm64-release.zip", source: hyper_util::client::legacy::Error(Connect, ConnectError("tcp connect error", Os { code: 61, kind: ConnectionRefused, message: "Connection refused" })) }
-  ```
+```
 
 修改 /Users/alizj/.cargo/git/checkouts/rust-sdks-e9c3cb1fc511908e/4262308/webrtc-sys/build/Cargo.toml，使用 0.12 版本，并且添加 socks features：
 
@@ -63,7 +64,7 @@ Caused by:
     reqwest = { version = "0.12", default-features = false, features = ["rustls-tls-native-roots", "blocking", "socks"] }
     ```
 
- 修改 /Users/alizj/.cargo/git/checkouts/rust-sdks-e9c3cb1fc511908e/4262308/webrtc-sys/build/src/lib.rs 中的 reqwest get 方法，使用 socks5 proxy。
+修改 /Users/alizj/.cargo/git/checkouts/rust-sdks-e9c3cb1fc511908e/4262308/webrtc-sys/build/src/lib.rs 中的 reqwest get 方法，使用 socks5 proxy。
 
     ``` rust
     let mut client = reqwest::blocking::ClientBuilder::new()
@@ -77,9 +78,10 @@ Caused by:
     ```
 
 解决 mac bundle 构建报错：
+
 > An SSL error has occurred and a secure connection to the server cannot be made
 
-``` sh
+```sh
 # 查看系统全局代理：
 scutil --proxy
 
@@ -96,9 +98,10 @@ zj@a:~/go/src/github.com/zed-industries/zed$ ls -l target/debug/WebRTC.framework
 ```
 
 编辑生成的 `Info.plist` 文件，在 dict 中添加如下内容：
-+ 参考：https://github.com/microsoft/vscode/issues/73806#issuecomment-496334904
 
-``` xml
+- 参考：https://github.com/microsoft/vscode/issues/73806#issuecomment-496334904
+
+```xml
 <key>NSAppTransportSecurity</key>
    <dict>
        <key>NSAllowsArbitraryLoads</key>
@@ -121,12 +124,13 @@ zed 的 ssh_session.rs 的 [update_server_binary_if_needed() 函数
 ](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/remote/src/ssh_session.rs#L1735)
 会先执行 server 上的 zed-remote-server 的 version 子命令来获得 server 语义版本(current_version)：
 
-``` sh
+```sh
 alizj@lima-dev2:/Users/alizj/.config/zed$ ~/.zed_server/zed-remote-server-dev-linux-aarch64 version
 0.160.0
 ```
 
 编译时，zed 使用文件 `crates/zed/RELEASE_CHANNEL` 中配置来确定 release channel 类型，可选值为：
+
 - dev
 - nightly
 - preview
@@ -140,41 +144,46 @@ update_server_binary_if_needed() 根据 release channel 来确定需要为 remot
 2. 如果是 nightly、preview、stable，则从 zed.dev API 获得对应版本；
 
 如果执行成功则获得 current_version 值，否则将它设置为 None，则进行版本比较(current_version vs wanted_version)：
+
 1. 如果两者都有值且匹配，则不安装或升级；
 1. 如果本地版本低，则提示升级本地 zed 版本后返回；
-3. 否则（如 server 版本低，或者有任何一方为 None），则会安装新版本。
+1. 否则（如 server 版本低，或者有任何一方为 None），则会安装新版本。
 
 在安装新 remote server binary 前，zed 会检查 bianry 是否在使用。如果在使用且 zed
 不是 dev 版本，则会直接返回错误，提 示 binary 在 使用，不能升级。但是如果是 dev 版本，
 则即使在使用也可以升级。
 
 如果是 dev 模式（wanted_version 为 None）：
+
 1. 先检查环境变量 `ZED_BUILD_REMOTE_SERVER` 是否设置，如果 **未设置** ：
-  1. 如果 current_version 有值，则复用 binary，直接返回；
-  2. 如果无值，则报错：ZED_BUILD_REMOTE_SERVER is not set, but no remote server exists
-2. 在设置 ZED_BUILD_REMOTE_SERVER 的情况下：
-  1. 如果是 dev 模式，则进行本地构建和上传到 server；
-  2. 否则报错：Running development build in release mode, cannot cross compile
-  (unset ZED_BUILD_REMOTE_SERVER)
+1. 如果 current_version 有值，则复用 binary，直接返回；
+1. 如果无值，则报错：ZED_BUILD_REMOTE_SERVER is not set, but no remote server exists
+1. 在设置 ZED_BUILD_REMOTE_SERVER 的情况下：
+1. 如果是 dev 模式，则进行本地构建和上传到 server；
+1. 否则报错：Running development build in release mode, cannot cross compile
+   (unset ZED_BUILD_REMOTE_SERVER)
 
 如果不是 dev 模式，则检查配置参数 upload_binary_over_ssh：
+
 1. 如果为 false（默认），则 server 尝试先从 zed.dev 下载 binary，如果失败则从 zed 本地上传。
 2. 如果为 true，则从 zed 本地上传。
 
 从 zed 本地上传：本地 zed 先下载 binary，然后上传到 server。
 
 总结：在 dev 模式下：
+
 1. 如果未设置环境变量 ZED_BUILD_REMOTE_SERVER，则要求远端已经有 bianry 在运行，**直接复用**。
 2. 如果设置 ZED_BUILD_REMOTE_SERVER，则会本地侯建和上传。
 
-``` sh
+```sh
 ZED_BUILD_REMOTE_SERVER=1  RUST_log=debug target/debug/zed
 ```
 
 zed 本地构建 remote server bianry 时执行的命令：
+
 1. 同构：cargo build --package remote_server --features debug-embed --target-dir target/remote_server
 2. 异构：triple=aarch64-linux cargo install cross --git "https://github.com/cross-rs/cross"
-cross build --package remote_server --features debug-embed --target-dir target/remote_server --target ${triple}
+   cross build --package remote_server --features debug-embed --target-dir target/remote_server --target ${triple}
 
 在 zed server 运行过程中，会自动[从网络下载 lsp language 并安装](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/languages/src/rust.rs#L100)
 到 ~/.local/share/zed/languages/ 目录下：
@@ -183,13 +192,13 @@ cross build --package remote_server --features debug-embed --target-dir target/r
 
 窗口右上角显示资源用量和 GPU FPS 信息（有 bug，可能导致段错误）：
 
-``` sh
+```sh
 $ MTL_HUD_ENABLED=1 /Applications/Zed.app/Contents/MacOS/zed
 ```
 
 DEBUG 启动模式:
 
-``` sh
+```sh
 # 先切换到 zed 源码目录(有些命令, 如 ssh remote 会在源码目录编译一些二进制)
 $ pwd
 /Users/alizj/go/src/github.com/zed-industries/zed
@@ -198,7 +207,7 @@ $ RUST_LOG=debug /Applications/Zed\ Dev.app/Contents/MacOS/zed
 
 zed cli : 可以通过 Zed 菜单 “Install CLI” 来安装 zed 命令行工具命令 zed：
 
-``` sh
+```sh
 zj@a:~$ which zed
 /usr/local/bin/zed
 zj@a:~$ ls -l /usr/local/bin/zed
@@ -214,18 +223,17 @@ $ zed -a ~/emacs # 将目录添加到 workspace
 ```
 
 zed 获得环境变量的两种方式：
+
 1. 命令行 zed 启动, 继承命令行环境变量;
 2. 通过 dock 启动, 先切换到 HOME 目录 spawn 一个 login shell 来获得用户环境变量, 然后被所有 zed 窗口继承;
 
 zed 打开 project 时, 会使用 direnv/editorconfig 等机制来获得项目相关的环境变量, 并被项目的
 task/lsp/terminal 继承。
 
-# 本地目录
-
 本地安装的扩展、LSP Server、Remote binary 等位于 ~/Library/Application\ Support/Zed/
 目录下：
 
-``` sh
+```sh
 $ ls ~/Library/Application\ Support/Zed/
 copilot/  db/  docs/  extensions/  languages/  node/  prettier/  remote_servers/
 
@@ -255,6 +263,7 @@ File Path 上时， 可以按 cmd 来快速打开。
 快速选择一个 block：将光标移动到 block 边界字符上，然后按 ctrl-= 来按语法选择。
 
 输入法设置:
+
 1. 不使用 MacOS 内置的拼音输入法，因为它使用中文标点，导致快捷键 ctrl-] 使用中文标点
    】，从而与 zed 快捷键绑定不兼容；
 2. 使用微信输入法；
@@ -262,24 +271,30 @@ File Path 上时， 可以按 cmd 来快速打开。
 4. 关闭 “自动编号”；
 
 输入法 keylayout：
+
 - 微信和搜狗中英文输入法：com.apple.keylayout.US
 - APPLE 英文：com.apple.keylayout.ABC
 - APPLE 中文：com.apple.keylayout.PinyinKeyboard
 
 微信输入法小技巧：
+
 1. 如果当前是中文输入状态，但需要上屏英文，可以按 shift 键，这样输入的部分内容会被作为
    英文输入；
 2. 输入 “日期” 或 “时间” 时会自动提示插入各种格式的日期和时间；
 3. 有些 emoji 字符有多种选择，可以使用上下箭头来选择；
 
+在 20241121 的 commit [Clip UTF-16 offsets in text for range](https://github.com/zed-industries/zed/pull/20968) 合并后，在开启微信中文输入法的情况下，
+快捷键绑定中也能使用单字母了。
+
 buffer 和 terminal 都设置为更符合编程体验的 "Sarasa Mono SC" 字体，它是 Iosevka 编程字体的中文版本，名称为等距更纱黑体。
 
-光标位于 URL 上, 执行 editor::open url 命令可以快速打开该 URL.
+光标位于 URL 上, 执行 editor::open url 命令可以快速打开该 URL。
 
 project panel 默认对空目录进行折叠, 双击折叠的目录时会展开。
 
 editor::Wrap 目前只对 Markdown 和 Plain Text Buffer 类型有效：
-``` rust
+
+```rust
 // https://github.com/zed-industries/zed/blob/96683da9f90bad4e1c2778c3607788f3eed31560/crates/editor/src/editor.rs#L7004
 if let Some(language_scope) = buffer.language_scope_at(selection.head()) {
     match language_scope.language_name().0.as_ref() {
@@ -291,7 +306,13 @@ if let Some(language_scope) = buffer.language_scope_at(selection.head()) {
 }
 ```
 
-手动添加 Org 支持。
+安装 org extention 后，就可以高亮 org-mode 文件。
+
+配置 `"show_whitespaces": "selection"` 后，显示选择区域中的空格。
+
+show_completions_on_input vs show_inline_completions：前者是 LSP 代码补全，后者是大模型补全。
+
+字体：默认使用的是 https://github.com/zed-industries/zed-fonts/tree/zed-plex 字体，需要手动下载安装。zed plex font 的主要特点是缩小了字体间距，UI 显示的更紧凑。
 
 # multicusor
 
@@ -309,6 +330,7 @@ buffer search 是每输入一个字符就触发的实时增量搜索, 而 projec
 搜索时，默认选中光标处的 symbol/word，也可以先选中内容后再搜索。
 
 搜索时，默认选中所有匹配项，导致前后跳转时不易分清光标所在行，两个办法：
+
 1. 开启行号来明确显示当前匹配的行；（通过命令面板开启）。
 2. 在 outline pane 看当前匹配的行。
 3. 焦点切换到编辑窗口（按 tab），按 `ctrl-l` 将光标滚动到窗口中心。
@@ -328,6 +350,7 @@ project search 的结果默认在 preview tab 中显示（标题是斜体），�
 
 outline 是基于 tree-sitter 解析的节点树，支持对编辑窗口、搜索窗口（buffer 或
 project 搜索）、Reference 窗口、诊断窗口的结构化显示。包含三种类型：
+
 - buffer outline
 - project outline
 - outline panel
@@ -364,7 +387,7 @@ preview tabs 通过以下方式转换为普通独立 tab：
 
 # keybindings
 
-注：使用命令 `debug: Open Key Context View` 查看当前焦点的 context，触发的按键，以及按键匹配情况。
+使用命令 `debug: Open Key Context View` 查看当前焦点的 context，触发的按键，以及按键匹配情况。
 
 zed 按键绑定（`/.config/zed/keymap.json`）不区分相同按键序列但不同顺序的情况，如`ctrl-cmd-a` 和 `cmd-ctrl-a` 是相同的按键，但 zed 不提示重复的按键绑定。解决办法：使用固定的顺序来写按键，如 `ctrl-cmd-alt-shift`。
 
@@ -381,7 +404,7 @@ zed 支持灵活的按键 remap：
 
 不是所有 action 在所有 context 中都有效， 如果高优 context 中的按键绑定 action 无效， 则会 fallback 到低优 context 中该按键绑定的 action，以此类推直到第一个有效 action。
 
-例如， Editor 和 Editor && mode == full 的 context 都定义了 ctrl-o 快捷键，但是后者的 excerpt 只在 multibuffer 中有效，所以 fallback 到 Editor 中的 buffer symbol：
+例如 Editor 和 Editor && mode == full 的 context 都定义了 ctrl-o 快捷键，但是后者的 excerpt 只在 multibuffer 中有效，所以 fallback 到 Editor 中的 buffer symbol：
 
     {
       "context": "Editor && mode == full",
@@ -401,16 +424,16 @@ zed 支持灵活的按键 remap：
 shift- 用于表示大写字母或第二按键，使用时需要注意：
 
 - 对于使用大写字母的按键，需要包含 shift，而不能直接写大写字母，如：
-    "alt-shift-r" ：OK
-    "alt-R"： 错误。
+  "alt-shift-r" ：OK
+  "alt-R"： 错误。
 
 - 对于使用第二按键，需要直接使用第二按键名称，而不能包含 shift，如：
-    "cmd-ctrl-<": OK， "cmd-ctrl-shift-,": 错误。
-    "cmd-%": OK, "cmd-shift-%": 错误，"cmd-shift-5": 错误。
+  "cmd-ctrl-<": OK， "cmd-ctrl-shift-,": 错误。
+  "cmd-%": OK, "cmd-shift-%": 错误，"cmd-shift-5": 错误。
 
 - 对于非大写字母或第二按键的场景，不能使用 shift，即 zed 的 shift 不支持作为通用修饰键来使用，如：
-    "ctrl-shift-,": 不对，因为 , 有第二按键 <，应该直接使用第二按键，而不需要加 shift。
-    "ctrl-shift-=": 不对，因为 = 有第二按键 +，应该直接使用 "ctrl-+"。
+  "ctrl-shift-,": 不对，因为 , 有第二按键 <，应该直接使用第二按键，而不需要加 shift。
+  "ctrl-shift-=": 不对，因为 = 有第二按键 +，应该直接使用 "ctrl-+"。
 
 - "ctrl-x ^" 中的 ctrl-x 是作为前缀快捷键来使用，那么 ctrl-x 不能再有单独的定义。
 
@@ -620,7 +643,6 @@ crate module 通过 actions!() 和 impl_actions!() 宏来定义和暴露给命�
         }
     }
 
-
 # language
 
 使用 file_types 参数为扩展名或文件路径指定语言类型:
@@ -647,7 +669,6 @@ zed 支持 by 语言参数[参数列表](https://zed.dev/docs/configuring-langua
          "format_on_save": "off"
       }
     }
-
 
 各 language server 可以在 lsp 中配置: 配置项名称使用嵌套对象而非 dot 分割字符串, 实例：
 
@@ -676,6 +697,33 @@ zed 支持 by 语言参数[参数列表](https://zed.dev/docs/configuring-langua
         }
       }
     }
+
+## python
+
+内置支持两个 language server：
+
+- pyright（默认）
+- pylsp
+
+安装 pyright lsp server：
+
+```sh
+# 建议：微软官方提供的安装方式
+sudo npm install -g pyright
+# 社区维护的安装方式
+# pip install pyright
+```
+
+配置 zed 使用自定义安装的 pyright：
+
+```json，
+"pyright": {
+  "binary": {
+  "path": "/opt/homebrew/bin/pyright-langserver",
+  "arguments": ["--stdio"]
+  }
+},
+```
 
 ## rust
 
@@ -714,8 +762,14 @@ zed 支持 by 语言参数[参数列表](https://zed.dev/docs/configuring-langua
     ]
 
 在浏览器打开符号本地文档：
+
 1. 先使用 cargo doc 生成本地文档，否则后续打开的是 https://crates.io/ 的在线文档；
-2.  执行命令："editor::OpenDocs"；
+2. 执行命令："editor::OpenDocs"；
+
+显示 RA 的启动信息：
+
+1. 在 ~/.bashrc 中添加环境变了：export RA_LOG=info
+2. 实际测试，在 project 中添加 .envrc 以及在 settings.json 中设置该变量都不会生效。
 
 # task
 
@@ -726,7 +780,7 @@ zed 也会自动根据项目语言生成一些 task，如对于 rust 项目，�
 - cargo check -p anthropic
 - cargo test -p collab ids -- --nocapture
 - cargo test -p collab db
-- cargo check --workspace --all-targets  # 执行 rust-analyzer 的 checkOnSave 的完整检查。
+- cargo check --workspace --all-targets # 执行 rust-analyzer 的 checkOnSave 的完整检查。
 - cargo clean
 - cargo run
 
@@ -734,9 +788,10 @@ zed 也会自动根据项目语言生成一些 task，如对于 rust 项目，�
 
 env 字段指定添加到 task 的环境变量，不支持变量替换，优先级高，会覆盖 terminal 环境变量。
 
-zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当前 zed 对 work directory 的判断是基于当前 *正在编辑的文件* 为基础的，可能会将普通文件判断为 work directory，从而导致 task 执行静默出错。
+zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当前 zed 对 work directory 的判断是基于当前 _正在编辑的文件_ 为基础的，可能会将普通文件判断为 work directory，从而导致 task 执行静默出错。
 
 注意：
+
 1. 不支持物理换行，即使前面加 \ 转义字符也不行；
 2. cwd 和 env 不支持 shell 扩展，如不能使用 ~ 字符；
 3. 字符串支持 \ 转义，如果要把转义字符传给 shell，需要连用 \\;
@@ -770,18 +825,18 @@ zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当�
       }
     }
 
-
 执行 task::Spawn 时，按 tab 选中候选者来修改 task 的命令和参数，也可以输入任意 shell 命令和参数,
 然后执行：
+
 - oneshot task："ctrl-enter"，会记录到 task history 中；
 - Ephemeral task："ctrl-cmd-enter"，不会记录到 task history 中；
 
-    {
-      "context": "Picker > Editor",
-      "bindings": {
-        // 选中候选者, 如果是 task::Spawn 面板则会在输入框中填写候选者命令配置,
-        // 这时可以修改 task 命令和参数.
-        "tab": "picker::ConfirmCompletion",
+  {
+  "context": "Picker > Editor",
+  "bindings": {
+  // 选中候选者, 如果是 task::Spawn 面板则会在输入框中填写候选者命令配置,
+  // 这时可以修改 task 命令和参数.
+  "tab": "picker::ConfirmCompletion",
 
         // 适用于 task::Spawn 面板执行 oneshot shell 命令
         "ctrl-enter": ["picker::ConfirmInput", { "secondary": false }],
@@ -790,7 +845,8 @@ zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当�
         // 该命令不会记录到 task history 中。
         "ctrl-cmd-enter": ["picker::ConfirmInput", { "secondary": true }]
       }
-    }
+
+  }
 
 注意：如果修改了 task 定义，则在 task picker 界面应该选择最下面的任务定义，而不是上面执行过的历史任务，否则最新的定义不生效。
 
@@ -834,6 +890,7 @@ zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当�
       "hide": "always" // 任务结束后自动关闭终端
     }
     ```
+
 绑定到快捷键 shift-shift：
 
     ``` json
@@ -877,83 +934,89 @@ zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当�
       ```
 
 参考：
+
 1. https://oliverguenther.de/2021/04/lazygit-an-introduction-series/
 2. https://github.com/jesseduffield/lazygit/blob/master/docs/keybindings/Keybindings_en.md
 
 全局：
-+ C-r：切换最近的项目；
-+ @：打开右下角的 git 命令提示面板；
-+ ？：打开帮助菜单；
-+ f: 从 remote fetch 最新的更新；
-+ P: push
-+ p: pull
-+ q 或 C-c：退出（quit）
-+ z：undo
-+ C-z：redo
-+ j/k 或 <UP>/<DOWN>: 前一个或后一个 item, 也即是前后移动;
-+ <left>/<right>: 在 block panel 间跳转，共有编号为 1-5 的 5 个 block；
-+ 1-5: 跳转到对应编号的 block；
-+ [/]: 在一个 block panel 的多个 tab 中切换。
-+ esc：返回（return）上一级；
-+ +/-： 切换当前 tab 的显示方式（全屏、半屏等），在查看 diff 或 commit 时非常有用。
-+ H/L: 左右 scroll;
-+ </>: 移动到 buffer 开始或结束；
-+ : : 执行 shell 命令。
-+ search：在不同 tab 中使用 / 来触发搜索，但语义可能不一致，使用 n/N 来前后搜索。
-  + C-b ：按 status 过滤文件；
-  + C-s ：按 path、commit、author 过滤文件；
-+ 前一个或后一个 page：,/.
-+ R: 刷新 git 状态（后台执行 git status，git branch 等命令以更新面板，但是不执行 git fetch）；
-+ d：discard 丢弃文件变更
-+ D：显示 reset 高级选项，包括 soft、hard 等；
-+ g: reset 到 UPSTREAM；
-+ <SPACE>：在 file panel 中是 stage 当前文件，在 diff panel 中是 stage 当前 hunk；
 
-+ o: 使用外部编辑器（external editor）打开文件(显示变更后的文件内容)
-+ e：使用系统缺省应用（dfault application）编辑文件。
+- C-r：切换最近的项目；
+- @：打开右下角的 git 命令提示面板；
+- ？：打开帮助菜单；
+- f: 从 remote fetch 最新的更新；
+- P: push
+- p: pull
+- q 或 C-c：退出（quit）
+- z：undo
+- C-z：redo
+- j/k 或 <UP>/<DOWN>: 前一个或后一个 item, 也即是前后移动;
+- <left>/<right>: 在 block panel 间跳转，共有编号为 1-5 的 5 个 block；
+- 1-5: 跳转到对应编号的 block；
+- [/]: 在一个 block panel 的多个 tab 中切换。
+- esc：返回（return）上一级；
+- +/-： 切换当前 tab 的显示方式（全屏、半屏等），在查看 diff 或 commit 时非常有用。
+- H/L: 左右 scroll;
+- </>: 移动到 buffer 开始或结束；
+- : : 执行 shell 命令。
+- search：在不同 tab 中使用 / 来触发搜索，但语义可能不一致，使用 n/N 来前后搜索。
+  - C-b ：按 status 过滤文件；
+  - C-s ：按 path、commit、author 过滤文件；
+- 前一个或后一个 page：,/.
+- R: 刷新 git 状态（后台执行 git status，git branch 等命令以更新面板，但是不执行 git fetch）；
+- d：discard 丢弃文件变更
+- D：显示 reset 高级选项，包括 soft、hard 等；
+- g: reset 到 UPSTREAM；
+- <SPACE>：在 file panel 中是 stage 当前文件，在 diff panel 中是 stage 当前 hunk；
+
+- o: 使用外部编辑器（external editor）打开文件(显示变更后的文件内容)
+- e：使用系统缺省应用（dfault application）编辑文件。
 
 比较 Commit：
-+ W: 在 commit 或 branch 上执行时，将当前 commit 作为标记与后续选择的其它 commit 进行比较，差异
+
+- W: 在 commit 或 branch 上执行时，将当前 commit 作为标记与后续选择的其它 commit 进行比较，差异
   显示在 diff panel 中。这时按 <enter> 来显示 diff 的文件列表, 再次按 W 将显示翻转 diff 方向，或者
   退出 diff mode。
 
 File Panel：
-+ Untracked(??), Added (A), Deleted(D), or Modified(M)
-  + unstaged (red) and staged (green)
-+ <enter>: 打开当前文件或目录的 unstage diff panel，这样可以按 hunks 或 lines 来 stage。
-+ <SPACE>: stage 当前文件
-+ `: 切换文件树的显示方式（层次或扁平显示）
-+ a: stage、unstaged 所有文件
-+ s：stash 当前文件
-  + S: 查看 stash 选项（e.g. stash all, stash staged, stash unstaged)
-+ i: 忽略当前文件
-+ c: commit 当前的 stage 文件；
-+ A：amend 上一次 commit
-+ C-b: 只显示 stage 或 unstage 的文件；
-+ r: refresh 文件
+
+- Untracked(??), Added (A), Deleted(D), or Modified(M)
+  - unstaged (red) and staged (green)
+- <enter>: 打开当前文件或目录的 unstage diff panel，这样可以按 hunks 或 lines 来 stage。
+- <SPACE>: stage 当前文件
+- `: 切换文件树的显示方式（层次或扁平显示）
+- a: stage、unstaged 所有文件
+- s：stash 当前文件
+  - S: 查看 stash 选项（e.g. stash all, stash staged, stash unstaged)
+- i: 忽略当前文件
+- c: commit 当前的 stage 文件；
+- A：amend 上一次 commit
+- C-b: 只显示 stage 或 unstage 的文件；
+- r: refresh 文件
 
 Diff Panel:
-+ h/l 或 <left>/<right>: 前一个或后一个 hunk：
-+ <SPACE>: stage 当前 hunk line 或 selection，如果已经 staged 了，则 unstage 当前 hunk；
-+ a: Toggle hunk selection mode，即一次选择一个 hunk；
-+ range select：可以批量对选择的项目（file、commit）应用命令，如在 unstage panel 中选择一部分
+
+- h/l 或 <left>/<right>: 前一个或后一个 hunk：
+- <SPACE>: stage 当前 hunk line 或 selection，如果已经 staged 了，则 unstage 当前 hunk；
+- a: Toggle hunk selection mode，即一次选择一个 hunk；
+- range select：可以批量对选择的项目（file、commit）应用命令，如在 unstage panel 中选择一部分
   hunk，然后使用 SPACE 命令来进行 stage。反之，在 stage panel 中，使用 v 选择一个 range 后，
   使用 SPACE 命令来进行 unstage。
   1. 先按 v，然后使用 up、down 或 j/k 来选择。再次按 v 来 reset 选择；
   2. 或者按 shift+up 或 shift+down 来选择。再次按不带 shift 的 up、down 来 reset 选择；
-+ d：discard 丢弃部分文件变更（丢弃文件中 staged、unstaged 部分的变更）
-    + When unstaged change is selected, discard the change using git reset.
-    + When staged change is selected, unstage the change.
-+ <TAB>: 在 unstage 和 stage view 之间切换；
-+ E: 编辑当前 diff hunk，编辑后保存关闭临时文件。
-+ esc: 返回到 file panel。
-+ {/}： 增加或减少 diff 上下文行数。
-+ c: Commit staged changes.
-+ w：Commit changes without pre-commit hook
-+ C：Commit changes using git editor
+- d：discard 丢弃部分文件变更（丢弃文件中 staged、unstaged 部分的变更）
+  - When unstaged change is selected, discard the change using git reset.
+  - When staged change is selected, unstage the change.
+- <TAB>: 在 unstage 和 stage view 之间切换；
+- E: 编辑当前 diff hunk，编辑后保存关闭临时文件。
+- esc: 返回到 file panel。
+- {/}： 增加或减少 diff 上下文行数。
+- c: Commit staged changes.
+- w：Commit changes without pre-commit hook
+- C：Commit changes using git editor
 
 Branch Panel：
-- 以 * 开头的 branch 为当前 branch；向上箭头表示 commit ahead，向下箭头表示 commit behind；
+
+- 以 \* 开头的 branch 为当前 branch；向上箭头表示 commit ahead，向下箭头表示 commit behind；
 - <SPACE>: checkout 当前 branch；
 - c：checkout by name，按 branch name 来 checkout，如果是 -，则代表 latest branch；
 - <Enter>: 查看当前 branch 的 commit 历史，在某个 commit 上按 <Enter> 则显示 Commit Panel。
@@ -964,26 +1027,28 @@ Branch Panel：
 - R：rename branch
 - M：将当前光标所在分支 merge 到本地当前分支，显示 merge 选项
 - r：将当前本地分支 rebase 到光标所在分支
-+ /: 按 branch name 搜索
-+ [/]: 切换到该 panel 的其它 tab，如 remote branch 和 tags；
-+ w : 从该 branch 创建 worktree；
+
+* /: 按 branch name 搜索
+* [/]: 切换到该 panel 的其它 tab，如 remote branch 和 tags；
+* w : 从该 branch 创建 worktree；
 
 Commit Panel: 显示当前本地分支的 commit history list，可以进行 Squash、Fixup、Amend、Reword 等操作。
+
 - 4：切换到该 Panel
 - <Enter>: 显示该 commit 下的变更文件列表，在文件上按 <Enter> 显示该文件的 Patch。
-   - 和 diff panel 一样，可以对整个文件或部分 hunk 选择，然后生成 custom patch；
-   - 最后执行 Ctrl-p 来显示 custom patch menu；
-     - Reset patch cancel the custom patch, resetting any selections you've made
-     - Apply patch Run git applywith the patch here (this won't do anything if the patch is from this commit)
-     - Apply patch in reverse Run git apply --reverse with the patch here
-     - Remove patch from original commit Removes the selected changes from this commit and discards it! (Results in rebase)
-     - Move patch into new index Removes the selected changes from this commit and adds it to the stash (Results in rebase)
-     - Move patch into new commit Removes the selected changes from this commit and adds a new commit with the changes. The commit message will be "Split from <this commit>"
+  - 和 diff panel 一样，可以对整个文件或部分 hunk 选择，然后生成 custom patch；
+  - 最后执行 Ctrl-p 来显示 custom patch menu；
+    - Reset patch cancel the custom patch, resetting any selections you've made
+    - Apply patch Run git applywith the patch here (this won't do anything if the patch is from this commit)
+    - Apply patch in reverse Run git apply --reverse with the patch here
+    - Remove patch from original commit Removes the selected changes from this commit and discards it! (Results in rebase)
+    - Move patch into new index Removes the selected changes from this commit and adds it to the stash (Results in rebase)
+    - Move patch into new commit Removes the selected changes from this commit and adds a new commit with the changes. The commit message will be "Split from <this commit>"
 - / : 按 commit hash id 或 message summary 搜索；
 
 - i：开始 interactive rebase，对要进行 rebase 的 commit 进行 squash (s), fixup (f),
-   drop (d), edit (e), move up (ctrl+i) or move down (ctrl+j)，然后使用 m 触发
-   rebase options menu，选择 continue。可以使用 v 来选择多个 commit。
+  drop (d), edit (e), move up (ctrl+i) or move down (ctrl+j)，然后使用 m 触发
+  rebase options menu，选择 continue。可以使用 v 来选择多个 commit。
 - e：编辑（edit）选中的 commit，会对该 commit 以后的 commit 进行 rebase
 
 - A: amend, 如果 files panel 中有 staged changes 则 amend 会带上。如果对历史 commit 进行
@@ -1005,7 +1070,7 @@ Commit Panel: 显示当前本地分支的 commit history list，可以进行 Squ
   将被 rebase 到其它分支），然后切换到其它 branch 执行 rebase；
 - a：Set/Reset commit author or set co-author.
 - <c-l>: 设置 commit log graph 显示选项；
-- <c-t> 	Open external diff tool (git difftool)
+- <c-t> Open external diff tool (git difftool)
 - <SPACE>: Checkout the selected commit as a detached HEAD.
 - y：Copy commit attribute to clipboard (e.g. hash, URL, diff, message, author).
 - o：Open commit in browser
@@ -1013,19 +1078,23 @@ Commit Panel: 显示当前本地分支的 commit history list，可以进行 Squ
 - g：View reset options (soft/mixed/hard) for resetting onto selected item.
 
 Push 到远程不同的分支：
+
 1. 需要本地先建一个后续 push 到远程的分支；
 2. 执行 P 来 push 到远程。
 
 Merge conflict 解决：
+
 1. 有 conflict 的文件会显示 U 字母，这时 lazygit 会显示冲突列表；
 2. 使用 j/k 来在冲突列表中移动，然后 <SPACE> 来选择某一个版本。也可以使用 e/o 打开编辑器, 来编辑解决冲突。
 3. 最后 stage 解决完冲突的文件；
 
 Cherry picking：
+
 1. 在 commit panel 中使用 C（copy cherry-pick） 选中一个或多个 commit；
 2. 然后切换或选择另一个分支，使用 V（paste cherry-pick）来生效；
 
 Stash panel：stash 将当前 worktree 的变更保存到 stash 空间，然后将 worktree 恢复到上一次 commit 的干净状态。
+
 - 使用 5 来切换到该 panel
 - 在 files tab 中使用 s 命令将 staged 或 unstaged 的内容保存到 stash；
 - <SPACE>: apply stash 但是不 popup；
@@ -1034,20 +1103,27 @@ Stash panel：stash 将当前 worktree 的变更保存到 stash 空间，然后�
 - d：delete stash entry；
 
 Interactive Rebase 操作（修改当前分支的 commit）：
-+ https://github.com/jesseduffield/lazygit/wiki/Interactive-Rebasing
+
+- https://github.com/jesseduffield/lazygit/wiki/Interactive-Rebasing
+
 1. 按 4 切换到 commit panel；
 2. 在要开始 interactive rebase 的 commit 上按 e（Edit），这时会从该 commit parent 开始
-  rebase，光标所在 commit 是 edit 状态，以后的（above）的 commit 都会被 pick 选中。
-  - 如果执行的是 i 命令，则可以对整个 commit history 的 commit 进行标记，而不是像 edit 那样
-    从标记的 commit 开始 rebase。
+   rebase，光标所在 commit 是 edit 状态，以后的（above）的 commit 都会被 pick 选中。
+
+- 如果执行的是 i 命令，则可以对整个 commit history 的 commit 进行标记，而不是像 edit 那样
+  从标记的 commit 开始 rebase。
+
 3. lazygit 提示 YOU ARE HERE，这时 git 暂停在该 commit，等待用户修改该 commit（即 edit 语义）：
-  - 可以对 above commit 进行修改，'squash（s）', 'drop（d）', 'edit（e）', 'pick（p）', and 'fixup（f）'；
+
+- 可以对 above commit 进行修改，'squash（s）', 'drop（d）', 'edit（e）', 'pick（p）', and 'fixup（f）'；
+
 4. 修改 commit：在 worktree 中修改文件，然后 stage（<SPACE>)，再 amend 该 commit (shift-A)，
    这时在 commit diff 中可以看到该修改被合并到那个 commit 中。
-4. 回到 commit panel，按 m 来触发 merge or rebase options，然后选择 continue。
-5. 然后从 edit 开始的 commit 到最新的 commit 都会被重新提交，生成新的 commit id。
+5. 回到 commit panel，按 m 来触发 merge or rebase options，然后选择 continue。
+6. 然后从 edit 开始的 commit 到最新的 commit 都会被重新提交，生成新的 commit id。
 
 Rebase onto 操作（将其它分支 commit rebase 到任意分支）：
+
 1. 在 branch panel 中选择 bugfix 分支，commit panel 中显示该分支的 commit；
 2. 在 commit panel 中选择要 Rebase 的 Base Commit，按 B，该 commit 后续（不包含该 commit）的
    commits 都会被 rebase 到后续其它分支；
@@ -1058,16 +1134,18 @@ Rebase onto 操作（将其它分支 commit rebase 到任意分支）：
 合并到该 commit 中。
 
 Bisect
+
 - Press b in the commits view to mark a commit as good/bad in order to begin a git bisect.
 
 What's the difference between git reflog and log?
-+ https://stackoverflow.com/a/17860179/19867059
 
-   git log shows the current HEAD and its ancestry. That is, it prints the commit HEAD points to, then its parent, its parent, and so on. It traverses back through the repo's ancestry, by recursively looking up each commit's parent.
+- https://stackoverflow.com/a/17860179/19867059
 
-   (In practice, some commits have more than one parent. To see a more representative log, use a command like git log --oneline --graph --decorate.)
+  git log shows the current HEAD and its ancestry. That is, it prints the commit HEAD points to, then its parent, its parent, and so on. It traverses back through the repo's ancestry, by recursively looking up each commit's parent.
 
-   git reflog doesn't traverse HEAD's ancestry at all. The reflog is an ordered list of the commits that HEAD has pointed to: it's undo history for your repo. The reflog isn't part of the repo itself (it's stored separately to the commits themselves) and isn't included in pushes, fetches or clones; it's purely local.
+  (In practice, some commits have more than one parent. To see a more representative log, use a command like git log --oneline --graph --decorate.)
+
+  git reflog doesn't traverse HEAD's ancestry at all. The reflog is an ordered list of the commits that HEAD has pointed to: it's undo history for your repo. The reflog isn't part of the repo itself (it's stored separately to the commits themselves) and isn't included in pushes, fetches or clones; it's purely local.
 
 # assistant
 
@@ -1117,15 +1195,16 @@ inline assistant 中不能使用 slash 命令，如 /file ，但是 assistant pa
 - /tab: Inserts the content of the active tab or all open tabs into the context
 - /terminal: Inserts a select number of lines of output from the terminal
 - /search: Performs semantic search for content in your project based on natural language
-    Not generally available yet, but some users may have access to it.
+  Not generally available yet, but some users may have access to it.
 - /workflow: Opts into the edit workflow for a specific context
-    Not generally available yet.
+  Not generally available yet.
 
 部分命令支持参数，如：
+
 - /diagnostics [--include-warnings] [path]
 - /file <path>
   - /file src/index.js
-  - /file src/*.js
+  - /file src/\*.js
   - /file src
 - /prompt <prompt_name>
 - /tab [tab_name|all]
@@ -1137,13 +1216,17 @@ inline assistant 中不能使用 slash 命令，如 /file ，但是 assistant pa
 # extentions
 
 extensions 可以扩展：
+
 1. theme
 2. language
-  - meta 信息，如语言名称和扩展名等；
-  - 基于 tree-sitter 的 syntax grammer highlight
-  - 提供一个或多个 language server
+
+- meta 信息，如语言名称和扩展名等；
+- 基于 tree-sitter 的 syntax grammer highlight
+- 提供一个或多个 language server
+
 3. slash command
-  - 显示在补全列表中，用户选择后执行
+
+- 显示在补全列表中，用户选择后执行
 
 extensions 默认被安装到 `~/Library/Application Support/Zed/extensions`。
 
@@ -1154,6 +1237,49 @@ extensions 使用 Rust 开发，但被编译为 WebAssembly 后被 zed 执行。
 1. [FireCrawl Zed Extension](https://github.com/notpeter/firecrawl-zed)
 2. [RFC Zed Extension](https://github.com/notpeter/rfc-zed)
 3. [安装 extension 的脚本](https://gist.github.com/srghma/1a53015ed2c26f725119b1c9dc43a3ab)
+
+# snippet
+
+snippet 按语言名称保存在 ~/.config/zed/snippets 目录中。
+
+body 字符串可以使用 \ 对 \$}" 进行转义。
+
+通过 ${1|choice1,choice2,choice3} 语法支持可选值列表提示。
+
+    ```json
+    "Log to the console": {
+      "prefix": "log",
+      "body": ["console.log($1);", "$0"],
+      "description": "Log to the console"
+    },
+    "Log warning to console": {
+      "prefix": "warn",
+      "body": ["console.warn($1);", "$0"],
+      "description": "Log warning to the console"
+    },
+    "Log error to console": {
+      "prefix": "error",
+      "body": ["console.error($1);", "$0"],
+      "description": "Log error to the console"
+    },
+    "Throw Exception": {
+      "prefix": "throw",
+      "body": ["throw new Error(\"$1\");", "$0"],
+      "description": "Throw Exception"
+    }
+    "my snippet": {
+        "prefix": "log",
+        "body": ["type ${1|i32, u32|} = $2"],
+        "description": "Expand `log` to `console.log()`"
+    },
+    "my snippet2": {
+        "prefix": "snip",
+        "body": [
+          "type ${1|i,i8,i16,i64,i32|} ${2|test,test_again,test_final|} = $3"
+        ],
+        "description": "snippet choice tester"
+      }
+    ```
 
 # markdown
 
@@ -1166,22 +1292,22 @@ bash/shell code block 需要使用 sh 语言简称, 这样 markdown 才能正确
 
 执行 `debug: open theme preview` 命令预览当前主题的配色。
 
-# 其它
+zed 各主题预览：https://zed-themes.com/?order=recent
 
-配置 `"show_whitespaces": "selection"` 后，显示选择区域中的空格。
+几款高质量主题：
 
-show_completions_on_input vs show_inline_completions：前者是 LSP 代码补全，后者是大模型补全。
+1. https://github.com/catppuccin/zed
+2. 内置的 Gruvbox Dark Hard
 
-字体：默认使用的是 https://github.com/zed-industries/zed-fonts/tree/zed-plex 字体，需要手动下载安装。zed plex font 的主要特点是缩小了字体间距，UI 显示的更紧凑。
-
-# remote ssh
+# remote
 
 安装 docker desktop。
 
 清理 ~/.docker/config.json 和 ~/.docker/daemon.json 中的旧配置。
 
 安装 SOCKS5 转 HTTP 代理：
-``` sh
+
+```sh
 zj@a:~/go/src/github.com/zed-industries/zed$ pip3 install pproxy
 zj@a:~/go/src/github.com/zed-industries/zed$ pproxy -r socks5://127.0.0.1:1080 -vv
 Serving on ipv? 0.0.0.0:8080 by http,socks4,socks5
@@ -1190,12 +1316,13 @@ Serving on ipv? :::8080 by http,socks4,socks5
 ```
 
 配置 docker-desktop 使用 HTTP 代理：
+
 1. 配置使用 Host Network 类型；
 1. 配置 HTTP 和 HTTPS 代理均为 https://127.0.0.1:8080
 
 切换到 zed 项目源码目录，启动 zed：
 
-``` sh
+```sh
 zj@a:~/.config/zed$ cd
 zj@a:~$ cd go/src/github.com/zed-industries/zed
 zj@a:~/go/src/github.com/zed-industries/zed$  RUST_LOG=debug /Applications/Zed\ Dev.app/Contents/MacOS/zed
@@ -1204,15 +1331,15 @@ zj@a:~/go/src/github.com/zed-industries/zed$  RUST_LOG=debug /Applications/Zed\ 
 使用 `projects: open remote` 创建一个 SSH 连接，zed 会自动安装 cross 来为 ssh server 交叉编译一个
 zed binary 并上传。
 
-``` sh
+```sh
 zj@a:~/go/src/github.com/zed-industries/zed$ docker ps -a
 CONTAINER ID   IMAGE                                                                 COMMAND                     CREATED         STATUS          PORTS     NAMES
 c5e53ec7bee9   localhost/cross-rs/cross-custom-zed:aarch64-unknown-linux-gnu-8d728   "sh -c 'PATH=\"$PATH\"…"   3 minutes ago   Up 3 minutes              cross-1.81-x86_64-unknown-linux-gnu-38948-eeb90cda1-aarch64-unknown-linux-gnu-8d728-1730176669812
 ```
 
-然后登录目标服务器，可见本地的 zed 向它上传了一个本地交叉编译生成的 zed-remote-server-dev-linux--aarch64  二进制并运行：
+然后登录目标服务器，可见本地的 zed 向它上传了一个本地交叉编译生成的 zed-remote-server-dev-linux--aarch64 二进制并运行：
 
-``` sh
+```sh
 alizj@lima-dev2:~$ ps -eH -opid,args |grep zed
   54801           grep --color=auto zed
   54534         .zed_server/zed-remote-server-dev-linux-aarch64 proxy --identifier dev-workspace-176
@@ -1222,7 +1349,7 @@ alizj@lima-dev2:~$ ps -eH -opid,args |grep zed
 
 同时 zed 在目标服务器上创建和保存了如下文件和目录：
 
-``` sh
+```sh
 alizj@lima-dev2:~$ ./.zed_server/zed-remote-server-dev-linux-aarch64 version
 0.160.0
 alizj@lima-dev2:~$ ls ~/.config/zed/
@@ -1242,6 +1369,7 @@ json-language-server
 ```
 
 也可以使用命令行打开 zed remote ssh：
+
 - 协议链接：zed://ssh/<connnection>/<path>
 - zed 命令：zed ssh://my-host/~/code/zed
 
@@ -1265,31 +1393,32 @@ json-language-server
 
 2. 按键问题
 
-  - "ctrl-cmd-d": "editor::DeleteToPreviousWordStart", // 不生效
-  - "cmd-q": "editor::Rewrap", // 自动折行，有问题，折行的长度不对。
+- "ctrl-cmd-d": "editor::DeleteToPreviousWordStart", // 不生效
+- "cmd-q": "editor::Rewrap", // 自动折行，有问题，折行的长度不对。
 
 3. 本地交叉编译 remote_server 报错
 
-    [2024-10-29T17:14:42+08:00 DEBUG worktree] ignoring event "target/remote_server/debug/incremental/build_script_build-34db12mrzjok5/s-h1avtiisg8-0xfewcx-working" within unloaded directory
-    error: linking with `aarch64-linux-gnu-gcc` failed: exit status: 1
-      |
-      = note: LC_ALL="C" PATH="/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin:/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin:/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/bin" VSLANG="1033" "aarch64-linux-gnu-gcc" "-Wl,--version-script=/tmp/rustc36YcCI/list" "-Wl,--no-undefined-version" "/tmp/rustc36YcCI/symbols.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.00.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.01.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.02.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.03.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.04.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.05.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.06.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.07.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.08.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.09.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.10.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.11.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.12.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.13.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.14.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.15.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.bmqrrknlrqqnfika44j5n5qxv.rcgu.o" "-Wl,--as-needed" "-L" "/target/aarch64-unknown-linux-gnu/debug/deps" "-L" "/target/debug/deps" "-L" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib" "-Wl,-Bstatic" "/target/aarch64-unknown-linux-gnu/debug/deps/libzune_core-1888dc448ab93c4b.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libstd-2bf0b2a5e0a60917.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libpanic_unwind-0af01d78b15f6872.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libobject-aa90d1efd19541cb.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libmemchr-6645a3a6124c47a1.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libaddr2line-3de13e717f4d9e74.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libgimli-f50e3ac5e8bc32ca.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/librustc_demangle-f84a4f82a7a57e94.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libstd_detect-bd992eebc2a12fc4.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libhashbrown-c9882005b74b1193.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/librustc_std_workspace_alloc-b18e8234ebc582c8.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libminiz_oxide-79ef105ee0e8243e.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libadler-652182712f7d3bc4.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libunwind-6cb747324af00512.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libcfg_if-740a433abf104d06.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/liblibc-1e2f311c277b60cf.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/liballoc-85299feea58ac1e7.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/librustc_std_workspace_core-2a73a86214747017.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libcore-29cdff63f523de0d.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libcompiler_builtins-405c9891256dbf91.rlib" "-Wl,-Bdynamic" "-lgcc_s" "-lutil" "-lrt" "-lpthread" "-lm" "-ldl" "-lc" "-Wl,--eh-frame-hdr" "-Wl,-z,noexecstack" "-L" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib" "-o" "/target/aarch64-unknown-linux-gnu/debug/deps/libzune_jpeg-d98812c935e11704.so" "-Wl,--gc-sections" "-shared" "-Wl,-soname=libzune_jpeg-d98812c935e11704.so" "-Wl,-z,relro,-z,now" "-nodefaultlibs" "-fuse-ld=mold"
-      = note: aarch64-linux-gnu-gcc: error: unrecognized command line option '-fuse-ld=mold'; did you mean '-fuse-ld=gold'?
+   [2024-10-29T17:14:42+08:00 DEBUG worktree] ignoring event "target/remote_server/debug/incremental/build_script_build-34db12mrzjok5/s-h1avtiisg8-0xfewcx-working" within unloaded directory
+   error: linking with `aarch64-linux-gnu-gcc` failed: exit status: 1
+   |
+   = note: LC_ALL="C" PATH="/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin:/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin:/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/bin" VSLANG="1033" "aarch64-linux-gnu-gcc" "-Wl,--version-script=/tmp/rustc36YcCI/list" "-Wl,--no-undefined-version" "/tmp/rustc36YcCI/symbols.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.00.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.01.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.02.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.03.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.04.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.05.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.06.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.07.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.08.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.09.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.10.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.11.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.12.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.13.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.14.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.15.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.bmqrrknlrqqnfika44j5n5qxv.rcgu.o" "-Wl,--as-needed" "-L" "/target/aarch64-unknown-linux-gnu/debug/deps" "-L" "/target/debug/deps" "-L" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib" "-Wl,-Bstatic" "/target/aarch64-unknown-linux-gnu/debug/deps/libzune_core-1888dc448ab93c4b.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libstd-2bf0b2a5e0a60917.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libpanic_unwind-0af01d78b15f6872.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libobject-aa90d1efd19541cb.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libmemchr-6645a3a6124c47a1.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libaddr2line-3de13e717f4d9e74.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libgimli-f50e3ac5e8bc32ca.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/librustc_demangle-f84a4f82a7a57e94.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libstd_detect-bd992eebc2a12fc4.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libhashbrown-c9882005b74b1193.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/librustc_std_workspace_alloc-b18e8234ebc582c8.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libminiz_oxide-79ef105ee0e8243e.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libadler-652182712f7d3bc4.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libunwind-6cb747324af00512.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libcfg_if-740a433abf104d06.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/liblibc-1e2f311c277b60cf.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/liballoc-85299feea58ac1e7.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/librustc_std_workspace_core-2a73a86214747017.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libcore-29cdff63f523de0d.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libcompiler_builtins-405c9891256dbf91.rlib" "-Wl,-Bdynamic" "-lgcc_s" "-lutil" "-lrt" "-lpthread" "-lm" "-ldl" "-lc" "-Wl,--eh-frame-hdr" "-Wl,-z,noexecstack" "-L" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib" "-o" "/target/aarch64-unknown-linux-gnu/debug/deps/libzune_jpeg-d98812c935e11704.so" "-Wl,--gc-sections" "-shared" "-Wl,-soname=libzune_jpeg-d98812c935e11704.so" "-Wl,-z,relro,-z,now" "-nodefaultlibs" "-fuse-ld=mold"
+   = note: aarch64-linux-gnu-gcc: error: unrecognized command line option '-fuse-ld=mold'; did you mean '-fuse-ld=gold'?
 
-      解决办法：
-      1. 下载 mold 包，并解压到 /usr/local
-      2. 修改 .cargo/config.toml，使用 "link-arg=-B/usr/local/libexec/mold"，
+   解决办法：
+
+   1. 下载 mold 包，并解压到 /usr/local
+   2. 修改 .cargo/config.toml，使用 "link-arg=-B/usr/local/libexec/mold"，
       https://github.com/zed-industries/zed/pull/19910, 该目录下的 ld 是 mold 的软链接，这样 gcc 在使用 ld 时实际使用的是 old。
 
-      https://gitlab.kitware.com/cmake/cmake/-/issues/25748
+   https://gitlab.kitware.com/cmake/cmake/-/issues/25748
 
-      zj@a:~/go/src/github.com/zed-industries/zed$ docker run -it localhost/cross-rs/cross-custom-zed:aarch64-unknown-linux-gnu-8d728 bash
+   zj@a:~/go/src/github.com/zed-industries/zed$ docker run -it localhost/cross-rs/cross-custom-zed:aarch64-unknown-linux-gnu-8d728 bash
 
-      root@b4fce23c85a8:/app# aarch64-linux-gnu-gcc --version
-      aarch64-linux-gnu-gcc (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0
-      Copyright (C) 2019 Free Software Foundation, Inc.
-      This is free software; see the source for copying conditions.  There is NO
-      warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+   root@b4fce23c85a8:/app# aarch64-linux-gnu-gcc --version
+   aarch64-linux-gnu-gcc (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0
+   Copyright (C) 2019 Free Software Foundation, Inc.
+   This is free software; see the source for copying conditions. There is NO
+   warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
-      root@b4fce23c85a8:/app# which mold
-      /usr/local/bin/mold
+   root@b4fce23c85a8:/app# which mold
+   /usr/local/bin/mold
