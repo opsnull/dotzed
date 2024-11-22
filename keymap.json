@@ -14,15 +14,6 @@
 // 不使用 Macos 全局快捷键，如输入法切换等。
 //
 // 使用 > 来定义嵌套 context，父子 context 是直接的关系，使用 debug: open key contex view 命令来查看。
-//
-// Context 优先级：
-// 1. Editor > Pane > Workspace > Global
-// 2. Terminal > Pane > Workspace > Global
-// 3. BufferSearch Editor > Editor > BufferSearch Bar > Pane > Workspace > Global
-// 4. ProjectSearch Editor > Editor > ProjectSearch Bar > Pane > Workspace > Global
-// 5. OutlinePanel > Workspace > Global
-// 6. ProjectPanel > Workspace > Global
-//
 [
   {
     // Global context - 最低优先级
@@ -56,7 +47,6 @@
       "ctrl-x ctrl-w": "workspace::SaveAs",
       "ctrl-x ctrl-n": "workspace::NewFile",
       "ctrl-x 4 b": "workspace::NewFile",
-      "cmd-t": "workspace::NewFile",
 
       /// 命令和工具
       "ctrl-x p b": "branches::OpenRecent",
@@ -68,7 +58,9 @@
       "ctrl-x b": "tab_switcher::Toggle",
       "ctrl-x ctrl-c": "zed::Quit",
       "ctrl-x ctrl-r": "editor::RevealInFileManager",
-      "cmd-x": "command_palette::Toggle"
+      "ctrl-x ctrl-cmd-r": "workspace::OpenInTerminal",
+      "cmd-x": "command_palette::Toggle",
+      "ctrl-h k": "debug::OpenKeyContextView"
     }
   },
   {
@@ -94,32 +86,28 @@
       "ctrl-9": ["pane::ActivateItem", 8],
 
       /// 根据导航历史移动(高频操作）
-      "cmd-p": "pane::GoBack",
-      "cmd-n": "pane::GoForward",
       "cmd-,": "pane::GoBack",
       "ctrl-cmd-,": "pane::GoForward",
 
       // 根据选择历史移动
-      "ctrl-u ctrl-space": "editor::UndoSelection",
-      "ctrl-,": "editor::UndoSelection",
-      "ctrl-u ctrl-cmd-space": "editor::RedoSelection",
-      "ctrl-.": "editor::RedoSelection",
+      "ctrl-.": "editor::UndoSelection",
+      "ctrl-cmd-.": "editor::RedoSelection",
 
       /// Pane 操作
       "cmd-o": "workspace::ActivateNextPane",
       "ctrl-x o": "workspace::ActivateNextPane",
-      "cmd-shift-o": "workspace::ActivatePreviousPane",
+      "ctrl-cmd-o": "workspace::ActivatePreviousPane",
       "ctrl-x k": "pane::CloseActiveItem",
-      "ctrl-x 0": "pane::CloseActiveItem",
       "cmd-0": "pane::CloseActiveItem",
+      "ctrl-x 0": "pane::CloseActiveItem",
       "ctrl-x 1": "workspace::ToggleZoom",
       "ctrl-x 2": "pane::SplitDown",
       "ctrl-x 3": "pane::SplitRight",
-      "ctrl-x t r": "pane::ReopenClosedItem",
+      "cmd-t": "workspace::NewFile",
       "cmd-shift-t": "pane::ReopenClosedItem",
+      "ctrl-x t r": "pane::ReopenClosedItem",
       "ctrl-x t p": "pane::RevealInProjectPanel",
       "ctrl-x t 0": "pane::CloseInactiveItems",
-      "ctrl-x t l": "pane::ActivateItem",
       "ctrl-x ctrl-=": "zed::IncreaseBufferFontSize",
       "ctrl-x ctrl--": "zed::DecreaseBufferFontSize",
       "ctrl-x ctrl-0": "zed::ResetBufferFontSize"
@@ -191,15 +179,13 @@
       "cmd-@": "editor::SelectEnclosingSymbol",
 
       /// 多光标操作
-      "ctrl-c ctrl-p": "editor::AddSelectionAbove",
-      "ctrl-c ctrl-n": "editor::AddSelectionBelow",
+      "ctrl-cmd-p": "editor::AddSelectionAbove",
+      "ctrl-cmd-n": "editor::AddSelectionBelow",
 
       /// 剪切和粘贴
       "ctrl-w": "editor::Cut",
       "cmd-w": "editor::Copy",
       "ctrl-y": "editor::Paste",
-
-      "ctrl-h k": "debug::OpenKeyContextView",
 
       /// 删除操作
       "backspace": "editor::Backspace",
@@ -224,7 +210,7 @@
       "cmd-down": "editor::MoveLineDown",
       "ctrl-cmd-l": "editor::DuplicateLineUp",
       "cmd-^": "editor::JoinLines",
-      "cmd-g g": "go_to_line::Toggle",
+      "cmd-g cmd-g": "go_to_line::Toggle",
 
       /// 撤销和重做
       "ctrl-/": "editor::Undo",
@@ -236,14 +222,14 @@
       "ctrl-cmd-s": "pane::DeploySearch",
 
       // 显式项目大纲
-      "cmd-g o": "outline::Toggle",
-      "cmd-g cmd-o": "project_symbols::Toggle",
+      "ctrl-o": "outline::Toggle",
+      "ctrl-cmd-o": "project_symbols::Toggle",
 
       /// 代码开发功能
       "ctrl-\\": "editor::ShowCompletions",
       "ctrl-c ctrl-h": "editor::ToggleInlayHints",
       "ctrl-c ctrl-a": "editor::ToggleCodeActions",
-      "ctrl-c ctrl-d": "editor::Hover",
+      "ctrl-c ctrl-i": "editor::Hover",
       "ctrl-c ctrl-s": "editor::ShowSignatureHelp",
       "ctrl-c ctrl-r": "editor::Rename",
       // 在浏览器打开符号文档（如果使用 cargo doc 生成本地文档，则打开本地文档）。
@@ -251,14 +237,18 @@
       "ctrl-c d s": ["task::Spawn", { "task_name": "open-rust-std-doc" }],
       "ctrl-c d w": ["task::Spawn", { "task_name": "open-rust-docs-rs" }],
       "ctrl-c d p": ["task::Spawn", { "task_name": "open-rust-crates-io" }],
-      "cmd-g e": "diagnostics::Deploy",
-      "cmd-g l": "diagnostics::Deploy",
-      "cmd-g n": "editor::GoToDiagnostic",
-      "cmd-g p": "editor::GoToPrevDiagnostic",
+      "ctrl-c ctrl-e": "diagnostics::Deploy",
+      "ctrl-c ctrl-l": "diagnostics::Deploy",
+      "ctrl-c ctrl-n": "editor::GoToDiagnostic",
+      "ctrl-c ctrl-p": "editor::GoToPrevDiagnostic",
 
       // 根据 git 变更移动
-      "ctrl-c g n": "editor::GoToHunk",
-      "ctrl-c g p": "editor::GoToPrevHunk",
+      "ctrl-c ctrl-j": "editor::GoToHunk",
+      "ctrl-c ctrl-k": "editor::GoToPrevHunk",
+
+      "ctrl-cmd-\\": "editor::RevertSelectedHunks",
+      "ctrl-c ctrl-d": "editor::ToggleHunkDiff",
+      "ctrl-c ctrl-shift-d": "editor::ExpandAllHunkDiffs",
 
       // xref
       "cmd-.": "editor::GoToDefinition",
@@ -277,13 +267,13 @@
 
       /// 折叠
       "cmd-q": "editor::Rewrap",
-      "ctrl-c f t": "editor::ToggleFold",
-      "ctrl-c f u": "editor::UnfoldAll",
-      "ctrl-c f 1": ["editor::FoldAtLevel", { "level": 1 }],
-      "ctrl-c f 2": ["editor::FoldAtLevel", { "level": 2 }],
-      "ctrl-c f 3": ["editor::FoldAtLevel", { "level": 3 }],
-      "ctrl-c f 4": ["editor::FoldAtLevel", { "level": 4 }],
-      "ctrl-c f 5": ["editor::FoldAtLevel", { "level": 5 }]
+      "ctrl-c ctrl-t": "editor::ToggleFold",
+      "ctrl-c ctrl-u": "editor::UnfoldAll",
+      "ctrl-c ctrl-1": ["editor::FoldAtLevel", { "level": 1 }],
+      "ctrl-c ctrl-2": ["editor::FoldAtLevel", { "level": 2 }],
+      "ctrl-c ctrl-3": ["editor::FoldAtLevel", { "level": 3 }],
+      "ctrl-c ctrl-4": ["editor::FoldAtLevel", { "level": 4 }],
+      "ctrl-c ctrl-5": ["editor::FoldAtLevel", { "level": 5 }]
     }
   },
   {
@@ -344,15 +334,17 @@
     }
   },
   {
-    // 重命名
     "context": "Editor && renaming",
     "bindings": {
       "enter": "editor::ConfirmRename"
     }
   },
   {
-    "context": "Pane || EmptyPane",
-    "bindings": {}
+    //  完成的 task
+    "context": "Pane > EmptyPane",
+    "bindings": {
+      "q": "pane::CloseActiveItem"
+    }
   },
   {
     "context": "Workspace && !Terminal",
@@ -463,8 +455,8 @@
   {
     // 大纲面板。
     // 加 not_editing 条件可以避免 rename 编辑时不能输入单字母绑定的按键。
-    // 第一次打开大纲面板时焦点位于 Filter 输入框中，可以按 ctrl-n/p 等选择。
-    // 如果要使用单大写字母，如 N，需要使用 shift-n 而非 N。
+    // 第一次打开大纲面板时焦点位于 Filter 输入框中，可以按 ctrl-n/p 来切换到 not_editing 模式。
+    // 如果要使用单大写字母，如 N，需要使用 shift-n 绑定。
     "context": "OutlinePanel && not_editing",
     "bindings": {
       "escape": "menu::Cancel",
@@ -579,7 +571,7 @@
     }
   },
   {
-    // AI上下文编辑
+    // AI 上下文编辑
     "context": "ContextEditor > Editor",
     "bindings": {
       // 发送问题
@@ -612,6 +604,14 @@
       "cmd-n": "prompt_library::NewPrompt",
       "cmd-shift-s": "prompt_library::ToggleDefaultPrompt",
       "cmd-w": "workspace::CloseWindow"
+    }
+  },
+  {
+    "context": "TabSwitcher",
+    "bindings": {
+      "ctrl-p": "menu::SelectPrev",
+      "ctrl-n": "menu::SelectNext",
+      "ctrl-k": "tab_switcher::CloseSelectedItem"
     }
   },
   {
@@ -649,6 +649,13 @@
       "cmd->": "terminal::ScrollToBottom",
       // AI inline 补全
       "ctrl-enter": "assistant::InlineAssist"
+    }
+  },
+  {
+    // 不带 bracketed_paste 属性终端，如 Task 任务。
+    "context": "Terminal && !bracketed_paste",
+    "bindings": {
+      "q": "pane::CloseActiveItem"
     }
   },
   {

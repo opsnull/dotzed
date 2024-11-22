@@ -59,23 +59,23 @@ Caused by:
 
 修改 /Users/alizj/.cargo/git/checkouts/rust-sdks-e9c3cb1fc511908e/4262308/webrtc-sys/build/Cargo.toml，使用 0.12 版本，并且添加 socks features：
 
-    ``` toml
+    ```toml
     [dependencies]
     reqwest = { version = "0.12", default-features = false, features = ["rustls-tls-native-roots", "blocking", "socks"] }
     ```
 
 修改 /Users/alizj/.cargo/git/checkouts/rust-sdks-e9c3cb1fc511908e/4262308/webrtc-sys/build/src/lib.rs 中的 reqwest get 方法，使用 socks5 proxy。
 
-    ``` rust
-    let mut client = reqwest::blocking::ClientBuilder::new()
-        .proxy(reqwest::Proxy::all("socks5h://127.0.0.1:1080")?)
-        .build()?;
-    let mut resp = client.execute(client.get(download_url()).build()?)?;
-    //let mut resp = reqwest::blocking::get(download_url())?;
-    if resp.status() != StatusCode::OK {
-        return Err(format!("failed to download webrtc: {}", resp.status()).into());
-    }
-    ```
+```rust
+let mut client = reqwest::blocking::ClientBuilder::new()
+    .proxy(reqwest::Proxy::all("socks5h://127.0.0.1:1080")?)
+    .build()?;
+let mut resp = client.execute(client.get(download_url()).build()?)?;
+//let mut resp = reqwest::blocking::get(download_url())?;
+if resp.status() != StatusCode::OK {
+    return Err(format!("failed to download webrtc: {}", resp.status()).into());
+}
+```
 
 解决 mac bundle 构建报错：
 
@@ -255,7 +255,12 @@ pane 有自己的 tool bar 和导航 history（前进、后退）。光标在 Pa
 # editing
 
 zed 打开系统文件对话框后，按 Command-Shift-g 可以按照文件路径来打开。也可以在终
-端使用 `zed cli` 来按照文件路径打开文 件。
+端使用 `zed cli` 来按照文件路径打开文件。
+
+使用 tab switcher 可以快速在当前已经打开的文件间切换，而且默认选择上一次打开的文件。
++ 最便捷的多文件编辑时切换机制；
+
+在终端中快速打开当前 pane item 对应的目录：workspace::OpenInTerminal
 
 在 editor 或 terminal buffer 中，当光标位于 URL (需要带 http 或 https 前缀)或
 File Path 上时， 可以按 cmd 来快速打开。
@@ -357,6 +362,28 @@ project 搜索）、Reference 窗口、诊断窗口的结构化显示。包含�
 
 outline panel 支持多种快捷操作（Actions），如目录的展开和合并，跳转到上一级，在
 Finder 中打开文件等。
+
+关闭在 outline-panel 显示 markdown、org-mode 中代码块的功能：
+
+1. org-mode：
+``` sh
+zj@a:~/Library/Application Support/Zed/extensions/installed/org/languages/org$ cat injections.scm
+;(block . name: (expr) parameter: (expr) @language (contents) @content)
+```
+
+2. markdown
+
+``` sh
+zj@a:~/go/src/github.com/zed-industries/zed$ git diff crates/languages/src/markdown/injections.scm
+crates/languages/src/markdown/injections.scm --- Text (4 Scheme parse errors, exceeded DFT_PARSE_ERROR_LIMIT)
+1 (fenced_code_block                                             1 ;(fenced_code_block
+2   (info_string                                                 2 ;  (info_string
+3     (language) @language)                                      3 ;    (language) @language)
+4   (code_fence_content) @content)                               4 ;  (code_fence_content) @content)
+5                                                                5
+6 ((inline) @content                                             6 ((inline) @content
+7  (#set! "language" "markdown-inline"))                         7  (#set! "language" "markdown-inline"))
+```
 
 # multibuffer
 

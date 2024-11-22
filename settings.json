@@ -1,10 +1,12 @@
 {
+  //  默认是 One Dark 和 One Light theme。
   "theme": "Gruvbox Dark Hard",
   // 不使用缺省的 keymap，只使用自定义 keymap。
   "base_keymap": "None",
   // open 和 save as 使用 zed 内置的文件选择，更高效。
   "use_system_path_prompts": false,
   "assistant": {
+    "show_hints": false,
     "default_model": {
       "provider": "zed.dev",
       "model": "claude-3-5-sonnet-latest"
@@ -102,7 +104,6 @@
   "collaboration_panel": {
     "button": false
   },
-  //   "active_pane_magnification": 1,
   "vim_mode": false,
   //   "default_dock_anchor": "expanded",
   "tabs": {
@@ -199,6 +200,7 @@
     "**/vendor", // go
     "**/pkg/mod"
   ],
+  // 包含被 git 忽略的文件目录，但是可以被 file_scan_exclusions 重载。
   "file_scan_inclusions": [".env*", "docker-compose.*.yml"],
   "file_types": {
     "JSONC": [
@@ -321,26 +323,16 @@
         "arguments": []
       },
       "initialization_options": {
-        // server.extraEnv 只是 vs-code 支持，zed 不支持。
-        // "server": {
-        //   "extraEnv": {
-        //     "RA_LOG": "info"
-        //   }
-        // },
         // cargo fmt 的很多特性依赖于 +nightly toolchain。
         "rustfmt": {
           "extraArgs": ["+nightly"]
         },
-        // proc-macro-srv 必须要和 toolchain 版本一致，否则会报 ABI 兼容性问题。
-        // "procMacro": {
-        //   "server": "/Users/alizj/.cargo/bin/rust-analyzer-proc-macro-srv"
+        // // 从 rust-analyzer 获得更多的诊断信息（因为后续关闭了 cargo check 检查）。
+        // "diagnostics": {
+        //   "experimental": {
+        //     "enable": true
+        //   }
         // },
-        // 从 rust-analyzer 获得更多的诊断信息（因为后续关闭了cargo check 检查）。
-        "diagnostics": {
-          "experimental": {
-            "enable": false
-          }
-        },
         "files": {
           "excludeDirs": ["/Users/alizj/.cargo", "/Users/alizj/.rustup"]
         },
@@ -349,22 +341,19 @@
             "enable": true
           }
         },
-        // 关闭 checkOnSave 后，rust-analyzer 将不再运行 cargo check 命令，而只运行
-        //  rust-analyzer 自身的检查。下面的 check、cargo 配置都将失效。
-        // 如果想运行默认的检查，可以执行 zed 自动为 rust 项目生成的 task：
-        // argo check --workspace --all-targets
-        "checkOnSave": false,
-        // 默认 cargo check --workspace --all-targets 影响性能，关闭 --workspace
-        // 和 --all-targets。
+        // 关闭 checkOnSave 后，rust-analyzer 不运行 cargo check 命令，而只运行 rust-analyzer 自身的检查（非常受限）, 这会 导致 大
+        // 部分错误都检查不出来。下面的 check、cargo 配置都将失效。
+        //
+        // 如果想运行 cargo check 检查，只能手动运行自动生成的 task： argo check --workspace --all-targets 然后在 task
+        // terminal 中查看结果（不会在线显示）。
+        "checkOnSave": true,
+        // 默认 cargo check --workspace --all-targets 影响性能，关闭 --workspace 和 --all-targets。
         "check": {
           "command": "clippy", // cargo check 使用 clippy
           "workspace": false
         },
         "cargo": {
-          "allTargets": false,
-          "extraEnv": {
-            //"RA_LOG": "info" //  对于 RA 无效，因为它不是 cargo 启动的。
-          }
+          "allTargets": false
         }
         //"linkedProjects": ["./path/to/a/Cargo.toml", "./path/to/b/Cargo.toml"]
       }
