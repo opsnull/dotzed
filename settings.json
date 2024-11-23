@@ -1,6 +1,10 @@
 {
-  //  默认是 One Dark 和 One Light theme。
-  "theme": "Gruvbox Dark Hard",
+  // 默认是 One Dark 和 One Light theme。
+  "theme": {
+    "dark": "Gruvbox Dark Hard",
+    "light": "Gruvbox Light Hard",
+    "mode": "system"
+  },
   // 不使用缺省的 keymap，只使用自定义 keymap。
   "base_keymap": "None",
   // open 和 save as 使用 zed 内置的文件选择，更高效。
@@ -25,11 +29,12 @@
     "hour_format": "hour24",
     "path": "~/docs"
   },
-  // 关闭全局 soft wrap, 在 languages 中按语言开启（如 markdown 默认开启）。
-  "soft_wrap": "none",
-  "preferred_line_length": 90,
+  // 根据 preferred_line_length 或当前 editor 的宽度来自动“软”换行。
+  // 软换行：视觉上换行，但是实际文本并没有插入换行字符。
+  "soft_wrap": "bounded",
+  "preferred_line_length": 120,
   // 在列表中的各宽度位置显示 guide line。
-  //"wrap_guides": [90, 120],
+  "wrap_guides": [90, 120],
   "indent_guides": {
     "coloring": "fixed"
   },
@@ -43,26 +48,25 @@
   },
   "confirm_quit": true,
   "cursor_shape": "bar",
-  // 使用基于 Isoveka 的中英文编程字体，字体偏小。
-  "buffer_font_family": "Sarasa Mono SC",
+  // Sarasa Mono SC 是基于 Isoveka 的中英文编程字体，字体偏小。
+  //"buffer_font_family": "Sarasa Mono SC",
   "buffer_font_size": 16,
-  // 减小 UI 元素的字体大小，这样留更多空间给编辑区。
   "ui_font_size": 18,
   // comfortable 是 1.618 倍行距，便于阅读。
   "buffer_line_height": "comfortable",
   "buffer_font_features": {
-    // 关闭 ligatures
+    // calt 指 ligatures
     "calt": false
   },
   // 在 multibuffer 中双击: 打开文件。
   "double_click_in_multibuffer": "open",
   "gutter": {
     // 是否显示 line number。
-    "line_numbers": false,
+    "line_numbers": true,
     // 关闭一些不常用的功能，节省左侧空间。
     "code_actions": false,
     "runnables": false,
-    "folds": false
+    "folds": true
   },
   "hard_tabs": false,
   "formatter": "auto",
@@ -77,7 +81,7 @@
   "current_line_highlight": "all",
   "auto_signature_help": true,
   "hover_popover_enabled": true,
-  "scroll_sensitivity": 0.6,
+  "scroll_sensitivity": 0.3,
   // 空闲超过指定时间后自动保存。
   "autosave": { "after_delay": { "milliseconds": 5000 } },
   "inlay_hints": {
@@ -127,8 +131,8 @@
   },
   "scrollbar": {
     "show": "auto",
-    // 不高亮显示 git diff
-    "git_diff": false
+    // 高亮显示 git diff
+    "git_diff": true
   },
   // preview tabs: 在一个公共 tab 中自动切换显示多个文件，避免打开过多 tab。
   "preview_tabs": {
@@ -141,7 +145,7 @@
     "modal_width": "medium"
   },
   "terminal": {
-    // Monaco 和 Noto Sans Mono 字体显示终端图形字符时更清晰
+    // 使用更紧凑的 Sarasa Term SC 字体。
     "font_family": "Sarasa Term SC",
     "font_size": 16,
     // zed 给 task 追加的环境变量，不支持 shell 变量替换。
@@ -171,8 +175,8 @@
   },
   "proxy": "socks5h://127.0.0.1:1080",
   "git": {
-    // git gutter 已经在 side scroll 中显式，故关闭，节省左侧空间。
-    "git_gutter": "hide",
+    // 在最左侧显示 git gutter。
+    "git_gutter": "tracked_files",
     "inline_blame": {
       "enabled": true,
       "delay_ms": 5000,
@@ -220,16 +224,16 @@
       "language_servers": ["pyright", "!pylsp"]
     },
     "Org": {
-      "tab_size": 2,
+      "tab_size": 2
       // "formatter": "prettier", // 不支持 org
-      "preferred_line_length": 110,
-      "soft_wrap": "preferred_line_length"
+      //"preferred_line_length": 110,
+      //"soft_wrap": "preferred_line_length"
     },
     "Markdown": {
       "tab_size": 2,
-      "formatter": "prettier",
-      "preferred_line_length": 110,
-      "soft_wrap": "preferred_line_length"
+      "formatter": "prettier"
+      //"preferred_line_length": 110,
+      //"soft_wrap": "preferred_line_length"
     },
     "TOML": {
       "formatter": "prettier",

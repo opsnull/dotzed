@@ -28,7 +28,7 @@ index bc95e1dd6a..a20fd09268 100755
 
 ## 修改程序名称
 
-修改 `crates/zed/Cargo.toml` 文件中 [package.metadata.bundle-dev] 中 name，由 "Zed Dev" 修改为 "Dev".
+修改 `crates/zed/Cargo.toml` 文件中 `[package.metadata.bundle-dev]` 中 name，由 "Zed Dev" 修改为 "Dev".
 
 # launch
 
@@ -51,8 +51,7 @@ $ RUST_LOG=debug /Applications/Zed\ Dev.app/Contents/MacOS/zed
 
 可以通过 Zed 菜单 “Install CLI” 来安装 zed 命令行工具命令 zed：
 
-每次编译 zed 后，都会生成 cli 和 zed 两个 binary，并打包到 Mac 应用中，需要执行上面菜单中的
-"Install CLI" 命令来更新 zed cli binary。
+每次编译 zed 后，都会生成 cli 和 zed 两个 binary，并打包到 Mac 应用中，需要执行上面菜单中的 "Install CLI" 命令来更新 zed cli binary。
 
 ```sh
 zj@a:~$ which zed
@@ -69,31 +68,17 @@ $ zed -a ~/emacs/minimal.el # 在当前 workspace 中打开文件，同时将文
 $ zed -a ~/emacs # 将目录添加到 workspace
 ```
 
-## zed 获得环境变量
-
+zed 获得环境变量的方式：
 1. 命令行 zed 启动, 继承命令行环境变量;
 2. 通过 dock 启动, 先切换到 HOME 目录 spawn 一个 login shell 来获得用户环境变量, 然后被所有 zed 窗口继承;
 
-zed 打开 project 时, 会使用 direnv/editorconfig 等机制来获得项目相关的环境变量, 并被项目的
-task/lsp/terminal 继承。
-
-本地安装的扩展、LSP Server、Remote binary 等位于 ~/Library/Application\ Support/Zed/
-目录下：
-
-```sh
-$ ls ~/Library/Application\ Support/Zed/
-copilot/  db/  docs/  extensions/  languages/  node/  prettier/  remote_servers/
-
-$ ls ~/Library/Application\ Support/Zed/languages/
-eslint/  json-language-server/  package-version-server/  pyright/  rust-analyzer/  tailwindcss-language-server/  vscode-css-language-server/  vtsls/  yaml-language-server/
-```
+zed 打开 project 时, 会使用 direnv/editorconfig 等机制来获得项目相关的环境变量, 并被项目的 task/lsp/terminal 继承。
 
 # layout
 
 一个 window 有多个 panes （通过 spit），一个 pane 有多个 items（tabs）。
 
-pane 有自己的 tool bar 和导航 history（前进、后退）。光标在 Pane buffer 的移动位置会被记录到 Pane 导航历史记
-录中，可以点击左上角的左、右箭头来回到上一次、下一次的位置。通过使用导航历史快捷键，可以快捷的前后移动。
+pane 有自己的 tool bar 和导航 history（前进、后退）。光标在 Pane buffer 的移动位置会被记录到 Pane 导航历史记录中，可以点击左上角的左、右箭头来回到上一次、下一次的位置。通过使用导航历史快捷键，可以快捷的前后移动。
 
 可以使用 ctrl-0/1/2 等数字快捷键快速在多个 pane tab 切换。
 
@@ -101,16 +86,25 @@ pane 有自己的 tool bar 和导航 history（前进、后退）。光标在 Pa
 
 # editing
 
-zed 打开系统文件对话框后，按 Command-Shift-g 可以按照文件路径来打开。也可以在终
-端使用 `zed cli` 来按照文件路径打开文件。
+zed 打开系统文件对话框后，按 Command-Shift-g 可以按照文件路径来打开。也可以在终端使用 `zed cli` 来按照文件路径打开文件。
 
 使用 tab switcher 可以快速在当前已经打开的文件间切换，而且默认选择上一次打开的文件。
 + 最便捷的多文件编辑时切换机制；
 
+设置 soft wrap 模式为 bounded，且设置较大的 preferred_line_length 值，这样不需要人为的为一段话插入物理换行，后续还可以根据 editor 窗口大小自动软换行。
+
+    ``` json
+    // 根据 preferred_line_length 或当前 editor 的宽度来自动“软”换行。
+    // 软换行：视觉上换行，但是实际文本并没有插入换行字符。
+    "soft_wrap": "bounded",
+    "preferred_line_length": 120,
+    // 在列表中的各宽度位置显示 guide line。
+    "wrap_guides": [90, 120],
+    ```
+
 在终端中快速打开当前 pane item 对应的目录：workspace::OpenInTerminal
 
-在 editor 或 terminal buffer 中，当光标位于 URL (需要带 http 或 https 前缀)或
-File Path 上时， 可以按 cmd 来快速打开。
+在 editor 或 terminal buffer 中，当光标位于 URL (需要带 http 或 https 前缀)或 File Path 上时，可以按 cmd 来快速打开。
 
 快速选择一个 block：将光标移动到 block 边界字符上，然后按 ctrl-= 来按语法选择。
 
@@ -133,8 +127,7 @@ File Path 上时， 可以按 cmd 来快速打开。
 2. 输入 “日期” 或 “时间” 时会自动提示插入各种格式的日期和时间；
 3. 有些 emoji 字符有多种选择，可以使用上下箭头来选择；
 
-在 20241121 的 commit [Clip UTF-16 offsets in text for range](https://github.com/zed-industries/zed/pull/20968) 合并后，
-在开启微信中文输入法的情况下，快捷键绑定中也能使用单字母了。
+在 20241121 的 commit [Clip UTF-16 offsets in text for range](https://github.com/zed-industries/zed/pull/20968) 合并后，在开启微信中文输入法的情况下，快捷键绑定中也能使用单字母了。
 
 buffer 和 terminal 都设置为更符合编程体验的 "Sarasa Mono SC" 字体，它是 Iosevka 编程字体的中文版本，名称为等距更纱黑体。
 
@@ -156,13 +149,14 @@ if let Some(language_scope) = buffer.language_scope_at(selection.head()) {
 }
 ```
 
-安装 org extention 后，就可以高亮 org-mode 文件。
+安装 org extention 后，可以高亮 org-mode 文件。
 
 配置 `"show_whitespaces": "selection"` 后，显示选择区域中的空格。
 
-show_completions_on_input vs show_inline_completions：前者是 LSP 代码补全，后者是大模型补全。
+`show_completions_on_input vs show_inline_completions`：前者是 LSP 代码补全，后者是大模型补全。
 
 字体：默认使用的是 https://github.com/zed-industries/zed-fonts/tree/zed-plex 字体，需要手动下载安装。
+
 zed plex font 的主要特点是缩小了字体间距，UI 显示的更紧凑。
 
 # multicusor
@@ -183,21 +177,17 @@ buffer search 是每输入一个字符就触发的实时增量搜索, 而 projec
 2. 在 outline pane 看当前匹配的行。
 3. 焦点切换到编辑窗口（按 tab），按 `ctrl-l` 将光标滚动到窗口中心。
 
-选中搜索框右侧的 `Select All Match` 按钮对当前选中的匹配项（默认选中所有匹配项）启用多光标编辑，
-实现搜索结果的批量编辑。
+选中搜索框右侧的 `Select All Match` 按钮对当前选中的匹配项（默认选中所有匹配项）启用多光标编辑，实现搜索结果的批量编辑。
 
 搜索的结果可以在 outline panel 显示，实现快速跳转和二次过滤。
 
-project search 的结果默认在 preview tab 中显示（标题是斜体），它是临时 buffer，在其
-中双击后就显示 对应位置的文件内 容，不能再返回到以前的结果 buffer。 解决办法：双击前，
-先将该 preview tab pin 住或转换 为普通 tab（双击tab）。
+project search 的结果默认在 preview tab 中显示（标题是斜体），它是临时 buffer，在其中双击后就显示 对应位置的文件内 容，不能再返回到以前的结果 buffer。 解决办法：双击前，先将该 preview tab pin 住或转换 为普通 tab（双击tab）。
 
 正则搜索使用扩展正则表达式语法, 参考 [regex crate 文档](https://docs.rs/regex/latest/regex/#syntax).
 
 # outline
 
-outline 是基于 tree-sitter 解析的节点树，支持对编辑窗口、搜索窗口（buffer 或
-project 搜索）、Reference 窗口、诊断窗口的结构化显示。包含三种类型：
+outline 是基于 tree-sitter 解析的节点树，支持对编辑窗口、搜索窗口（buffer 或 project 搜索）、Reference 窗口、诊断窗口的结构化显示。包含三种类型：
 
 - buffer outline
 - project outline
@@ -208,6 +198,7 @@ outline panel 支持多种快捷操作（Actions），如目录的展开和合�
 关闭在 outline-panel 显示 markdown、org-mode 中代码块的功能：
 
 1. org-mode：
+
 ``` sh
 zj@a:~/Library/Application Support/Zed/extensions/installed/org/languages/org$ cat injections.scm
 ;(block . name: (expr) parameter: (expr) @language (contents) @content)
@@ -245,7 +236,7 @@ preview tabs 的 tab 标题是 _斜体显示_ ，从而可以和普通独立 tab
 preview tabs 通过以下方式转换为普通独立 tab：
 
 1. project pandel 中双击打开文件；
-2. 使用 project_panel::OpenPermanent action 打开文件；
+2. 使用 `project_panel::OpenPermanent` action 打开文件；
 3. 编辑文件。
 4. pin tab。
 5. 双击 tab。
@@ -257,11 +248,9 @@ preview tabs 通过以下方式转换为普通独立 tab：
 
 使用命令 `debug: Open Key Context View` 查看当前焦点的 context，触发的按键以及按键匹配情况。
 
-zed 按键绑定（`/.config/zed/keymap.json`）不区分相同按键序列但不同顺序的情况，如`ctrl-cmd-a` 和 `cmd-ctrl-a` 是
-相同的按键，但 zed 不提示重复的按键绑定。解决办法：使用固定的顺序来写按键，如 `ctrl-cmd-alt-shift`。
+zed 按键绑定（`/.config/zed/keymap.json`）不区分相同按键序列但不同顺序的情况，如`ctrl-cmd-a` 和 `cmd-ctrl-a` 是相同的按键，但 zed 不提示重复的按键绑定。解决办法：使用固定的顺序来写按键，如 `ctrl-cmd-alt-shift`。
 
-统一规划一些前缀快捷键，如 `ctrl-x`, 它们只用于前缀场景，而不单独使用，否则会导致按键响应延迟。
-（因为 zed 会等待一段时间来接收前缀后续 的按键，当超时后，才认为是致独立绑定语义）。
+统一规划一些前缀快捷键，如 `ctrl-x`, 它们只用于前缀场景，而不单独使用，否则会导致按键响应延迟。（因为 zed 会等待一段时间来接收前缀后续 的按键，当超时后，才认为是致独立绑定语义）。
 
 zed 支持灵活的按键 remap：
 
@@ -270,14 +259,11 @@ zed 支持灵活的按键 remap：
 - `["task::Spawn", { "task_name": "Example task" }]`
 - `["assistant::InlineAssist",{ "prompt": "Build a snake game" }]`
 
-自定义按键绑定覆盖缺省按键绑定，缺省绑定中未覆盖的按键继续有效。所以，如果要确保自己的按键定生效，则可能需要在多个
-context 中重复设置。
+自定义按键绑定覆盖缺省按键绑定，缺省绑定中未覆盖的按键继续有效。所以，如果要确保自己的按键定生效，则可能需要在多个 context 中重复设置。
 
-不是所有 action 在所有 context 中都有效， 如果高优 context 中的按键绑定 action 无效， 则会 fallback 到低优 context
-中该按键绑定的 action，以此类推直到第一个有效 action。
+不是所有 action 在所有 context 中都有效， 如果高优 context 中的按键绑定 action 无效， 则会 fallback 到低优 context 中该按键绑定的 action，以此类推直到第一个有效 action。
 
-例如 Editor 和 Editor && mode == full 的 context 都定义了 ctrl-o 快捷键，但是后者的 excerpt 只在 multibuffer 中有效，
-所以 fallback 到 Editor 中的 buffer symbol：
+例如 `Editor` 和 `Editor && mode == full` 的 context 都定义了 ctrl-o 快捷键，但是后者的 excerpt 只在 multibuffer 中有效，所以 fallback 到 Editor 中的 buffer symbol：
 
     {
       "context": "Editor && mode == full",
@@ -297,37 +283,32 @@ context 中重复设置。
 shift- 用于表示大写字母或第二按键，使用时需要注意：
 
 - 对于使用大写字母的按键，需要包含 shift，而不能直接写大写字母，如：
-  "alt-shift-r" ：OK
-  "alt-R"： 错误。
+  - "alt-shift-r" ：OK
+  - "alt-R"： 错误。
 
 - 对于使用第二按键，需要直接使用第二按键名称，而不能包含 shift，如：
-  "cmd-ctrl-<": OK， "cmd-ctrl-shift-,": 错误。
-  "cmd-%": OK, "cmd-shift-%": 错误，"cmd-shift-5": 错误。
+  - "cmd-ctrl-<": OK， "cmd-ctrl-shift-,": 错误。
+  - "cmd-%": OK, "cmd-shift-%": 错误，"cmd-shift-5": 错误。
 
 - 对于非大写字母或第二按键的场景，不能使用 shift，即 zed 的 shift 不支持作为通用修饰键来使用，如：
-  "ctrl-shift-,": 不对，因为 , 有第二按键 <，应该直接使用第二按键，而不需要加 shift。
-  "ctrl-shift-=": 不对，因为 = 有第二按键 +，应该直接使用 "ctrl-+"。
+  - "ctrl-shift-,": 不对，因为 , 有第二按键 <，应该直接使用第二按键，而不需要加 shift。
+  - "ctrl-shift-=": 不对，因为 = 有第二按键 +，应该直接使用 "ctrl-+"。
 
 - "ctrl-x ^" 中的 ctrl-x 是作为前缀快捷键来使用，那么 ctrl-x 不能再有单独的定义。
 
-窗口是由层次化的 UI 元素节点组成的，节点间有父子、兄弟关系，处于不同层次的上下文中。 反映到按键上，就是有优先级，
-嵌套越深的层次上定义的快捷键优先级越高，如 buffer 搜索输入框的层次是：
+窗口是由层次化的 UI 元素节点组成的，节点间有父子、兄弟关系，处于不同层次的上下文中。 反映到按键上，就是有优先级，嵌套越深的层次上定义的快捷键优先级越高，如 buffer 搜索输入框的层次是：
 
-Workspace > Pane > BufferSearchBar > Editor(搜索框)
+    Workspace > Pane > BufferSearchBar > Editor(搜索框)
 
-zed 从配置中加载所有按键绑定，然后用户输入对应按键绑定时，过滤 context 条件符合要求的 actions 列表，然后根据
-context 所在的 UI 节点深度，选择最深层次上定义的 action。
+zed 从配置中加载所有按键绑定，然后用户输入对应按键绑定时，过滤 context 条件符合要求的 actions 列表，然后根据 context 所在的 UI 节点深度，选择最深层次上定义的 action。
 
 当没有打开的文件时，即没有 panel tab 处于 focus 时，处于 Workspace 或 Global 上下文。
 
-如果光标焦点位于搜索框，则 BufferSearchBar > Editor context 定义的快捷键优先级最高，
-然后是普通 Editor > BufferSearchBar > Pane > Workspace。
+如果光标焦点位于搜索框，则 `BufferSearchBar > Editor context` 定义的快捷键优先级最高，然后是普通 `Editor > BufferSearchBar > Pane > Workspace`。
 
 context 表达式可以使用 > 来表达直接的父子关系（父直属的子节点）匹配，如 Parent > Child，层次越深优先级越高。
 
-context 表达式中的逻辑表达式并不表示层次关系,也没有提升优先级深度，如 `BufferSearchBar && !in_replace` 实际还是
-匹配焦点位于 BufferSearchBar 中搜索框（而非替换框），由于本质上还是匹配 BufferSearchBar 这一个层次，所以它们的定义
-顺序很重要，后续的覆盖前者，例如 keymap.json 文件中安如下顺序定义 context：
+context 表达式中的逻辑表达式并不表示层次关系,也没有提升优先级深度，如 `BufferSearchBar && !in_replace` 实际还是匹配焦点位于 BufferSearchBar 中搜索框（而非替换框），由于本质上还是匹配 BufferSearchBar 这一个层次，所以它们的定义顺序很重要，后续的覆盖前者，例如 keymap.json 文件中安如下顺序定义 context：
 
 1. Editor
 2. Editor && mode == single_line
@@ -337,9 +318,7 @@ context 表达式中的逻辑表达式并不表示层次关系,也没有提升�
 
 第 1 个 Editor 由于没有限定条件，是 Editor 的通用配置，所以应该放到最前面。
 
-第 2、3 个 Editor 都是匹配特定 mode 的 context，只会在对应的场景下生效，但它们的并没有引
-入优先级更深的 cotext，本质上还是和第 1 个处于相同的深度，但是由于位于 Editor 的后面定义，
-所以覆盖 Editor 中相同定义的快捷键。
+第 2、3 个 Editor 都是匹配特定 mode 的 context，只会在对应的场景下生效，但它们的并没有引入优先级更深的 cotext，本质上还是和第 1 个处于相同的深度，但是由于位于 Editor 的后面定义，所以覆盖 Editor 中相同定义的快捷键。
 
 按键绑定优先级：Editor 》Pane 》Workspace 》Global。
 
@@ -469,9 +448,7 @@ keymap 的 context 中使用逻辑表达式来匹配特定模式的 Editor：
 1. Picker
 2. Picker > Editor
 
-某些 context 的 action 不能用在其它 context 中, context 的可用 action 是由对应
-crate module 通过 actions!() 和 impl_actions!() 宏来定义和暴露给命令面板和按键绑定
-使用的, 例如:
+某些 context 的 action 不能用在其它 context 中, context 的可用 action 是由对应 crate module 通过 actions!() 和 impl_actions!() 宏来定义和暴露给命令面板和按键绑定使用的, 例如:
 
     picker, [ConfirmCompletion]);
     impl_actions!(picker, [ConfirmInput]);
@@ -521,8 +498,7 @@ crate module 通过 actions!() 和 impl_actions!() 宏来定义和暴露给命�
 
 # language
 
-在 zed server 运行过程中，会自动[从网络下载 lsp language 并安装](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/languages/src/rust.rs#L100)
-到 ~/.local/share/zed/languages/ 目录下：
+在 zed server 运行过程中，会自动[从网络下载 lsp language 并安装](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/languages/src/rust.rs#L100) 到 `~/.local/share/zed/languages/` 目录下：
 
 ``` sh
 zj@a:~/Library/Application Support/Zed$ pwd
@@ -546,7 +522,17 @@ linux-aarch64/
 zj@a:~/Library/Application Support/Zed$ ls remote_servers/dev/linux-aarch64/0.160.0.gz
 ```
 
-使用 file_types 参数为扩展名或文件路径指定语言类型:
+本地安装的扩展、LSP Server、Remote binary 等位于 `~/Library/Application\ Support/Zed/` 目录下：
+
+```sh
+$ ls ~/Library/Application\ Support/Zed/
+copilot/  db/  docs/  extensions/  languages/  node/  prettier/  remote_servers/
+
+$ ls ~/Library/Application\ Support/Zed/languages/
+eslint/  json-language-server/  package-version-server/  pyright/  rust-analyzer/  tailwindcss-language-server/  vscode-css-language-server/  vtsls/  yaml-language-server/
+```
+
+使用 `file_types` 参数为扩展名或文件路径指定语言类型:
 
     "file_types": {
       "C++": ["c"],
@@ -628,34 +614,40 @@ sudo npm install -g pyright
 
 ## rust
 
-对于大型项目，为了避免每次保存文件都触发 rust-analyzer check 影响性能，可以使用如下配置：
+对于大型项目，为了避免每次保存文件都触发 rust-analyzer check 影响性能，可以 by
+做如下配置：
 
-    "rust-analyzer": {
-      "initialization_options": {
-        // 从 rust-analyzer 获得更多的诊断信息（因为后续关闭了cargo check 检查）。
-        "diagnostics": {
-          "experimental": {
-            "enable": true
+    {
+      "lsp": {
+        "rust-analyzer": {
+          "initialization_options": {
+            // 从 rust-analyzer 获得更多的诊断信息（因为后续关闭了cargo check 检查）。
+            "diagnostics": {
+              "experimental": {
+                "enable": true
+              }
+            },
+            // 关闭 checkOnSave 后，rust-analyzer 将不再运行 cargo check 命令，而只运行 rust-analyzer
+            // 自身的检查。下面的 check、cargo 配置都将失效。
+            // 如果想运行默认的检查，可以执行 zed 自动为 rust 项目生成的 task：argo check --workspace --all-targets
+            "checkOnSave": false,
+            // 默认 cargo check --workspace --all-targets，影响性能，关闭 --workspace 和 --all-targets。
+            "check": {
+              "command": "clippy",
+              "workspace": false
+            },
+            "cargo": {
+              "allTargets": false
+            }
           }
-        },
-        // 关闭 checkOnSave 后，rust-analyzer 将不再运行 cargo check 命令，而只运行 rust-analyzer
-        // 自身的检查。下面的 check、cargo 配置都将失效。
-        // 如果想运行默认的检查，可以执行 zed 自动为 rust 项目生成的 task：argo check --workspace --all-targets
-        "checkOnSave": false,
-        // 默认 cargo check --workspace --all-targets，影响性能，关闭 --workspace 和 --all-targets。
-        "check": {
-          "command": "clippy",
-          "workspace": false
-        },
-        "cargo": {
-          "allTargets": false
         }
       }
     }
 
-由于 zed 自动为 rust 生成 task，可以手动执行 task：cargo check --workspace --all-targets 来实现 checkOnSave 的效果。
 
-对于包含多个 project 的 zed workspace（它们没有不属于一个 cargo workspace 的 member），可以在 initialization_options 中添加 linkedProjects 列表，这样 ra 会自动诊断它们。
+由于 zed 自动为 rust 生成 task，可以手动执行 task：`cargo check --workspace --all-targets` 来实现 checkOnSave 的效果。
+
+对于包含多个 project 的 zed workspace（它们没有不属于一个 cargo workspace 的 member），可以在 `initialization_options` 中添加 `linkedProjects` 列表，这样 ra 会自动诊断它们。
 
     "linkedProjects": [
       "./path/to/a/Cargo.toml",
@@ -665,12 +657,13 @@ sudo npm install -g pyright
 在浏览器打开符号本地文档：
 
 1. 先使用 cargo doc 生成本地文档，否则后续打开的是 https://crates.io/ 的在线文档；
-2. 执行命令："editor::OpenDocs"；
+2. 执行命令：`"editor::OpenDocs"`；
 
 显示 RA 的启动信息：
 
-1. 在 ~/.bashrc 中添加环境变了：export RA_LOG=info
-2. 实际测试，在 project 中添加 .envrc 以及在 settings.json 中设置该变量都不会生效。
+1. 在 ~/.bashrc 中添加环境变了：`export RA_LOG=info`;
+2. 实际测试，在 project 中添加 .envrc 以及在 settings.json 中设置该变量都不会生效；
+3. 即使设置为 info 级别，RA 也会打印大量日志，*影响性能*，所以日常不能开启；
 
 # task
 
@@ -726,8 +719,7 @@ zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当�
       }
     }
 
-执行 task::Spawn 时，按 tab 选中候选者来修改 task 的命令和参数，也可以输入任意 shell 命令和参数,
-然后执行：
+执行 `task::Spawn` 时，按 tab 选中候选者来修改 task 的命令和参数，也可以输入任意 shell 命令和参数, 然后执行：
 
 - oneshot task："ctrl-enter"，会记录到 task history 中；
 - Ephemeral task："ctrl-cmd-enter"，不会记录到 task history 中；
@@ -735,8 +727,7 @@ zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当�
   {
   "context": "Picker > Editor",
   "bindings": {
-  // 选中候选者, 如果是 task::Spawn 面板则会在输入框中填写候选者命令配置,
-  // 这时可以修改 task 命令和参数.
+  // 选中候选者, 如果是 task::Spawn 面板则会在输入框中填写候选者命令配置, 这时可以修改 task 命令和参数.
   "tab": "picker::ConfirmCompletion",
 
         // 适用于 task::Spawn 面板执行 oneshot shell 命令
@@ -773,9 +764,7 @@ zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当�
     ]
     ```
 
-## 快速切换输入法
-
-定义一个 task：
+快速切换输入法 task：
 
     ``` json
     {
@@ -807,9 +796,9 @@ zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当�
     },
     ```
 
-## lazygit
+lazygit task：
 
-编辑配置文件 `~/.config/lazygit/config.yml`：
+1. 编辑配置文件 `~/.config/lazygit/config.yml`：
 
     ``` yaml
     gui:
@@ -818,7 +807,7 @@ zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当�
       editPreset: "zed" # 使用 zed 编辑文件
     ```
 
-创建 zed task：需要配置环境变量 `XDG_CONFIG_HOME` 来指定 lazgit 的配置目录。
+2. 创建 zed task：需要配置环境变量 `XDG_CONFIG_HOME` 来指定 lazgit 的配置目录。
 
       ``` json
       {
@@ -874,9 +863,7 @@ zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当�
 
 比较 Commit：
 
-- W: 在 commit 或 branch 上执行时，将当前 commit 作为标记与后续选择的其它 commit 进行比较，差异
-  显示在 diff panel 中。这时按 <enter> 来显示 diff 的文件列表, 再次按 W 将显示翻转 diff 方向，或者
-  退出 diff mode。
+- W: 在 commit 或 branch 上执行时，将当前 commit 作为标记与后续选择的其它 commit 进行比较，差异显示在 diff panel 中。这时按 <enter> 来显示 diff 的文件列表, 再次按 W 将显示翻转 diff 方向，或者退出 diff mode。
 
 File Panel：
 
@@ -947,28 +934,23 @@ Commit Panel: 显示当前本地分支的 commit history list，可以进行 Squ
     - Move patch into new commit Removes the selected changes from this commit and adds a new commit with the changes. The commit message will be "Split from <this commit>"
 - / : 按 commit hash id 或 message summary 搜索；
 
-- i：开始 interactive rebase，对要进行 rebase 的 commit 进行 squash (s), fixup (f),
-  drop (d), edit (e), move up (ctrl+i) or move down (ctrl+j)，然后使用 m 触发
-  rebase options menu，选择 continue。可以使用 v 来选择多个 commit。
+- i：开始 interactive rebase，对要进行 rebase 的 commit 进行 squash (s), fixup (f),drop (d), edit (e), move up (ctrl+i) or move down (ctrl+j)，然后使用 m 触发 rebase options menu，选择 continue。可以使用 v 来选择多个 commit。
 - e：编辑（edit）选中的 commit，会对该 commit 以后的 commit 进行 rebase
 
-- A: amend, 如果 files panel 中有 staged changes 则 amend 会带上。如果对历史 commit 进行
-  amend，会进行 rebase。
+- A: amend, 如果 files panel 中有 staged changes 则 amend 会带上。如果对历史 commit 进行 amend，会进行 rebase。
 - s：squash，将所在 commit 合并到前一个（below it） commit（保留 commit message），会进行 rebase
 - f：fixup，将所在 commit 合并到后一个 commit（丢弃 commit message），会进行 rebase。
 - d：delete commit，会进行 rebase。
 - r：reword，编辑 commit message，会进行 rebase。
 - R：reword in editor，会进行 rebase。
 
-- F: Create fixup commit，为选择的 commit 创建 fixup！commit，后续在该 commit 上执行 S 来
-  squash all above fixup commits
+- F: Create fixup commit，为选择的 commit 创建 fixup！commit，后续在该 commit 上执行 S 来 squash all above fixup commits
 - S：Apply fixup commits，Squash all 'fixup!' commits, either above the selected commit,
   or all in current branch (autosquash).
 
 - t：revert commit
 - T：tag commt
-- B: 将光标所在 commit 标记为 rebase Base commit（不包含光标所在的 commit，往上的所有 commit
-  将被 rebase 到其它分支），然后切换到其它 branch 执行 rebase；
+- B: 将光标所在 commit 标记为 rebase Base commit（不包含光标所在的 commit，往上的所有 commit 将被 rebase 到其它分支），然后切换到其它 branch 执行 rebase；
 - a：Set/Reset commit author or set co-author.
 - <c-l>: 设置 commit log graph 显示选项；
 - <c-t> Open external diff tool (git difftool)
@@ -1008,26 +990,22 @@ Interactive Rebase 操作（修改当前分支的 commit）：
 - https://github.com/jesseduffield/lazygit/wiki/Interactive-Rebasing
 
 1. 按 4 切换到 commit panel；
-2. 在要开始 interactive rebase 的 commit 上按 e（Edit），这时会从该 commit parent 开始
-   rebase，光标所在 commit 是 edit 状态，以后的（above）的 commit 都会被 pick 选中。
+2. 在要开始 interactive rebase 的 commit 上按 e（Edit），这时会从该 commit parent 开始 rebase，光标所在 commit 是 edit 状态，以后的（above）的 commit 都会被 pick 选中。
 
-- 如果执行的是 i 命令，则可以对整个 commit history 的 commit 进行标记，而不是像 edit 那样
-  从标记的 commit 开始 rebase。
+- 如果执行的是 i 命令，则可以对整个 commit history 的 commit 进行标记，而不是像 edit 那样从标记的 commit 开始 rebase。
 
 3. lazygit 提示 YOU ARE HERE，这时 git 暂停在该 commit，等待用户修改该 commit（即 edit 语义）：
 
 - 可以对 above commit 进行修改，'squash（s）', 'drop（d）', 'edit（e）', 'pick（p）', and 'fixup（f）'；
 
-4. 修改 commit：在 worktree 中修改文件，然后 stage（<SPACE>)，再 amend 该 commit (shift-A)，
-   这时在 commit diff 中可以看到该修改被合并到那个 commit 中。
+4. 修改 commit：在 worktree 中修改文件，然后 stage（<SPACE>)，再 amend 该 commit (shift-A)，这时在 commit diff 中可以看到该修改被合并到那个 commit 中。
 5. 回到 commit panel，按 m 来触发 merge or rebase options，然后选择 continue。
 6. 然后从 edit 开始的 commit 到最新的 commit 都会被重新提交，生成新的 commit id。
 
 Rebase onto 操作（将其它分支 commit rebase 到任意分支）：
 
 1. 在 branch panel 中选择 bugfix 分支，commit panel 中显示该分支的 commit；
-2. 在 commit panel 中选择要 Rebase 的 Base Commit，按 B，该 commit 后续（不包含该 commit）的
-   commits 都会被 rebase 到后续其它分支；
+2. 在 commit panel 中选择要 Rebase 的 Base Commit，按 B，该 commit 后续（不包含该 commit）的 commits 都会被 rebase 到后续其它分支；
 3. 在 branch panel 中选择要 rebase 到的其它分支，按 r，这时会出现 rebase dialog，可以进行 simple
    或 iteractive rebasing。
 
@@ -1070,17 +1048,13 @@ AI 回答过程中可以使用 escape 中断。
 
 可以随时使用 cmd-n 来创建新 context 来创建新的对话。
 
-可以对 context 对话历史就行修改，比如点击 role block，就可以删除 Assistant 的回答。修改
-context 历史对话后，token 消耗数量也随之发生变化。
+可以对 context 对话历史就行修改，比如点击 role block，就可以删除 Assistant 的回答。修改 context 历史对话后，token 消耗数量也随之发生变化。
 
-使用 `assistant: quote selection` 命令将普通 Editor 中的选择区域发送到 assistant editor。
-反之，使用也可以将 Assistant panel 中内容插入到 Editor 中。
+使用 `assistant: quote selection` 命令将普通 Editor 中的选择区域发送到 assistant editor。反之，使用也可以将 Assistant panel 中内容插入到 Editor 中。
 
-Inline Assistant：可以在 Editor 或 Terminal 等任意位置使用 Cmd-Enter 触发 inline
-Assistant。可以将当前选择内容或当前行发送给 inline Assistant，也可以修改 AI 的响应。
+Inline Assistant：可以在 Editor 或 Terminal 等任意位置使用 Cmd-Enter 触发 inline Assistant。可以将当前选择内容或当前行发送给 inline Assistant，也可以修改 AI 的响应。
 
-inline assistant 使用当前 assistant panel 的内容作为 context，所以在使用 inline assistant
-前，可以将相关信息如 file、selection、diagnose 等发送到 assistant panel。
+inline assistant 使用当前 assistant panel 的内容作为 context，所以在使用 inline assistant 前，可以将相关信息如 file、selection、diagnose 等发送到 assistant panel。
 
 inline assistant 中不能使用 slash 命令，如 /file ，但是 assistant panel 可以。
 
@@ -1143,17 +1117,15 @@ extensions 使用 Rust 开发，但被编译为 WebAssembly 后被 zed 执行。
 
 PR: https://github.com/zed-industries/zed/pull/13937
 
-将 Zed 的 snippet 由以前的 snippet extention 支持切换到内部实现，所以不需要安装该扩展和 snippet-completion-server。
+将 Zed 的 snippet 由以前的 snippet extention 支持切换到内部实现，所以不需要安装该扩展和 `snippet-completion-server`。
 
-这个内部实现硬编码了从 ~/.config/zed/snippets 目录中获得所有 snippet，可以使用命令 “Snippets: open folder”
-来打开该目录。
+这个内部实现硬编码了从 `~/.config/zed/snippets` 目录中获得所有 snippet，可以使用命令 `“Snippets: open folder”` 来打开该目录。
 
 该目录下都是 json 文件（不像 simple-snippet-language-server 那样支持目录）：
-+ snippets.json：定义语言无关的全局 snippets；
-+ 其它文件是语言名称相关的 json 文件，如 org.json;
++ `snippets.json`：定义语言无关的全局 snippets；
++ 其它文件是语言名称相关的 json 文件，如 `org.json`;
 
-https://github.com/rafamadriz/friendly-snippets 项目提供了丰富的 snippets, 可以将将它 clone 下来后，
-将 snippets 目录替换 ~/.config/zed/snippets，同时需要将其中的子目录内容都移动到 ~/.config/zed/snippets 目录下（可能需要手动合并）。
+https://github.com/rafamadriz/friendly-snippets 项目提供了丰富的 snippets, 可以将将它 clone 下来后，将 snippets 目录替换 `~/.config/zed/snippets`，同时需要将其中的子目录内容都移动到 `~/.config/zed/snippets` 目录下（可能需要手动合并）。
 
 ``` sh
 zj@a:~/.config/zed$ ls snippets/rust/
@@ -1171,8 +1143,7 @@ comprehension.json  debug.json  pydoc.json  python.json  unittest.json
 zj@a:~/.config/zed/snippets$ cp python/python.json .
 ```
 
-friendly-snippets 的 org.json 有 bug 需要修复，否则 zed log 中会报 "failed to parse snippet" 错误，同时
-snippet 功能失效：
+friendly-snippets 的 org.json 有 bug 需要修复，否则 zed log 中会报 "failed to parse snippet" 错误，同时 snippet 功能失效：
 + https://github.com/zed-industries/zed/issues/21107
 
 ``` sh
@@ -1213,7 +1184,7 @@ zj@a:~/.config/zed/external-snippets/github.com/rafamadriz/friendly-snippets.git
 
 body 字符串可以使用 \ 对 \$}" 进行转义。
 
-通过 ${1|choice1,choice2,choice3} 语法支持可选值列表提示。
+通过 `${1|choice1,choice2,choice3}` 语法支持可选值列表提示。
 
     ```json
     "Log to the console": {
@@ -1221,21 +1192,6 @@ body 字符串可以使用 \ 对 \$}" 进行转义。
       "body": ["console.log($1);", "$0"],
       "description": "Log to the console"
     },
-    "Log warning to console": {
-      "prefix": "warn",
-      "body": ["console.warn($1);", "$0"],
-      "description": "Log warning to the console"
-    },
-    "Log error to console": {
-      "prefix": "error",
-      "body": ["console.error($1);", "$0"],
-      "description": "Log error to the console"
-    },
-    "Throw Exception": {
-      "prefix": "throw",
-      "body": ["throw new Error(\"$1\");", "$0"],
-      "description": "Throw Exception"
-    }
     "my snippet": {
         "prefix": "log",
         "body": ["type ${1|i32, u32|} = $2"],
@@ -1254,8 +1210,9 @@ body 字符串可以使用 \ 对 \$}" 进行转义。
 
 bash/shell code block 需要使用 sh 语言简称, 这样 markdown 才能正确高亮对应 code block。
 
-对于 rust/json 等 tree-sitter 可以支持的 language, 不能使用 code block, 否则 outline 会显示
-代码的结构,"解决办法是: 使用 2 层缩进。
+对于 rust/json 等 tree-sitter 可以支持的 language, 不能使用 code block, 否则 outline 会显示代码的结构。
+
+解决办法: 使用 2 层缩进。
 
 # theme
 
@@ -1272,7 +1229,7 @@ zed 各主题预览：https://zed-themes.com/?order=recent
 
 安装 docker desktop。
 
-清理 ~/.docker/config.json 和 ~/.docker/daemon.json 中的旧配置。
+清理 `~/.docker/config.json` 和 `~/.docker/daemon.json` 中的旧配置。
 
 安装 SOCKS5 转 HTTP 代理：
 
@@ -1306,7 +1263,7 @@ CONTAINER ID   IMAGE                                                            
 c5e53ec7bee9   localhost/cross-rs/cross-custom-zed:aarch64-unknown-linux-gnu-8d728   "sh -c 'PATH=\"$PATH\"…"   3 minutes ago   Up 3 minutes              cross-1.81-x86_64-unknown-linux-gnu-38948-eeb90cda1-aarch64-unknown-linux-gnu-8d728-1730176669812
 ```
 
-然后登录目标服务器，可见本地的 zed 向它上传了一个本地交叉编译生成的 zed-remote-server-dev-linux--aarch64 二进制并运行：
+然后登录目标服务器，可见本地的 zed 向它上传了一个本地交叉编译生成的 `zed-remote-server-dev-linux--aarch64` 二进制并运行：
 
 ```sh
 alizj@lima-dev2:~$ ps -eH -opid,args |grep zed
@@ -1349,12 +1306,12 @@ json-language-server
    [2024-10-29T17:14:42+08:00 DEBUG worktree] ignoring event "target/remote_server/debug/incremental/build_script_build-34db12mrzjok5/s-h1avtiisg8-0xfewcx-working" within unloaded directory
    error: linking with `aarch64-linux-gnu-gcc` failed: exit status: 1
    |
-   = note: LC_ALL="C" PATH="/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin:/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin:/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/bin" VSLANG="1033" "aarch64-linux-gnu-gcc" "-Wl,--version-script=/tmp/rustc36YcCI/list" "-Wl,--no-undefined-version" "/tmp/rustc36YcCI/symbols.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.00.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.01.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.02.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.03.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.04.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.05.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.06.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.07.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.08.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.09.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.10.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.11.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.12.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.13.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.14.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.15.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.bmqrrknlrqqnfika44j5n5qxv.rcgu.o" "-Wl,--as-needed" "-L" "/target/aarch64-unknown-linux-gnu/debug/deps" "-L" "/target/debug/deps" "-L" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib" "-Wl,-Bstatic" "/target/aarch64-unknown-linux-gnu/debug/deps/libzune_core-1888dc448ab93c4b.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libstd-2bf0b2a5e0a60917.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libpanic_unwind-0af01d78b15f6872.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libobject-aa90d1efd19541cb.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libmemchr-6645a3a6124c47a1.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libaddr2line-3de13e717f4d9e74.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libgimli-f50e3ac5e8bc32ca.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/librustc_demangle-f84a4f82a7a57e94.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libstd_detect-bd992eebc2a12fc4.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libhashbrown-c9882005b74b1193.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/librustc_std_workspace_alloc-b18e8234ebc582c8.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libminiz_oxide-79ef105ee0e8243e.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libadler-652182712f7d3bc4.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libunwind-6cb747324af00512.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libcfg_if-740a433abf104d06.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/liblibc-1e2f311c277b60cf.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/liballoc-85299feea58ac1e7.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/librustc_std_workspace_core-2a73a86214747017.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libcore-29cdff63f523de0d.rlib" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib/libcompiler_builtins-405c9891256dbf91.rlib" "-Wl,-Bdynamic" "-lgcc_s" "-lutil" "-lrt" "-lpthread" "-lm" "-ldl" "-lc" "-Wl,--eh-frame-hdr" "-Wl,-z,noexecstack" "-L" "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib" "-o" "/target/aarch64-unknown-linux-gnu/debug/deps/libzune_jpeg-d98812c935e11704.so" "-Wl,--gc-sections" "-shared" "-Wl,-soname=libzune_jpeg-d98812c935e11704.so" "-Wl,-z,relro,-z,now" "-nodefaultlibs" "-fuse-ld=mold"
+   = note: LC_ALL="C" PATH="/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin:/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin:/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/bin" VSLANG="1033" "aarch64-linux-gnu-gcc" "-Wl,--version-script=/tmp/rustc36YcCI/list" "-Wl,--no-undefined-version" "/tmp/rustc36YcCI/symbols.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.00.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62 "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib" "-o" "/target/aarch64-unknown-linux-gnu/debug/deps/libzune_jpeg-d98812c935e11704.so" "-Wl,--gc-sections" "-shared" "-Wl,-soname=libzune_jpeg-d98812c935e11704.so" "-Wl,-z,relro,-z,now" "-nodefaultlibs" "-fuse-ld=mold"
    = note: aarch64-linux-gnu-gcc: error: unrecognized command line option '-fuse-ld=mold'; did you mean '-fuse-ld=gold'?
 
    解决办法：
 
-   1. 下载 mold 包，并解压到 /usr/local
+   1. 下载 mold 包，并解压到 /usr/local；
    2. 修改 .cargo/config.toml，使用 "link-arg=-B/usr/local/libexec/mold"，
       https://github.com/zed-industries/zed/pull/19910, 该目录下的 ld 是 mold 的软链接，这样 gcc 在使用 ld 时实际使用的是 old。
 
@@ -1403,16 +1360,14 @@ Caused by:
   called `Result::unwrap()` on an `Err` value: reqwest::Error { kind: Request, url: "https://github.com/livekit/client-sdk-rust/releases/download/webrtc-dac8015-5/webrtc-mac-arm64-release.zip", source: hyper_util::client::legacy::Error(Connect, ConnectError("tcp connect error", Os { code: 61, kind: ConnectionRefused, message: "Connection refused" })) }
 ```
 
-修改 /Users/alizj/.cargo/git/checkouts/rust-sdks-e9c3cb1fc511908e/4262308/webrtc-sys/build/Cargo.toml，使用 0.12 版本，
-并且添加 socks features：
+修改 /Users/alizj/.cargo/git/checkouts/rust-sdks-e9c3cb1fc511908e/4262308/webrtc-sys/build/Cargo.toml，使用 0.12 版本，并且添加 socks features：
 
 ```tom
 [dependencies]
 reqwest = { version = "0.12", default-features = false, features = ["rustls-tls-native-roots", "blocking", "socks"] }
 ```
 
-修改 /Users/alizj/.cargo/git/checkouts/rust-sdks-e9c3cb1fc511908e/4262308/webrtc-sys/build/src/lib.rs 中的
-reqwest get 方法，使用 socks5 proxy。
+修改 /Users/alizj/.cargo/git/checkouts/rust-sdks-e9c3cb1fc511908e/4262308/webrtc-sys/build/src/lib.rs 中的 reqwest get 方法，使用 socks5 proxy。
 
 ```rust
 let mut client = reqwest::blocking::ClientBuilder::new()
@@ -1457,8 +1412,7 @@ zj@a:~/go/src/github.com/zed-industries/zed$ ls -l target/debug/WebRTC.framework
    </dict>
 ```
 
-本地开发构建使用 `dev profile`，zed 内部会识别当前是否 dev 版本（通过宏 `cfg!(not(debug_assertions))`），
-会做一些 dev 特殊处理逻辑。
+本地开发构建使用 `dev profile`，zed 内部会识别当前是否 dev 版本（通过宏 `cfg!(not(debug_assertions))`），会做一些 dev 特殊处理逻辑。
 
 ```sh
 # 构建 MacOS bundle DMG 并安装
@@ -1470,8 +1424,7 @@ $ RUST_LOG=debug ./target/dev/zed
 ```
 
 zed 的 ssh_session.rs 的 [update_server_binary_if_needed() 函数
-](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/remote/src/ssh_session.rs#L1735)
-会先执行 server 上的 zed-remote-server 的 version 子命令来获得 server 语义版本(current_version)：
+](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/remote/src/ssh_session.rs#L1735) 会先执行 server 上的 zed-remote-server 的 version 子命令来获得 server 语义版本(current_version)：
 
 ```sh
 alizj@lima-dev2:/Users/alizj/.config/zed$ ~/.zed_server/zed-remote-server-dev-linux-aarch64 version
@@ -1498,8 +1451,7 @@ update_server_binary_if_needed() 根据 release channel 来确定需要为 remot
 1. 如果本地版本低，则提示升级本地 zed 版本后返回；
 1. 否则（如 server 版本低，或者有任何一方为 None），则会安装新版本。
 
-在安装新 remote server binary 前，zed 会检查 bianry 是否在使用。如果在使用且 zed 不是 dev 版本，则会直接返回错误，
-提 示 binary 在 使用，不能升级。但是如果是 dev 版本，则即使在使用也可以升级。
+在安装新 remote server binary 前，zed 会检查 bianry 是否在使用。如果在使用且 zed 不是 dev 版本，则会直接返回错误，提 示 binary 在 使用，不能升级。但是如果是 dev 版本，则即使在使用也可以升级。
 
 如果是 dev 模式（wanted_version 为 None）：
 
