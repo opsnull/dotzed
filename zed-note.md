@@ -26,167 +26,9 @@ index bc95e1dd6a..a20fd09268 100755
      cp crates/zed/contents/$channel/embedded.provisionprofile "${app_path}/Contents/"
 ```
 
-解决构建 webrtc-sys 失败的问题：
+## 修改程序名称
 
-- 将 reqwest 升级到最新的 v0.12 版本；
-- 启用 reqwest 的 socks feature；
-
-```sh
-zj@a:~/go/src/github.com/zed-industries/zed$ ./script/bundle-mac -ldi
-~/go/src/github.com/zed-industries/zed/crates/zed ~/go/src/github.com/zed-industries/zed
-~/go/src/github.com/zed-industries/zed
-Building for local target only.
-   Compiling webrtc-sys v0.3.5 (https://github.com/zed-industries/rust-sdks?rev=4262308983646ab5b0e0802c3d8bc52154f99aab#42623089)
-error: failed to run custom build command for `webrtc-sys v0.3.5 (https://github.com/zed-industries/rust-sdks?rev=4262308983646ab5b0e0802c3d8bc52154f99aab#42623089)`
-
-Caused by:
-  process didn't exit successfully: `/Users/alizj/go/src/github.com/zed-industries/zed/target/debug/build/webrtc-sys-bf3c821455d0b783/build-script-build` (exit status: 101)
-  --- stdout
-  cargo:rerun-if-env-changed=LK_DEBUG_WEBRTC
-  cargo:rerun-if-env-changed=LK_CUSTOM_WEBRTC
-  cargo:CXXBRIDGE_PREFIX=webrtc-sys
-  cargo:CXXBRIDGE_DIR0=/Users/alizj/go/src/github.com/zed-industries/zed/target/debug/build/webrtc-sys-5584bf7f821ea101/out/cxxbridge/include
-  cargo:CXXBRIDGE_DIR1=/Users/alizj/go/src/github.com/zed-industries/zed/target/debug/build/webrtc-sys-5584bf7f821ea101/out/cxxbridge/crate
-
-  --- stderr
-
-  CXX include path:
-    /Users/alizj/go/src/github.com/zed-industries/zed/target/debug/build/webrtc-sys-5584bf7f821ea101/out/cxxbridge/include
-    /Users/alizj/go/src/github.com/zed-industries/zed/target/debug/build/webrtc-sys-5584bf7f821ea101/out/cxxbridge/crate
-  thread 'main' panicked at /Users/alizj/.cargo/git/checkouts/rust-sdks-e9c3cb1fc511908e/4262308/webrtc-sys/build.rs:85:45:
-  called `Result::unwrap()` on an `Err` value: reqwest::Error { kind: Request, url: "https://github.com/livekit/client-sdk-rust/releases/download/webrtc-dac8015-5/webrtc-mac-arm64-release.zip", source: hyper_util::client::legacy::Error(Connect, ConnectError("tcp connect error", Os { code: 61, kind: ConnectionRefused, message: "Connection refused" })) }
-```
-
-修改 /Users/alizj/.cargo/git/checkouts/rust-sdks-e9c3cb1fc511908e/4262308/webrtc-sys/build/Cargo.toml，使用 0.12 版本，并且添加 socks features：
-
-    ```toml
-    [dependencies]
-    reqwest = { version = "0.12", default-features = false, features = ["rustls-tls-native-roots", "blocking", "socks"] }
-    ```
-
-修改 /Users/alizj/.cargo/git/checkouts/rust-sdks-e9c3cb1fc511908e/4262308/webrtc-sys/build/src/lib.rs 中的 reqwest get 方法，使用 socks5 proxy。
-
-```rust
-let mut client = reqwest::blocking::ClientBuilder::new()
-    .proxy(reqwest::Proxy::all("socks5h://127.0.0.1:1080")?)
-    .build()?;
-let mut resp = client.execute(client.get(download_url()).build()?)?;
-//let mut resp = reqwest::blocking::get(download_url())?;
-if resp.status() != StatusCode::OK {
-    return Err(format!("failed to download webrtc: {}", resp.status()).into());
-}
-```
-
-解决 mac bundle 构建报错：
-
-> An SSL error has occurred and a secure connection to the server cannot be made
-
-```sh
-# 查看系统全局代理：
-scutil --proxy
-
-zj@a:~/go/src/github.com/zed-industries/zed$ ls -l target/debug/WebRTC.framework/
-total 0
-lrwxr-xr-x 1 alizj  24 11  2 11:08 Headers -> Versions/Current/Headers/
-lrwxr-xr-x 1 alizj  24 11  2 11:08 Modules -> Versions/Current/Modules/
-lrwxr-xr-x 1 alizj  26 11  2 11:08 Resources -> Versions/Current/Resources/
-drwxr-xr-x 4 alizj 128 11  2 11:08 Versions/
-lrwxr-xr-x 1 alizj  23 11  2 11:08 WebRTC -> Versions/Current/WebRTC*
-
-zj@a:~/go/src/github.com/zed-industries/zed$ ls -l target/debug/WebRTC.framework/Resources/Info.plist
--rw-r--r-- 1 alizj 1018 11  2 11:08 target/debug/WebRTC.framework/Resources/Info.plist
-```
-
-编辑生成的 `Info.plist` 文件，在 dict 中添加如下内容：
-
-- 参考：https://github.com/microsoft/vscode/issues/73806#issuecomment-496334904
-
-```xml
-<key>NSAppTransportSecurity</key>
-   <dict>
-       <key>NSAllowsArbitraryLoads</key>
-       <true/>
-   </dict>
-```
-
-本地开发构建使用 `dev profile`，zed 内部会识别当前是否 dev 版本（通过宏 `cfg!(not(debug_assertions))`），会做一些 dev 特殊处理逻辑。
-
-```sh
-# 构建 MacOS bundle DMG 并安装
-$ ./script/bundle-mac -idl
-
-# 或者只构建 binary
-$ cargo build --profile dev
-$ RUST_LOG=debug ./target/dev/zed
-```
-
-zed 的 ssh_session.rs 的 [update_server_binary_if_needed() 函数
-](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/remote/src/ssh_session.rs#L1735)
-会先执行 server 上的 zed-remote-server 的 version 子命令来获得 server 语义版本(current_version)：
-
-```sh
-alizj@lima-dev2:/Users/alizj/.config/zed$ ~/.zed_server/zed-remote-server-dev-linux-aarch64 version
-0.160.0
-```
-
-编译时，zed 使用文件 `crates/zed/RELEASE_CHANNEL` 中配置来确定 release channel 类型，可选值为：
-
-- dev
-- nightly
-- preview
-- stable
-
-有一些 zed 特性也是根据 release channel 类型来做不同处理的。例如 ssh_sessions.rs 的
-update_server_binary_if_needed() 根据 release channel 来确定需要为 remote server
-[安装的版本（wanted_version）](https://github.com/zed-industries/zed/blob/40802d91d4faf849ad35fb53d6b00320c1d04cc1/crates/remote/src/ssh_session.rs#L1760)：
-
-1. 如果是 dev，则设置 wanted_version 为 None，后续进行本地构建；
-2. 如果是 nightly、preview、stable，则从 zed.dev API 获得对应版本；
-
-如果执行成功则获得 current_version 值，否则将它设置为 None，则进行版本比较(current_version vs wanted_version)：
-
-1. 如果两者都有值且匹配，则不安装或升级；
-1. 如果本地版本低，则提示升级本地 zed 版本后返回；
-1. 否则（如 server 版本低，或者有任何一方为 None），则会安装新版本。
-
-在安装新 remote server binary 前，zed 会检查 bianry 是否在使用。如果在使用且 zed
-不是 dev 版本，则会直接返回错误，提 示 binary 在 使用，不能升级。但是如果是 dev 版本，
-则即使在使用也可以升级。
-
-如果是 dev 模式（wanted_version 为 None）：
-
-1. 先检查环境变量 `ZED_BUILD_REMOTE_SERVER` 是否设置，如果 **未设置** ：
-1. 如果 current_version 有值，则复用 binary，直接返回；
-1. 如果无值，则报错：ZED_BUILD_REMOTE_SERVER is not set, but no remote server exists
-1. 在设置 ZED_BUILD_REMOTE_SERVER 的情况下：
-1. 如果是 dev 模式，则进行本地构建和上传到 server；
-1. 否则报错：Running development build in release mode, cannot cross compile
-   (unset ZED_BUILD_REMOTE_SERVER)
-
-如果不是 dev 模式，则检查配置参数 upload_binary_over_ssh：
-
-1. 如果为 false（默认），则 server 尝试先从 zed.dev 下载 binary，如果失败则从 zed 本地上传。
-2. 如果为 true，则从 zed 本地上传。
-
-从 zed 本地上传：本地 zed 先下载 binary，然后上传到 server。
-
-总结：在 dev 模式下：
-
-1. 如果未设置环境变量 ZED_BUILD_REMOTE_SERVER，则要求远端已经有 bianry 在运行，**直接复用**。
-2. 如果设置 ZED_BUILD_REMOTE_SERVER，则会本地侯建和上传。
-
-```sh
-ZED_BUILD_REMOTE_SERVER=1  RUST_log=debug target/debug/zed
-```
-
-zed 本地构建 remote server bianry 时执行的命令：
-
-1. 同构：cargo build --package remote_server --features debug-embed --target-dir target/remote_server
-2. 异构：triple=aarch64-linux cargo install cross --git "https://github.com/cross-rs/cross"
-   cross build --package remote_server --features debug-embed --target-dir target/remote_server --target ${triple}
-
-在 zed server 运行过程中，会自动[从网络下载 lsp language 并安装](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/languages/src/rust.rs#L100)
-到 ~/.local/share/zed/languages/ 目录下：
+修改 `crates/zed/Cargo.toml` 文件中 [package.metadata.bundle-dev] 中 name，由 "Zed Dev" 修改为 "Dev".
 
 # launch
 
@@ -196,7 +38,7 @@ zed 本地构建 remote server bianry 时执行的命令：
 $ MTL_HUD_ENABLED=1 /Applications/Zed.app/Contents/MacOS/zed
 ```
 
-DEBUG 启动模式:
+## DEBUG 启动模式
 
 ```sh
 # 先切换到 zed 源码目录(有些命令, 如 ssh remote 会在源码目录编译一些二进制)
@@ -205,7 +47,12 @@ $ pwd
 $ RUST_LOG=debug /Applications/Zed\ Dev.app/Contents/MacOS/zed
 ```
 
-zed cli : 可以通过 Zed 菜单 “Install CLI” 来安装 zed 命令行工具命令 zed：
+## zed cli
+
+可以通过 Zed 菜单 “Install CLI” 来安装 zed 命令行工具命令 zed：
+
+每次编译 zed 后，都会生成 cli 和 zed 两个 binary，并打包到 Mac 应用中，需要执行上面菜单中的
+"Install CLI" 命令来更新 zed cli binary。
 
 ```sh
 zj@a:~$ which zed
@@ -222,7 +69,7 @@ $ zed -a ~/emacs/minimal.el # 在当前 workspace 中打开文件，同时将文
 $ zed -a ~/emacs # 将目录添加到 workspace
 ```
 
-zed 获得环境变量的两种方式：
+## zed 获得环境变量
 
 1. 命令行 zed 启动, 继承命令行环境变量;
 2. 通过 dock 启动, 先切换到 HOME 目录 spawn 一个 login shell 来获得用户环境变量, 然后被所有 zed 窗口继承;
@@ -269,8 +116,7 @@ File Path 上时， 可以按 cmd 来快速打开。
 
 输入法设置:
 
-1. 不使用 MacOS 内置的拼音输入法，因为它使用中文标点，导致快捷键 ctrl-] 使用中文标点
-   】，从而与 zed 快捷键绑定不兼容；
+1. 不使用 MacOS 内置的拼音输入法，因为它使用中文标点，导致快捷键 ctrl-] 使用中文标点 】，从而与 zed 快捷键绑定不兼容；
 2. 使用微信输入法；
 3. 启用微信输入法的 shift 中英文切换快捷键。
 4. 关闭 “自动编号”；
@@ -283,13 +129,12 @@ File Path 上时， 可以按 cmd 来快速打开。
 
 微信输入法小技巧：
 
-1. 如果当前是中文输入状态，但需要上屏英文，可以按 shift 键，这样输入的部分内容会被作为
-   英文输入；
+1. 如果当前是中文输入状态，但需要上屏英文，可以按 shift 键，这样输入的部分内容会被作为英文输入；
 2. 输入 “日期” 或 “时间” 时会自动提示插入各种格式的日期和时间；
 3. 有些 emoji 字符有多种选择，可以使用上下箭头来选择；
 
-在 20241121 的 commit [Clip UTF-16 offsets in text for range](https://github.com/zed-industries/zed/pull/20968) 合并后，在开启微信中文输入法的情况下，
-快捷键绑定中也能使用单字母了。
+在 20241121 的 commit [Clip UTF-16 offsets in text for range](https://github.com/zed-industries/zed/pull/20968) 合并后，
+在开启微信中文输入法的情况下，快捷键绑定中也能使用单字母了。
 
 buffer 和 terminal 都设置为更符合编程体验的 "Sarasa Mono SC" 字体，它是 Iosevka 编程字体的中文版本，名称为等距更纱黑体。
 
@@ -317,20 +162,18 @@ if let Some(language_scope) = buffer.language_scope_at(selection.head()) {
 
 show_completions_on_input vs show_inline_completions：前者是 LSP 代码补全，后者是大模型补全。
 
-字体：默认使用的是 https://github.com/zed-industries/zed-fonts/tree/zed-plex 字体，需要手动下载安装。zed plex font 的主要特点是缩小了字体间距，UI 显示的更紧凑。
+字体：默认使用的是 https://github.com/zed-industries/zed-fonts/tree/zed-plex 字体，需要手动下载安装。
+zed plex font 的主要特点是缩小了字体间距，UI 显示的更紧凑。
 
 # multicusor
 
-在编辑窗口（普通编辑窗口或搜索结果窗口），按住 alt 后点击要增加 cursor 的位置，然后就可
-以多光标同时编辑。
+在编辑窗口（普通编辑窗口或搜索结果窗口），按住 alt 后点击要增加 cursor 的位置，然后就可以多光标同时编辑。
 
 # search
 
-搜索分为 和 project search，支持关键字、word 和正则搜索方式， 也可以
-忽略大小写。
+搜索分为 和 project search，支持关键字、word 和正则搜索方式， 也可以忽略大小写。
 
-buffer search 是每输入一个字符就触发的实时增量搜索, 而 project search 是输入完所有
-搜索字符后按 enter 后后才触发 搜索。
+buffer search 是每输入一个字符就触发的实时增量搜索, 而 project search 是输入完所有搜索字符后按 enter 后才触发搜索。
 
 搜索时，默认选中光标处的 symbol/word，也可以先选中内容后再搜索。
 
@@ -340,12 +183,12 @@ buffer search 是每输入一个字符就触发的实时增量搜索, 而 projec
 2. 在 outline pane 看当前匹配的行。
 3. 焦点切换到编辑窗口（按 tab），按 `ctrl-l` 将光标滚动到窗口中心。
 
-选中搜索框右侧的 `Select All Match` 按钮对当前选中的匹配项
-（默认选中所有匹配项）启用多光标编辑， 实现搜索结果的批量编辑。
+选中搜索框右侧的 `Select All Match` 按钮对当前选中的匹配项（默认选中所有匹配项）启用多光标编辑，
+实现搜索结果的批量编辑。
 
 搜索的结果可以在 outline panel 显示，实现快速跳转和二次过滤。
 
-project search 的结果默认在 preview tab 中显示（标题是斜体），它是临时buffer，在其
+project search 的结果默认在 preview tab 中显示（标题是斜体），它是临时 buffer，在其
 中双击后就显示 对应位置的文件内 容，不能再返回到以前的结果 buffer。 解决办法：双击前，
 先将该 preview tab pin 住或转换 为普通 tab（双击tab）。
 
@@ -360,8 +203,7 @@ project 搜索）、Reference 窗口、诊断窗口的结构化显示。包含�
 - project outline
 - outline panel
 
-outline panel 支持多种快捷操作（Actions），如目录的展开和合并，跳转到上一级，在
-Finder 中打开文件等。
+outline panel 支持多种快捷操作（Actions），如目录的展开和合并，跳转到上一级，在 Finder 中打开文件等。
 
 关闭在 outline-panel 显示 markdown、org-mode 中代码块的功能：
 
@@ -391,8 +233,7 @@ project 级别的 search/reference/diagnose 打开的窗口是 multibuffer 类�
 
 multibuffer 中的文件位置称为片段（excerpt），支持多光标编辑和保存。
 
-配置 `"double_click_in_multibuffer": "open"` 选项后，双击 multibuffer 片段时，
-在新的 tab 打开对应文件位置。
+配置 `"double_click_in_multibuffer": "open"` 选项后，双击 multibuffer 片段时，在新的 tab 打开对应文件位置。
 
 # preview tabs
 
@@ -414,11 +255,13 @@ preview tabs 通过以下方式转换为普通独立 tab：
 
 # keybindings
 
-使用命令 `debug: Open Key Context View` 查看当前焦点的 context，触发的按键，以及按键匹配情况。
+使用命令 `debug: Open Key Context View` 查看当前焦点的 context，触发的按键以及按键匹配情况。
 
-zed 按键绑定（`/.config/zed/keymap.json`）不区分相同按键序列但不同顺序的情况，如`ctrl-cmd-a` 和 `cmd-ctrl-a` 是相同的按键，但 zed 不提示重复的按键绑定。解决办法：使用固定的顺序来写按键，如 `ctrl-cmd-alt-shift`。
+zed 按键绑定（`/.config/zed/keymap.json`）不区分相同按键序列但不同顺序的情况，如`ctrl-cmd-a` 和 `cmd-ctrl-a` 是
+相同的按键，但 zed 不提示重复的按键绑定。解决办法：使用固定的顺序来写按键，如 `ctrl-cmd-alt-shift`。
 
-统一规划一些前缀快捷键，如 `ctrl-x`, 它们只用于前缀场景，而不单独使用，否则会导致按键响应延迟。（因为 zed 会等待一段时间来接收前缀后续 的按键，当超时后，才认为是致独立绑定语义）。
+统一规划一些前缀快捷键，如 `ctrl-x`, 它们只用于前缀场景，而不单独使用，否则会导致按键响应延迟。
+（因为 zed 会等待一段时间来接收前缀后续 的按键，当超时后，才认为是致独立绑定语义）。
 
 zed 支持灵活的按键 remap：
 
@@ -427,11 +270,14 @@ zed 支持灵活的按键 remap：
 - `["task::Spawn", { "task_name": "Example task" }]`
 - `["assistant::InlineAssist",{ "prompt": "Build a snake game" }]`
 
-自定义按键绑定覆盖缺省按键绑定，缺省绑定中未覆盖的按键继续有效。所以，如果要确保自己的按键定生效，则可能需要在多个 context 中重复设置。
+自定义按键绑定覆盖缺省按键绑定，缺省绑定中未覆盖的按键继续有效。所以，如果要确保自己的按键定生效，则可能需要在多个
+context 中重复设置。
 
-不是所有 action 在所有 context 中都有效， 如果高优 context 中的按键绑定 action 无效， 则会 fallback 到低优 context 中该按键绑定的 action，以此类推直到第一个有效 action。
+不是所有 action 在所有 context 中都有效， 如果高优 context 中的按键绑定 action 无效， 则会 fallback 到低优 context
+中该按键绑定的 action，以此类推直到第一个有效 action。
 
-例如 Editor 和 Editor && mode == full 的 context 都定义了 ctrl-o 快捷键，但是后者的 excerpt 只在 multibuffer 中有效，所以 fallback 到 Editor 中的 buffer symbol：
+例如 Editor 和 Editor && mode == full 的 context 都定义了 ctrl-o 快捷键，但是后者的 excerpt 只在 multibuffer 中有效，
+所以 fallback 到 Editor 中的 buffer symbol：
 
     {
       "context": "Editor && mode == full",
@@ -464,12 +310,13 @@ shift- 用于表示大写字母或第二按键，使用时需要注意：
 
 - "ctrl-x ^" 中的 ctrl-x 是作为前缀快捷键来使用，那么 ctrl-x 不能再有单独的定义。
 
-zed 窗口是由层次化的 UI 元素节点组成的，节点间有父子、兄弟关系，处于不同层次的上下文中。 反映到按键上，就是有优先级，嵌套越深的层次上定义的快
-捷键优先级越高，如 buffer 搜索输入框的层次是：
+窗口是由层次化的 UI 元素节点组成的，节点间有父子、兄弟关系，处于不同层次的上下文中。 反映到按键上，就是有优先级，
+嵌套越深的层次上定义的快捷键优先级越高，如 buffer 搜索输入框的层次是：
 
 Workspace > Pane > BufferSearchBar > Editor(搜索框)
 
-zed 从配置中加载所有按键绑定，然后用户输入对应按键绑定时，过滤 context 条件符合要求的 actions 列表，然后根据 context 所在的 UI 节点深度，选择最深层次上定义的 action。
+zed 从配置中加载所有按键绑定，然后用户输入对应按键绑定时，过滤 context 条件符合要求的 actions 列表，然后根据
+context 所在的 UI 节点深度，选择最深层次上定义的 action。
 
 当没有打开的文件时，即没有 panel tab 处于 focus 时，处于 Workspace 或 Global 上下文。
 
@@ -478,7 +325,9 @@ zed 从配置中加载所有按键绑定，然后用户输入对应按键绑定�
 
 context 表达式可以使用 > 来表达直接的父子关系（父直属的子节点）匹配，如 Parent > Child，层次越深优先级越高。
 
-context 表达式中的逻辑表达式并不表示层次关系,也没有提升优先级深度，如 `BufferSearchBar && !in_replace` 实际还是匹配焦点位于 BufferSearchBar 中搜索框（而非替换框），由于本质上还是匹配 BufferSearchBar 这一个层次，所以它们的定义顺序很重要，后续的覆盖前者，例如 keymap.json 文件中安如下顺序定义 context：
+context 表达式中的逻辑表达式并不表示层次关系,也没有提升优先级深度，如 `BufferSearchBar && !in_replace` 实际还是
+匹配焦点位于 BufferSearchBar 中搜索框（而非替换框），由于本质上还是匹配 BufferSearchBar 这一个层次，所以它们的定义
+顺序很重要，后续的覆盖前者，例如 keymap.json 文件中安如下顺序定义 context：
 
 1. Editor
 2. Editor && mode == single_line
@@ -671,6 +520,31 @@ crate module 通过 actions!() 和 impl_actions!() 宏来定义和暴露给命�
     }
 
 # language
+
+在 zed server 运行过程中，会自动[从网络下载 lsp language 并安装](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/languages/src/rust.rs#L100)
+到 ~/.local/share/zed/languages/ 目录下：
+
+``` sh
+zj@a:~/Library/Application Support/Zed$ pwd
+/Users/alizj/Library/Application Support/Zed
+zj@a:~/Library/Application Support/Zed$ ls
+copilot/  db/  docs/  extensions/  languages/  node/  prettier/  remote_servers/
+zj@a:~/Library/Application Support/Zed$ ls extensions/installed/
+basher/      csv/  dockerfile/  html/  intellij-newui-theme/  log/   new-darcula/   org/   snippets/  toml/
+catppuccin/  cue/  elisp/       ini/   latex/                 make/  one-dark-pro/  scss/  sql/       xml/
+zj@a:~/Library/Application Support/Zed$ ls languages/
+cargo-appraiser-v0.0.17/  json-language-server/    pylsp/    rust-analyzer/                vscode-css-language-server/  yaml-language-server/
+eslint/                   package-version-server/  pyright/  tailwindcss-language-server/  vtsls/
+zj@a:~/Library/Application Support/Zed$ ls languages/pylsp/pylsp-venv/bin/
+Activate.ps1  activate  activate.csh  activate.fish  pip*  pip3*  pip3.12*  python@  python3@  python3.12@
+zj@a:~/Library/Application Support/Zed$ ls prettier/
+node_modules/  package-lock.json  package.json  prettier_server.js
+zj@a:~/Library/Application Support/Zed$ ls remote_servers/
+dev/  preview/
+zj@a:~/Library/Application Support/Zed$ ls remote_servers/dev/
+linux-aarch64/
+zj@a:~/Library/Application Support/Zed$ ls remote_servers/dev/linux-aarch64/0.160.0.gz
+```
 
 使用 file_types 参数为扩展名或文件路径指定语言类型:
 
@@ -1402,28 +1276,7 @@ json-language-server
 
 # Bugs
 
-1. 网络连接不上时，大量刷日志：
-
-   > 2024-10-23T11:06:26.657707+08:00 [ERROR] Client(error sending request for
-   > url (https://avatars.githubusercontent.com/u/433567?s=128&v=4)
-
-   > Caused by:
-   > 0: client error (Connect)
-   > 1: socks connect error: Host unreachable)
-
-   > zj@a:~$ date; wc -l ~/Library/Logs/Zed/Zed.log
-   > Wed Oct 23 11:06:47 CST 2024
-   > 96710 /Users/alizj/Library/Logs/Zed/Zed.log
-   > zj@a:~$ date; wc -l ~/Library/Logs/Zed/Zed.log
-   > Wed Oct 23 11:06:51 CST 2024
-   > 96980 /Users/alizj/Library/Logs/Zed/Zed.log
-
-2. 按键问题
-
-- "ctrl-cmd-d": "editor::DeleteToPreviousWordStart", // 不生效
-- "cmd-q": "editor::Rewrap", // 自动折行，有问题，折行的长度不对。
-
-3. 本地交叉编译 remote_server 报错
+## 本地交叉编译 remote_server 报错
 
    [2024-10-29T17:14:42+08:00 DEBUG worktree] ignoring event "target/remote_server/debug/incremental/build_script_build-34db12mrzjok5/s-h1avtiisg8-0xfewcx-working" within unloaded directory
    error: linking with `aarch64-linux-gnu-gcc` failed: exit status: 1
@@ -1449,3 +1302,165 @@ json-language-server
 
    root@b4fce23c85a8:/app# which mold
    /usr/local/bin/mold
+
+
+## 构建 webrtc-sys 失败
+
+- 将 reqwest 升级到最新的 v0.12 版本；
+- 启用 reqwest 的 socks feature；
+
+```sh
+zj@a:~/go/src/github.com/zed-industries/zed$ ./script/bundle-mac -ldi
+~/go/src/github.com/zed-industries/zed/crates/zed ~/go/src/github.com/zed-industries/zed
+~/go/src/github.com/zed-industries/zed
+Building for local target only.
+   Compiling webrtc-sys v0.3.5 (https://github.com/zed-industries/rust-sdks?rev=4262308983646ab5b0e0802c3d8bc52154f99aab#42623089)
+error: failed to run custom build command for `webrtc-sys v0.3.5 (https://github.com/zed-industries/rust-sdks?rev=4262308983646ab5b0e0802c3d8bc52154f99aab#42623089)`
+
+Caused by:
+  process didn't exit successfully: `/Users/alizj/go/src/github.com/zed-industries/zed/target/debug/build/webrtc-sys-bf3c821455d0b783/build-script-build` (exit status: 101)
+  --- stdout
+  cargo:rerun-if-env-changed=LK_DEBUG_WEBRTC
+  cargo:rerun-if-env-changed=LK_CUSTOM_WEBRTC
+  cargo:CXXBRIDGE_PREFIX=webrtc-sys
+  cargo:CXXBRIDGE_DIR0=/Users/alizj/go/src/github.com/zed-industries/zed/target/debug/build/webrtc-sys-5584bf7f821ea101/out/cxxbridge/include
+  cargo:CXXBRIDGE_DIR1=/Users/alizj/go/src/github.com/zed-industries/zed/target/debug/build/webrtc-sys-5584bf7f821ea101/out/cxxbridge/crate
+
+  --- stderr
+
+  CXX include path:
+    /Users/alizj/go/src/github.com/zed-industries/zed/target/debug/build/webrtc-sys-5584bf7f821ea101/out/cxxbridge/include
+    /Users/alizj/go/src/github.com/zed-industries/zed/target/debug/build/webrtc-sys-5584bf7f821ea101/out/cxxbridge/crate
+  thread 'main' panicked at /Users/alizj/.cargo/git/checkouts/rust-sdks-e9c3cb1fc511908e/4262308/webrtc-sys/build.rs:85:45:
+  called `Result::unwrap()` on an `Err` value: reqwest::Error { kind: Request, url: "https://github.com/livekit/client-sdk-rust/releases/download/webrtc-dac8015-5/webrtc-mac-arm64-release.zip", source: hyper_util::client::legacy::Error(Connect, ConnectError("tcp connect error", Os { code: 61, kind: ConnectionRefused, message: "Connection refused" })) }
+```
+
+修改 /Users/alizj/.cargo/git/checkouts/rust-sdks-e9c3cb1fc511908e/4262308/webrtc-sys/build/Cargo.toml，使用 0.12 版本，
+并且添加 socks features：
+
+```tom
+[dependencies]
+reqwest = { version = "0.12", default-features = false, features = ["rustls-tls-native-roots", "blocking", "socks"] }
+```
+
+修改 /Users/alizj/.cargo/git/checkouts/rust-sdks-e9c3cb1fc511908e/4262308/webrtc-sys/build/src/lib.rs 中的
+reqwest get 方法，使用 socks5 proxy。
+
+```rust
+let mut client = reqwest::blocking::ClientBuilder::new()
+    .proxy(reqwest::Proxy::all("socks5h://127.0.0.1:1080")?)
+    .build()?;
+let mut resp = client.execute(client.get(download_url()).build()?)?;
+//let mut resp = reqwest::blocking::get(download_url())?;
+if resp.status() != StatusCode::OK {
+    return Err(format!("failed to download webrtc: {}", resp.status()).into());
+}
+```
+
+## 构建 WebRTC 失败
+
+> An SSL error has occurred and a secure connection to the server cannot be made
+
+```sh
+# 查看系统全局代理：
+scutil --proxy
+
+zj@a:~/go/src/github.com/zed-industries/zed$ ls -l target/debug/WebRTC.framework/
+total 0
+lrwxr-xr-x 1 alizj  24 11  2 11:08 Headers -> Versions/Current/Headers/
+lrwxr-xr-x 1 alizj  24 11  2 11:08 Modules -> Versions/Current/Modules/
+lrwxr-xr-x 1 alizj  26 11  2 11:08 Resources -> Versions/Current/Resources/
+drwxr-xr-x 4 alizj 128 11  2 11:08 Versions/
+lrwxr-xr-x 1 alizj  23 11  2 11:08 WebRTC -> Versions/Current/WebRTC*
+
+zj@a:~/go/src/github.com/zed-industries/zed$ ls -l target/debug/WebRTC.framework/Resources/Info.plist
+-rw-r--r-- 1 alizj 1018 11  2 11:08 target/debug/WebRTC.framework/Resources/Info.plist
+```
+
+编辑生成的 `Info.plist` 文件，在 dict 中添加如下内容：
+
+- 参考：https://github.com/microsoft/vscode/issues/73806#issuecomment-496334904
+
+```xml
+<key>NSAppTransportSecurity</key>
+   <dict>
+       <key>NSAllowsArbitraryLoads</key>
+       <true/>
+   </dict>
+```
+
+本地开发构建使用 `dev profile`，zed 内部会识别当前是否 dev 版本（通过宏 `cfg!(not(debug_assertions))`），
+会做一些 dev 特殊处理逻辑。
+
+```sh
+# 构建 MacOS bundle DMG 并安装
+$ ./script/bundle-mac -idl
+
+# 或者只构建 binary
+$ cargo build --profile dev
+$ RUST_LOG=debug ./target/dev/zed
+```
+
+zed 的 ssh_session.rs 的 [update_server_binary_if_needed() 函数
+](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/remote/src/ssh_session.rs#L1735)
+会先执行 server 上的 zed-remote-server 的 version 子命令来获得 server 语义版本(current_version)：
+
+```sh
+alizj@lima-dev2:/Users/alizj/.config/zed$ ~/.zed_server/zed-remote-server-dev-linux-aarch64 version
+0.160.0
+```
+
+编译时，zed 使用文件 `crates/zed/RELEASE_CHANNEL` 中配置来确定 release channel 类型，可选值为：
+
+- dev
+- nightly
+- preview
+- stable
+
+有一些 zed 特性也是根据 release channel 类型来做不同处理的。例如 ssh_sessions.rs 的
+update_server_binary_if_needed() 根据 release channel 来确定需要为 remote server
+[安装的版本（wanted_version）](https://github.com/zed-industries/zed/blob/40802d91d4faf849ad35fb53d6b00320c1d04cc1/crates/remote/src/ssh_session.rs#L1760)：
+
+1. 如果是 dev，则设置 wanted_version 为 None，后续进行本地构建；
+2. 如果是 nightly、preview、stable，则从 zed.dev API 获得对应版本；
+
+如果执行成功则获得 current_version 值，否则将它设置为 None，则进行版本比较(current_version vs wanted_version)：
+
+1. 如果两者都有值且匹配，则不安装或升级；
+1. 如果本地版本低，则提示升级本地 zed 版本后返回；
+1. 否则（如 server 版本低，或者有任何一方为 None），则会安装新版本。
+
+在安装新 remote server binary 前，zed 会检查 bianry 是否在使用。如果在使用且 zed 不是 dev 版本，则会直接返回错误，
+提 示 binary 在 使用，不能升级。但是如果是 dev 版本，则即使在使用也可以升级。
+
+如果是 dev 模式（wanted_version 为 None）：
+
+1. 先检查环境变量 `ZED_BUILD_REMOTE_SERVER` 是否设置，如果 **未设置** ：
+1. 如果 current_version 有值，则复用 binary，直接返回；
+1. 如果无值，则报错：ZED_BUILD_REMOTE_SERVER is not set, but no remote server exists
+1. 在设置 ZED_BUILD_REMOTE_SERVER 的情况下：
+1. 如果是 dev 模式，则进行本地构建和上传到 server；
+1. 否则报错：Running development build in release mode, cannot cross compile
+   (unset ZED_BUILD_REMOTE_SERVER)
+
+如果不是 dev 模式，则检查配置参数 upload_binary_over_ssh：
+
+1. 如果为 false（默认），则 server 尝试先从 zed.dev 下载 binary，如果失败则从 zed 本地上传。
+2. 如果为 true，则从 zed 本地上传。
+
+从 zed 本地上传：本地 zed 先下载 binary，然后上传到 server。
+
+总结：在 dev 模式下：
+
+1. 如果未设置环境变量 ZED_BUILD_REMOTE_SERVER，则要求远端已经有 bianry 在运行，**直接复用**。
+2. 如果设置 ZED_BUILD_REMOTE_SERVER，则会本地侯建和上传。
+
+```sh
+ZED_BUILD_REMOTE_SERVER=1  RUST_log=debug target/debug/zed
+```
+
+zed 本地构建 remote server bianry 时执行的命令：
+
+1. 同构：cargo build --package remote_server --features debug-embed --target-dir target/remote_server
+2. 异构：triple=aarch64-linux cargo install cross --git "https://github.com/cross-rs/cross"
+   cross build --package remote_server --features debug-embed --target-dir target/remote_server --target ${triple}

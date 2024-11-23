@@ -85,11 +85,9 @@
       "ctrl-8": ["pane::ActivateItem", 7],
       "ctrl-9": ["pane::ActivateItem", 8],
 
-      /// 根据导航历史移动(高频操作）
-      "cmd-,": "pane::GoBack",
+      /// 根据导航历史或选择历史移动(高频操作）
+      "ctrl-,": "pane::GoBack",
       "ctrl-cmd-,": "pane::GoForward",
-
-      // 根据选择历史移动
       "ctrl-.": "editor::UndoSelection",
       "ctrl-cmd-.": "editor::RedoSelection",
 
@@ -169,7 +167,7 @@
       "ctrl-cmd-{": "editor::SelectToStartOfParagraph",
       "ctrl-cmd-}": "editor::SelectToEndOfParagraph",
       // 选中整个段落。
-      "cmd-h": ["workspace::SendKeystrokes", "cmd-{ ctrl-cmd-}"],
+      "cmd-shift-h": ["workspace::SendKeystrokes", "cmd-{ ctrl-cmd-}"],
       "ctrl-cmd-<": "editor::SelectToBeginning",
       "ctrl-cmd->": "editor::SelectToEnd",
       "ctrl-x h": "editor::SelectAll",
@@ -194,7 +192,9 @@
       "ctrl-d": "editor::Delete",
       "cmd-d": "editor::DeleteToNextWordEnd",
       "ctrl-k": "editor::CutToEndOfLine",
-      "ctrl-cmd-k": "editor::DeleteToBeginningOfLine",
+      //  剪切当前行：DeleteLine 不会存剪贴板，又没有 CutLine 命令。
+      "ctrl-cmd-k": ["workspace::SendKeystrokes", "ctrl-a ctrl-k ctrl-k"],
+      "ctrl-cmd-shift-k": "editor::DeleteToBeginningOfLine",
       // 删除连续的空格为一个。
       "cmd-space": [
         "workspace::SendKeystrokes",
@@ -227,43 +227,56 @@
 
       /// 代码开发功能
       "ctrl-\\": "editor::ShowCompletions",
-      "ctrl-c ctrl-h": "editor::ToggleInlayHints",
-      "ctrl-c ctrl-a": "editor::ToggleCodeActions",
-      "ctrl-c ctrl-i": "editor::Hover",
-      "ctrl-c ctrl-s": "editor::ShowSignatureHelp",
-      "ctrl-c ctrl-r": "editor::Rename",
+      //"ctrl-c ctrl-h": "editor::ToggleInlayHints",
+      //"ctrl-c ctrl-a": "editor::ToggleCodeActions",
+      //"ctrl-c ctrl-i": "editor::Hover",
+      //"ctrl-c ctrl-s": "editor::ShowSignatureHelp",
+      //"ctrl-c ctrl-r": "editor::Rename",
       // 在浏览器打开符号文档（如果使用 cargo doc 生成本地文档，则打开本地文档）。
-      "ctrl-c d .": "editor::OpenDocs",
-      "ctrl-c d s": ["task::Spawn", { "task_name": "open-rust-std-doc" }],
-      "ctrl-c d w": ["task::Spawn", { "task_name": "open-rust-docs-rs" }],
-      "ctrl-c d p": ["task::Spawn", { "task_name": "open-rust-crates-io" }],
-      "ctrl-c ctrl-e": "diagnostics::Deploy",
-      "ctrl-c ctrl-l": "diagnostics::Deploy",
-      "ctrl-c ctrl-n": "editor::GoToDiagnostic",
-      "ctrl-c ctrl-p": "editor::GoToPrevDiagnostic",
+      //"ctrl-c d .": "editor::OpenDocs",
+      // "ctrl-c d s": ["task::Spawn", { "task_name": "open-rust-std-doc" }],
+      // "ctrl-c d w": ["task::Spawn", { "task_name": "open-rust-docs-rs" }],
+      // "ctrl-c d p": ["task::Spawn", { "task_name": "open-rust-crates-io" }],
+      // "ctrl-c ctrl-e": "diagnostics::Deploy",
+      // "ctrl-c ctrl-l": "diagnostics::Deploy",
+      // "ctrl-c ctrl-n": "editor::GoToDiagnostic",
+      // "ctrl-c ctrl-p": "editor::GoToPrevDiagnostic",
 
-      // 根据 git 变更移动
-      "ctrl-c ctrl-j": "editor::GoToHunk",
-      "ctrl-c ctrl-k": "editor::GoToPrevHunk",
-
-      "ctrl-cmd-\\": "editor::RevertSelectedHunks",
-      "ctrl-c ctrl-d": "editor::ToggleHunkDiff",
-      "ctrl-c ctrl-shift-d": "editor::ExpandAllHunkDiffs",
-
-      // xref
+      "cmd-h": "editor::ToggleInlayHints",
+      "cmd-r": "editor::Rename",
+      "cmd-i": "editor::Hover",
+      "cmd-shift-d": "editor::OpenDocs",
+      "cmd-s": "editor::ShowSignatureHelp",
       "cmd-.": "editor::GoToDefinition",
       "ctrl-cmd-.": "editor::GoToDefinitionSplit",
-      // "cmd-,": "editor::GoToImplementation",
-      // "ctrl-cmd-,": "editor::GoToImplementationSplit",
+      "cmd-,": "editor::GoToImplementation",
+      "ctrl-cmd-,": "editor::GoToImplementationSplit",
       "cmd-?": "editor::FindAllReferences",
+
+      "cmd-e": "diagnostics::Deploy",
+      "cmd-j": "editor::GoToDiagnostic",
+      "cmd-k": "editor::GoToPrevDiagnostic",
+
+      //"ctrl-c ctrl-d": "editor::ToggleHunkDiff",
+      "alt-h": "editor::ToggleHunkDiff",
+      "ctrl-alt-h": "editor::ExpandAllHunkDiffs",
+      "alt-a": "editor::ApplyDiffHunk",
+      "ctrl-alt-a": "editor::ApplyAllDiffHunks",
+      "alt-r": "editor::RevertSelectedHunks",
+      // "ctrl-c ctrl-j": "editor::GoToHunk",
+      // "ctrl-c ctrl-k": "editor::GoToPrevHunk",
+      "alt-j": "editor::GoToHunk",
+      "alt-k": "editor::GoToPrevHunk",
 
       // 注释和格式化
       "cmd-;": ["editor::ToggleComments", { "advance_downwards": false }],
       "ctrl-c ctrl-f": "editor::Format",
 
       // 缩进
-      "ctrl-c ctrl-[": "editor::Outdent",
-      "ctrl-c ctrl-]": "editor::Indent",
+      // "ctrl-c ctrl-[": "editor::Outdent",
+      // "ctrl-c ctrl-]": "editor::Indent",
+      "cmd-[": "editor::Outdent",
+      "cmd-]": "editor::Indent",
 
       /// 折叠
       "cmd-q": "editor::Rewrap",
@@ -532,7 +545,7 @@
       "ctrl-cmd-enter": ["picker::ConfirmInput", { "secondary": true }],
 
       // FileFinder 面板快捷键，不能直接在 FileFinder 中配置，因为它的优先级比 Editor 低。
-      "ctrl-cmd-o": "file_finder::OpenMenu",
+      "ctrl-cmd-o": "file_finder::ToggleMenu",
       "ctrl-cmd-j": "pane::SplitDown",
       "ctrl-cmd-k": "pane::SplitUp",
       "ctrl-cmd-h": "pane::SplitLeft",
@@ -545,7 +558,7 @@
     "bindings": {
       "ctrl-shift-p": "file_finder::SelectPrev",
       // 打开目录
-      "ctrl-o": "file_finder::OpenMenu"
+      "ctrl-o": "file_finder::ToggleMenu"
     }
   },
   {
@@ -649,13 +662,6 @@
       "cmd->": "terminal::ScrollToBottom",
       // AI inline 补全
       "ctrl-enter": "assistant::InlineAssist"
-    }
-  },
-  {
-    // 不带 bracketed_paste 属性终端，如 Task 任务。
-    "context": "Terminal && !bracketed_paste",
-    "bindings": {
-      "q": "pane::CloseActiveItem"
     }
   },
   {

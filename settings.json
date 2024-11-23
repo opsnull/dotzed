@@ -1,6 +1,6 @@
 {
   //  默认是 One Dark 和 One Light theme。
-  "theme": "Gruvbox Dark Hard",
+  "theme": "Gruvbox Dark",
   // 不使用缺省的 keymap，只使用自定义 keymap。
   "base_keymap": "None",
   // open 和 save as 使用 zed 内置的文件选择，更高效。
@@ -29,17 +29,21 @@
   "soft_wrap": "none",
   "preferred_line_length": 90,
   // 在列表中的各宽度位置显示 guide line。
-  "wrap_guides": [90, 120],
+  //"wrap_guides": [90, 120],
   "indent_guides": {
     "coloring": "fixed"
   },
   "show_inline_completions": true,
+  "inline_completions_disabled_in": ["string", "comment"],
+  "inline_completions": {
+    "disabled_globs": ["**.org", "**.md"]
+  },
   "features": {
     "inline_completion_provider": "none" // "copilot"
   },
   "confirm_quit": true,
   "cursor_shape": "bar",
-  // 使用基于 Isoveka 的中英文编程字体。
+  // 使用基于 Isoveka 的中英文编程字体，字体偏小。
   "buffer_font_family": "Sarasa Mono SC",
   "buffer_font_size": 16,
   // 减小 UI 元素的字体大小，这样留更多空间给编辑区。
@@ -67,7 +71,7 @@
   // 开启后，搜索字符包含大写时区分大小写（未开启时不区分大小写）。
   "use_smartcase_search": true,
   "centered_layout": {
-    "left_padding": 0.2,
+    "left_padding": 0.1,
     "right_padding": 0.2
   },
   "current_line_highlight": "all",
@@ -171,7 +175,7 @@
     "git_gutter": "hide",
     "inline_blame": {
       "enabled": true,
-      "delay_ms": 500,
+      "delay_ms": 5000,
       "show_commit_summary": true
     }
   },
