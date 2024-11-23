@@ -650,14 +650,17 @@
       "cmd-f": ["terminal::SendText", "\u001bf"],
       // 复制粘贴
       "cmd-w": "terminal::Copy",
+      "cmd-c": "terminal::Copy",
+      "cmd-v": "terminal::Paste",
       "ctrl-y": "terminal::Paste",
+      "cmd-a": "editor::SelectAll",
       "ctrl-x h": "editor::SelectAll",
       // 显示控制
       "ctrl-l": "terminal::Clear",
       "shift-up": "terminal::ScrollLineUp",
       "shift-down": "terminal::ScrollLineDown",
       "ctrl-v": "terminal::ScrollPageDown",
-      "cmd-v": "terminal::ScrollPageUp",
+      "ctrl-shift-v": "terminal::ScrollPageUp",
       "cmd-<": "terminal::ScrollToTop",
       "cmd->": "terminal::ScrollToBottom",
       // AI inline 补全

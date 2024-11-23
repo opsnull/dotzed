@@ -1141,7 +1141,75 @@ extensions 使用 Rust 开发，但被编译为 WebAssembly 后被 zed 执行。
 
 # snippet
 
-snippet 按语言名称保存在 ~/.config/zed/snippets 目录中。
+PR: https://github.com/zed-industries/zed/pull/13937
+
+将 Zed 的 snippet 由以前的 snippet extention 支持切换到内部实现，所以不需要安装该扩展和 snippet-completion-server。
+
+这个内部实现硬编码了从 ~/.config/zed/snippets 目录中获得所有 snippet，可以使用命令 “Snippets: open folder”
+来打开该目录。
+
+该目录下都是 json 文件（不像 simple-snippet-language-server 那样支持目录）：
++ snippets.json：定义语言无关的全局 snippets；
++ 其它文件是语言名称相关的 json 文件，如 org.json;
+
+https://github.com/rafamadriz/friendly-snippets 项目提供了丰富的 snippets, 可以将将它 clone 下来后，
+将 snippets 目录替换 ~/.config/zed/snippets，同时需要将其中的子目录内容都移动到 ~/.config/zed/snippets 目录下（可能需要手动合并）。
+
+``` sh
+zj@a:~/.config/zed$ ls snippets/rust/
+rust.json  rustdoc.json
+zj@a:~/.config/zed/snippets$ mv rust/rust* .
+zj@a:~/.config/zed/snippets$ rm -rf rust
+
+zj@a:~/.config/zed/snippets$ ls shell/
+shell.json  shelldoc.json
+zj@a:~/.config/zed/snippets$ mv shell/* .
+zj@a:~/.config/zed/snippets$ rm -rf shell
+
+zj@a:~/.config/zed/snippets$ ls python/
+comprehension.json  debug.json  pydoc.json  python.json  unittest.json
+zj@a:~/.config/zed/snippets$ cp python/python.json .
+```
+
+friendly-snippets 的 org.json 有 bug 需要修复，否则 zed log 中会报 "failed to parse snippet" 错误，同时
+snippet 功能失效：
++ https://github.com/zed-industries/zed/issues/21107
+
+``` sh
+2024-11-23T17:48:01.660003+08:00 [ERROR] failed to parse snippet
+
+Caused by:
+    expected an integer
+
+# 调试代码
+crates/snippet/Cargo.toml --- TOML
+15 15 [dependencies]
+16 16 anyhow.workspace = true
+17 17 smallvec.workspace = true
+   18 log.workspace = true
+
+crates/snippet/src/snippet.rs --- 1/4 --- Rust
+48 55     text: &mut String,
+49 56     tabstops: &mut BTreeMap<usize, TabStop>,
+50 57 ) -> Result<&'a str> {
+.. 58     log::info!("debug parse snippet: {} {}", source, text);
+51 59     loop {
+52 60         match source
+   61             .chars()
+
+# 出问题的地方都是类似于 ${CURRENT_YEAR} 这种不以数字开头的 snippet
+zj@a:~/.config/zed/external-snippets/github.com/rafamadriz/friendly-snippets.git$ git diff
+snippets/org.json --- JSON
+118         "body": [                                                            114     "body": [
+119             "#+TITLE:     ${1:Untitled Document}",                           115       "#+TITLE:     ${1:Untitled Document}",
+120             "#+AUTHOR:    ${2:Author}",                                      116       "#+AUTHOR:    ${2:Author}",
+121             "#+DATE:      ${CURRENT_YEAR}-${CURRENT_MONTH}-${CURRENT_DATE}"  117       "#+DATE:      ${3:CURRENT_YEAR}-${4:CURRENT_MONTH}-${5:CURRENT_DATE}"
+122         ]                                                                    118     ]
+123     },                                                                       119   },
+124     "image": {                                                               120   "image": {
+
+zj@a:~/.config/zed/external-snippets/github.com/rafamadriz/friendly-snippets.git$
+```
 
 body 字符串可以使用 \ 对 \$}" 进行转义。
 

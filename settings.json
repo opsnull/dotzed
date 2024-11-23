@@ -1,6 +1,6 @@
 {
   //  默认是 One Dark 和 One Light theme。
-  "theme": "Gruvbox Dark",
+  "theme": "Gruvbox Dark Hard",
   // 不使用缺省的 keymap，只使用自定义 keymap。
   "base_keymap": "None",
   // open 和 save as 使用 zed 内置的文件选择，更高效。
@@ -219,10 +219,16 @@
     "Python": {
       "language_servers": ["pyright", "!pylsp"]
     },
+    "Org": {
+      "tab_size": 2,
+      // "formatter": "prettier", // 不支持 org
+      "preferred_line_length": 110,
+      "soft_wrap": "preferred_line_length"
+    },
     "Markdown": {
       "tab_size": 2,
       "formatter": "prettier",
-      "preferred_line_length": 90,
+      "preferred_line_length": 110,
       "soft_wrap": "preferred_line_length"
     },
     "TOML": {
