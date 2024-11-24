@@ -26,19 +26,17 @@ index bc95e1dd6a..a20fd09268 100755
      cp crates/zed/contents/$channel/embedded.provisionprofile "${app_path}/Contents/"
 ```
 
-## 修改程序名称
-
-修改 `crates/zed/Cargo.toml` 文件中 `[package.metadata.bundle-dev]` 中 name，由 "Zed Dev" 修改为 "Dev".
+修改程序名称：修改 `crates/zed/Cargo.toml` 文件中 `[package.metadata.bundle-dev]` 中 name，由 "Zed Dev" 修改为 "Dev".
 
 # launch
 
 窗口右上角显示资源用量和 GPU FPS 信息（有 bug，可能导致段错误）：
 
 ```sh
-$ MTL_HUD_ENABLED=1 /Applications/Zed.app/Contents/MacOS/zed
+MTL_HUD_ENABLED=1 /Applications/Zed.app/Contents/MacOS/zed
 ```
 
-## DEBUG 启动模式
+`DEBUG` 启动模式：
 
 ```sh
 # 先切换到 zed 源码目录(有些命令, 如 ssh remote 会在源码目录编译一些二进制)
@@ -47,11 +45,9 @@ $ pwd
 $ RUST_LOG=debug /Applications/Zed\ Dev.app/Contents/MacOS/zed
 ```
 
-## zed cli
+# zed cli
 
-可以通过 Zed 菜单 “Install CLI” 来安装 zed 命令行工具命令 zed：
-
-每次编译 zed 后，都会生成 cli 和 zed 两个 binary，并打包到 Mac 应用中，需要执行上面菜单中的 "Install CLI" 命令来更新 zed cli binary。
+编译 zed 后生成 cli 和 zed 两个 binary，并打包到 Mac 应用中，执行上面菜单中的 `Install CLI` 命令来更新系统的 zed cli binary。
 
 ```sh
 zj@a:~$ which zed
@@ -74,7 +70,19 @@ zed 获得环境变量的方式：
 
 zed 打开 project 时, 会使用 direnv/editorconfig 等机制来获得项目相关的环境变量, 并被项目的 task/lsp/terminal 继承。
 
-# layout
+# workspace
+
+使用 `file finder: toggle` 命令来打开一个项目或文件，会显示一个历史选择列表（Picker）:
+- enter：在当前 window 中打开；
+- cmd-enter：在新的 window 中打开；
+
+如果历史列表中不存在，则可以 `ctrl-x ctrl-f` 输入文件或目录名，然后按 enter 来打开：
+- 如果是目录，则打开**新的 window**，并添加到项目历史记录中；
+- 如果是文件，则直接在当前 window 打开，但是**不会**添加到当前 workspace 中，当下次重新打开 workspace 时会**不会包**含对应文件；
+
+如果想在当前 window 中打开文件或目录，而且后续重新打开该 workspace 时还保留，则可以执行 `workspace: add folder to project` 命令将文件或目录添加到 workspace。
+
+对于打开的多个 window，可以通过 zed 的 Window 菜单进行切换选择。
 
 一个 window 有多个 panes （通过 spit），一个 pane 有多个 items（tabs）。
 
@@ -86,12 +94,11 @@ pane 有自己的 tool bar 和导航 history（前进、后退）。光标在 Pa
 
 # editing
 
-zed 打开系统文件对话框后，按 Command-Shift-g 可以按照文件路径来打开。也可以在终端使用 `zed cli` 来按照文件路径打开文件。
+zed 打开 MacOS 系统文件对话框后，按 `cmd-shift-g` 可以按照文件路径来打开。也可以在终端使用 `zed cli` 来按照文件路径打开文件。
 
-使用 tab switcher 可以快速在当前已经打开的文件间切换，而且默认选择上一次打开的文件。
-+ 最便捷的多文件编辑时切换机制；
+使用 tab switcher 可以快速在当前已经打开的文件间切换，而且默认选择上一次打开的文件。这是最便捷的多文件编辑时切换方式。
 
-设置 soft wrap 模式为 bounded，且设置较大的 preferred_line_length 值，这样不需要人为的为一段话插入物理换行，后续还可以根据 editor 窗口大小自动软换行。
+设置 `soft wrap` 模式为 `bounded`，且设置较大的 `preferred_line_length` 值，这样不需要人为的为一段话插入物理换行，后续还可以根据 editor 窗口大小自动软换行。
 
     ``` json
     // 根据 preferred_line_length 或当前 editor 的宽度来自动“软”换行。
@@ -102,11 +109,11 @@ zed 打开系统文件对话框后，按 Command-Shift-g 可以按照文件路�
     "wrap_guides": [90, 120],
     ```
 
-在终端中快速打开当前 pane item 对应的目录：workspace::OpenInTerminal
+在终端中快速打开当前 pane item 对应的目录：`workspace::OpenInTerminal`。
 
-在 editor 或 terminal buffer 中，当光标位于 URL (需要带 http 或 https 前缀)或 File Path 上时，可以按 cmd 来快速打开。
+在 editor 或 terminal buffer 中，当光标位于 URL (需要带 http 或 https 前缀)或 File Path 上时，可以按 `cmd` 来快速打开。
 
-快速选择一个 block：将光标移动到 block 边界字符上，然后按 ctrl-= 来按语法选择。
+快速选择一个 block：将光标移动到 block 边界字符上，然后按 `ctrl-=` 来按语法选择。
 
 输入法设置:
 
@@ -114,18 +121,6 @@ zed 打开系统文件对话框后，按 Command-Shift-g 可以按照文件路�
 2. 使用微信输入法；
 3. 启用微信输入法的 shift 中英文切换快捷键。
 4. 关闭 “自动编号”；
-
-输入法 keylayout：
-
-- 微信和搜狗中英文输入法：com.apple.keylayout.US
-- APPLE 英文：com.apple.keylayout.ABC
-- APPLE 中文：com.apple.keylayout.PinyinKeyboard
-
-微信输入法小技巧：
-
-1. 如果当前是中文输入状态，但需要上屏英文，可以按 shift 键，这样输入的部分内容会被作为英文输入；
-2. 输入 “日期” 或 “时间” 时会自动提示插入各种格式的日期和时间；
-3. 有些 emoji 字符有多种选择，可以使用上下箭头来选择；
 
 在 20241121 的 commit [Clip UTF-16 offsets in text for range](https://github.com/zed-industries/zed/pull/20968) 合并后，在开启微信中文输入法的情况下，快捷键绑定中也能使用单字母了。
 
@@ -498,7 +493,7 @@ keymap 的 context 中使用逻辑表达式来匹配特定模式的 Editor：
 
 # language
 
-在 zed server 运行过程中，会自动[从网络下载 lsp language 并安装](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/languages/src/rust.rs#L100) 到 `~/.local/share/zed/languages/` 目录下：
+zed server 运行过程中，会自动[从网络下载 lsp language 并安装](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/languages/src/rust.rs#L100) 到 `~/.local/share/zed/languages/` 目录下：
 
 ``` sh
 zj@a:~/Library/Application Support/Zed$ pwd
@@ -614,8 +609,7 @@ sudo npm install -g pyright
 
 ## rust
 
-对于大型项目，为了避免每次保存文件都触发 rust-analyzer check 影响性能，可以 by
-做如下配置：
+对于大型项目，为了避免每次保存文件都触发 rust-analyzer check 影响性能，可以 by 项目做如下配置：
 
     {
       "lsp": {
@@ -644,15 +638,7 @@ sudo npm install -g pyright
       }
     }
 
-
 由于 zed 自动为 rust 生成 task，可以手动执行 task：`cargo check --workspace --all-targets` 来实现 checkOnSave 的效果。
-
-对于包含多个 project 的 zed workspace（它们没有不属于一个 cargo workspace 的 member），可以在 `initialization_options` 中添加 `linkedProjects` 列表，这样 ra 会自动诊断它们。
-
-    "linkedProjects": [
-      "./path/to/a/Cargo.toml",
-      "./path/to/b/Cargo.toml"
-    ]
 
 在浏览器打开符号本地文档：
 
@@ -719,34 +705,35 @@ zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当�
       }
     }
 
-执行 `task::Spawn` 时，按 tab 选中候选者来修改 task 的命令和参数，也可以输入任意 shell 命令和参数, 然后执行：
+执行 `task::Spawn` 时，按 tab 选中候选者来修改 task 的命令和参数，也可以输入 *任意 shell 命令和参数* , 然后执行 (具体按键取决于 `picker::ConfirmInput` 中的配置。)：
 
-- oneshot task："ctrl-enter"，会记录到 task history 中；
-- Ephemeral task："ctrl-cmd-enter"，不会记录到 task history 中；
+- oneshot task："alt-enter"，会记录到 task history 中, 后续可以 task:rerun；
+- Ephemeral task："cmd-alt-enter"，不会记录到 task history 中；
 
-  {
-  "context": "Picker > Editor",
-  "bindings": {
-  // 选中候选者, 如果是 task::Spawn 面板则会在输入框中填写候选者命令配置, 这时可以修改 task 命令和参数.
-  "tab": "picker::ConfirmCompletion",
+      ```json
+      {
+        "context": "Picker > Editor",
+        "bindings": {
+          // 选中候选者。如果焦点位于 task::Spawn 面板，则会在输入框中填写候选者命令配置, 可以修改它。
+          "tab": "picker::ConfirmCompletion",
 
-        // 适用于 task::Spawn 面板执行 oneshot shell 命令
-        "ctrl-enter": ["picker::ConfirmInput", { "secondary": false }],
+          // picker::ConfirmInput 目前（20241124）只在 task ui 中使用，下面两个命令也是专门为执行 task 定制的。
+          // 不能绑定到 ctrl-enter/cmd-enter，否则会 break 其它使用 Picker Editor 的场景，如 file finder，
+          // 它们使用 menu::SecondaryConfirm 而非 picker::ConfirmInput 命令。
 
-        // 适用于 task::Spawn 面板执行 Ephemeral tasks shell 命令
-        // 该命令不会记录到 task history 中。
-        "ctrl-cmd-enter": ["picker::ConfirmInput", { "secondary": true }]
-      }
-
-  }
+          // 1. 执行 oneshot shell 命令，记录到 task history 中，后续可以执行 task: rerun 来重新执行。
+          "alt-enter": ["picker::ConfirmInput", { "secondary": false }],
+          // 2. 执行 Ephemeral tasks shell 命令，不会记录到 task history 中。
+          "cmd-alt-enter": ["picker::ConfirmInput", { "secondary": true }]
+        }
+      },
+      ```
 
 注意：如果修改了 task 定义，则在 task picker 界面应该选择最下面的任务定义，而不是上面执行过的历史任务，否则最新的定义不生效。
 
 例如, 计算 zed buffer 中选中内容的字符数：执行 `ctrl-t`， 然后输入：`echo "$ZED_SELECTED_TEXT" | wc -c`， 最后执行 `ctrl-enter`。
 
-## 切换 org-mode src block 语言名称
-
-临时解决，解析后的 src block 代码显示在 Outline 的问题：
+切换 org-mode src block 语言名称，用来临时解决，解析后的 src block 代码显示在 Outline 的问题：
 
     ``` json
     // Static tasks configuration.
@@ -800,28 +787,28 @@ lazygit task：
 
 1. 编辑配置文件 `~/.config/lazygit/config.yml`：
 
-    ``` yaml
-    gui:
-      language: en
-    os:
-      editPreset: "zed" # 使用 zed 编辑文件
-    ```
+        ```yaml
+        gui:
+          language: en
+        os:
+          editPreset: "zed" # 使用 zed 编辑文件
+        ```
 
 2. 创建 zed task：需要配置环境变量 `XDG_CONFIG_HOME` 来指定 lazgit 的配置目录。
 
-      ``` json
-      {
-        "label": "Lazygit",
-        "command": "lazygit",
-        "args": [],
-        "env": {
-          "XDG_CONFIG_HOME": "/Users/alizj/.config"
-        },
-        "use_new_terminal": false, // 复用已有未结束的终端
-        "allow_concurrent_runs": true,
-        "hide": "always" // 任务结束后自动关闭终端
-      }
-      ```
+        ``` json
+        {
+          "label": "Lazygit",
+          "command": "lazygit",
+          "args": [],
+          "env": {
+            "XDG_CONFIG_HOME": "/Users/alizj/.config"
+          },
+          "use_new_terminal": false, // 复用已有未结束的终端
+          "allow_concurrent_runs": true,
+          "hide": "always" // 任务结束后自动关闭终端
+        }
+        ```
 
 参考：
 
@@ -1301,7 +1288,7 @@ json-language-server
 
 # Bugs
 
-## 本地交叉编译 remote_server 报错
+## 交叉编译 remote_server 报错
 
    [2024-10-29T17:14:42+08:00 DEBUG worktree] ignoring event "target/remote_server/debug/incremental/build_script_build-34db12mrzjok5/s-h1avtiisg8-0xfewcx-working" within unloaded directory
    error: linking with `aarch64-linux-gnu-gcc` failed: exit status: 1

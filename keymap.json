@@ -26,6 +26,8 @@
       "cmd-<": "menu::SelectFirst",
       "cmd->": "menu::SelectLast",
       "enter": "menu::Confirm",
+      // 在 open recent project 等 Picker 中使用。
+      "ctrl-enter": "menu::SecondaryConfirm",
       "cmd-enter": "menu::SecondaryConfirm",
       "escape": "menu::Cancel",
       "ctrl-g": ["workspace::SendKeystrokes", "escape"],
@@ -47,6 +49,8 @@
       "ctrl-x ctrl-w": "workspace::SaveAs",
       "ctrl-x ctrl-n": "workspace::NewFile",
       "ctrl-x 4 b": "workspace::NewFile",
+      // 将文件或目录添加到 workspace，这样后续打开该 workspace 时文件或目录都还在。
+      "ctrl-x ctrl-cmd-f": "workspace::AddFolderToProject",
 
       /// 命令和工具
       "ctrl-x p b": "branches::OpenRecent",
@@ -67,7 +71,6 @@
     // 优先级仅比 Global 高一级, 比其它 context 都低。
     "context": "Workspace",
     "bindings": {
-      /// 基础操作
       "escape": "workspace::Unfollow",
       "ctrl-g": "workspace::Unfollow",
 
@@ -116,12 +119,10 @@
     // 优先级比 BufferSearchBar > Editor 等嵌套 Editor 低。
     "context": "Editor",
     "bindings": {
-      /// 基础编辑操作
       "tab": "editor::Tab",
       "escape": "editor::Cancel",
 
       /// 光标移动
-      // 基础
       "up": "editor::MoveUp",
       "down": "editor::MoveDown",
       "left": "editor::MoveLeft",
@@ -130,15 +131,12 @@
       "ctrl-p": "editor::MoveUp",
       "ctrl-b": "editor::MoveLeft",
       "ctrl-f": "editor::MoveRight",
-      // 单词
       "cmd-b": "editor::MoveToPreviousWordStart",
       "cmd-f": "editor::MoveToNextWordEnd",
       "ctrl-cmd-b": "editor::MoveToPreviousSubwordStart",
       "ctrl-cmd-f": "editor::MoveToNextSubwordEnd",
-      // 行
       "ctrl-a": "editor::MoveToBeginningOfLine",
       "ctrl-e": "editor::MoveToEndOfLine",
-      // 段落/页面
       "cmd-{": "editor::MoveToStartOfParagraph",
       "cmd-}": "editor::MoveToEndOfParagraph",
       "ctrl-v": ["editor::MovePageDown", { "center_cursor": true }],
@@ -149,16 +147,12 @@
       "cmd-%": "editor::MoveToEnclosingBracket",
 
       /// 选择操作
-      // 基础
       "ctrl-shift-b": "editor::SelectLeft",
       "ctrl-shift-f": "editor::SelectRight",
-      "ctrl-cmd-shift-f": "editor::SelectToNextWordEnd",
       "cmd-shift-f": "editor::SelectToNextWordEnd",
-      "ctrl-cmd-shift-b": "editor::SelectToPreviousWordStart",
       "cmd-shift-b": "editor::SelectToPreviousWordStart",
       "ctrl-space": "editor::SelectToNextWordEnd",
-      "ctrl-cmd-space": "editor::SelectToNextWordEnd",
-      // 复杂
+      "ctrl-u ctrl-space": "editor::SelectToPreviousWordStart",
       "cmd-l": "editor::SelectLine",
       "ctrl-shift-a": ["editor::SelectToBeginningOfLine", { "stop_at_soft_wraps": true }],
       "ctrl-shift-e": ["editor::SelectToEndOfLine", { "stop_at_soft_wraps": true }],
@@ -166,12 +160,11 @@
       "ctrl-shift-n": "editor::SelectDown",
       "ctrl-cmd-{": "editor::SelectToStartOfParagraph",
       "ctrl-cmd-}": "editor::SelectToEndOfParagraph",
-      // 选中整个段落。
+      //  选中整个段落。
       "cmd-shift-h": ["workspace::SendKeystrokes", "cmd-{ ctrl-cmd-}"],
       "ctrl-cmd-<": "editor::SelectToBeginning",
       "ctrl-cmd->": "editor::SelectToEnd",
       "ctrl-x h": "editor::SelectAll",
-      // 按语法选择
       "ctrl-=": "editor::SelectLargerSyntaxNode",
       "ctrl--": "editor::SelectSmallerSyntaxNode",
       "cmd-@": "editor::SelectEnclosingSymbol",
@@ -191,10 +184,12 @@
       "delete": "editor::Delete",
       "ctrl-d": "editor::Delete",
       "cmd-d": "editor::DeleteToNextWordEnd",
+      // BUG: ctrl-cmd-d 按键不生效。
+      "ctrl-u cmd-d": "editor::DeleteToPreviousWordStart",
       "ctrl-k": "editor::CutToEndOfLine",
-      //  剪切当前行：DeleteLine 不会存剪贴板，又没有 CutLine 命令。
+      "ctrl-u ctrl-k": "editor::DeleteToBeginningOfLine",
+      // 剪切当前行到剪切板：DeleteLine 不会存剪贴板，但又没有 CutLine 命令。
       "ctrl-cmd-k": ["workspace::SendKeystrokes", "ctrl-a ctrl-k ctrl-k"],
-      "ctrl-cmd-shift-k": "editor::DeleteToBeginningOfLine",
       // 删除连续的空格为一个。
       "cmd-space": [
         "workspace::SendKeystrokes",
@@ -219,10 +214,12 @@
       // buffer 内搜索
       "ctrl-s": "buffer_search::Deploy",
       // project 项目搜索
+      "ctrl-u ctrl-s": "pane::DeploySearch",
       "ctrl-cmd-s": "pane::DeploySearch",
 
       // 显式项目大纲
       "ctrl-o": "outline::Toggle",
+      "ctrl-u ctrl-o": "project_symbols::Toggle",
       "ctrl-cmd-o": "project_symbols::Toggle",
 
       /// 代码开发功能
@@ -245,7 +242,7 @@
       "cmd-h": "editor::ToggleInlayHints",
       "cmd-r": "editor::Rename",
       "cmd-i": "editor::Hover",
-      "cmd-shift-d": "editor::OpenDocs",
+      "ctrl-c ctrl-d": "editor::OpenDocs",
       "cmd-s": "editor::ShowSignatureHelp",
       "cmd-.": "editor::GoToDefinition",
       "ctrl-cmd-.": "editor::GoToDefinitionSplit",
@@ -273,8 +270,6 @@
       "ctrl-c ctrl-f": "editor::Format",
 
       // 缩进
-      // "ctrl-c ctrl-[": "editor::Outdent",
-      // "ctrl-c ctrl-]": "editor::Indent",
       "cmd-[": "editor::Outdent",
       "cmd-]": "editor::Indent",
 
@@ -302,8 +297,7 @@
       "ctrl-=": "editor::ExpandExcerpts",
       "ctrl-cmd-=": "editor::ExpandExcerptsUp",
 
-      /// assistant editor 有效
-      // 将 Editor 选中内容粘贴到 assistant editor
+      /// assistant editor 有效，将 Editor 选中内容粘贴到 assistant editor
       "ctrl-cmd-]": "assistant::QuoteSelection",
       // 将 assistant editor 选择内容粘贴到 Editor 中当前位置
       "ctrl-cmd-[": "assistant::InsertIntoEditor",
@@ -353,7 +347,7 @@
     }
   },
   {
-    //  完成的 task
+    // 完成的 task
     "context": "Pane > EmptyPane",
     "bindings": {
       "q": "pane::CloseActiveItem"
@@ -380,9 +374,9 @@
     "context": "BufferSearchBar",
     "bindings": {
       "escape": "buffer_search::Dismiss",
+      "ctrl-g": "buffer_search::Dismiss",
       // 焦点从搜索框切换到编辑区域
       "tab": "buffer_search::FocusEditor",
-      "ctrl-g": "buffer_search::Dismiss",
       // 焦点聚焦到搜索框
       "ctrl-s": "search::FocusSearch",
       // 搜索历史记录
@@ -437,7 +431,7 @@
   {
     "context": "ProjectSearchBar > Editor",
     "bindings": {
-      // 基础操作
+      // 焦点从搜索框移动到 Editor
       "escape": "project_search::ToggleFocus",
       "ctrl-g": "project_search::ToggleFocus",
       "tab": "project_search::ToggleFocus",
@@ -535,28 +529,23 @@
     // Editor 的优先级比 Picker>Editor 低。
     "context": "Picker > Editor",
     "bindings": {
-      // 选中候选者。
-      // 如果焦点位于 task::Spawn 面板，则会在输入框中填写候选者命令配置, 可以修改它。
+      // 选中候选者。如果焦点位于 task::Spawn 面板，则会在输入框中填写候选者命令配置, 可以修改它。
       "tab": "picker::ConfirmCompletion",
-      // 如果焦点位于 task::Spawn 面板，则执行 oneshot shell 命令。
-      "ctrl-enter": ["picker::ConfirmInput", { "secondary": false }],
-      // 如果焦点位于 task::Spawn 面板，则执行 Ephemeral tasks shell 命令，该命令不会
-      // 记录到 task history 中。
-      "ctrl-cmd-enter": ["picker::ConfirmInput", { "secondary": true }],
 
-      // FileFinder 面板快捷键，不能直接在 FileFinder 中配置，因为它的优先级比 Editor 低。
-      "ctrl-cmd-o": "file_finder::ToggleMenu",
-      "ctrl-cmd-j": "pane::SplitDown",
-      "ctrl-cmd-k": "pane::SplitUp",
-      "ctrl-cmd-h": "pane::SplitLeft",
-      "ctrl-cmd-l": "pane::SplitRight"
+      // picker::ConfirmInput 目前（20241124）只在 task ui 中使用，下面两个命令也是专门为执行 task 定制的。
+      // 不能绑定到 ctrl-enter/cmd-enter，否则会 break 其它使用 Picker Editor 的场景，如 file finder，
+      // 它们使用 menu::SecondaryConfirm 而非 picker::ConfirmInput 命令。
+      // 1. 执行 oneshot shell 命令，记录到 task history 中，后续可以执行 task: rerun 来重新执行。
+      "alt-enter": ["picker::ConfirmInput", { "secondary": false }],
+      // 2. 执行 Ephemeral tasks shell 命令，不会记录到 task history 中。
+      "cmd-alt-enter": ["picker::ConfirmInput", { "secondary": true }]
     }
   },
   {
     // 光标位于 FileFinder 输入框时，UI 层次是：FileFinder -> Picker > Editor。
     "context": "FileFinder && !menu_open",
     "bindings": {
-      "ctrl-shift-p": "file_finder::SelectPrev",
+      "cmd-p": "file_finder::SelectPrev",
       // 打开目录
       "ctrl-o": "file_finder::ToggleMenu"
     }
@@ -571,7 +560,7 @@
     }
   },
   {
-    // AI助手面板
+    // AI 助手面板
     "context": "AssistantPanel",
     "bindings": {
       "cmd-w": "assistant::CopyCode",
@@ -606,12 +595,12 @@
   {
     "context": "ProposedChangesEditor",
     "bindings": {
-      "cmd-shift-y": "editor::ApplyDiffHunk",
-      "cmd-shift-a": "editor::ApplyAllDiffHunks"
+      // 与 Editor 中的按键保持一致。
+      "alt-a": "editor::ApplyDiffHunk",
+      "ctrl-alt-a": "editor::ApplyAllDiffHunks"
     }
   },
   {
-    // AI 提示库操作
     "context": "PromptLibrary",
     "bindings": {
       "cmd-n": "prompt_library::NewPrompt",
@@ -628,10 +617,8 @@
     }
   },
   {
-    // 终端操作
     "context": "Terminal",
     "bindings": {
-      // 基础操作
       "up": ["terminal::SendKeystroke", "up"],
       "down": ["terminal::SendKeystroke", "down"],
       "left": ["terminal::SendKeystroke", "left"],
@@ -639,28 +626,21 @@
       "escape": ["terminal::SendKeystroke", "escape"],
       "enter": ["terminal::SendKeystroke", "enter"],
       "ctrl-c": ["terminal::SendKeystroke", "ctrl-c"],
-
-      // 终端文本搜索
       "ctrl-s": "buffer_search::Deploy",
-
-      // 创建新终端
       "cmd-enter": "workspace::NewTerminal",
-      // 按 word 移动
       "cmd-b": ["terminal::SendText", "\u001bb"],
       "cmd-f": ["terminal::SendText", "\u001bf"],
-      // 复制粘贴
       "cmd-w": "terminal::Copy",
       "cmd-c": "terminal::Copy",
       "cmd-v": "terminal::Paste",
       "ctrl-y": "terminal::Paste",
       "cmd-a": "editor::SelectAll",
       "ctrl-x h": "editor::SelectAll",
-      // 显示控制
       "ctrl-l": "terminal::Clear",
       "shift-up": "terminal::ScrollLineUp",
       "shift-down": "terminal::ScrollLineDown",
       "ctrl-v": "terminal::ScrollPageDown",
-      "ctrl-shift-v": "terminal::ScrollPageUp",
+      "ctrl-cmd-v": "terminal::ScrollPageUp",
       "cmd-<": "terminal::ScrollToTop",
       "cmd->": "terminal::ScrollToBottom",
       // AI inline 补全
