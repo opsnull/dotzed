@@ -810,209 +810,6 @@ lazygit task：
         }
         ```
 
-参考：
-
-1. https://oliverguenther.de/2021/04/lazygit-an-introduction-series/
-2. https://github.com/jesseduffield/lazygit/blob/master/docs/keybindings/Keybindings_en.md
-
-全局：
-
-- C-r：切换最近的项目；
-- @：打开右下角的 git 命令提示面板；
-- ？：打开帮助菜单；
-- f: 从 remote fetch 最新的更新；
-- P: push
-- p: pull
-- q 或 C-c：退出（quit）
-- z：undo
-- C-z：redo
-- j/k 或 <UP>/<DOWN>: 前一个或后一个 item, 也即是前后移动;
-- <left>/<right>: 在 block panel 间跳转，共有编号为 1-5 的 5 个 block；
-- 1-5: 跳转到对应编号的 block；
-- [/]: 在一个 block panel 的多个 tab 中切换。
-- esc：返回（return）上一级；
-- +/-： 切换当前 tab 的显示方式（全屏、半屏等），在查看 diff 或 commit 时非常有用。
-- H/L: 左右 scroll;
-- </>: 移动到 buffer 开始或结束；
-- : : 执行 shell 命令。
-- search：在不同 tab 中使用 / 来触发搜索，但语义可能不一致，使用 n/N 来前后搜索。
-  - C-b ：按 status 过滤文件；
-  - C-s ：按 path、commit、author 过滤文件；
-- 前一个或后一个 page：,/.
-- R: 刷新 git 状态（后台执行 git status，git branch 等命令以更新面板，但是不执行 git fetch）；
-- d：discard 丢弃文件变更
-- D：显示 reset 高级选项，包括 soft、hard 等；
-- g: reset 到 UPSTREAM；
-- <SPACE>：在 file panel 中是 stage 当前文件，在 diff panel 中是 stage 当前 hunk；
-
-- o: 使用外部编辑器（external editor）打开文件(显示变更后的文件内容)
-- e：使用系统缺省应用（dfault application）编辑文件。
-
-比较 Commit：
-
-- W: 在 commit 或 branch 上执行时，将当前 commit 作为标记与后续选择的其它 commit 进行比较，差异显示在 diff panel 中。这时按 <enter> 来显示 diff 的文件列表, 再次按 W 将显示翻转 diff 方向，或者退出 diff mode。
-
-File Panel：
-
-- Untracked(??), Added (A), Deleted(D), or Modified(M)
-  - unstaged (red) and staged (green)
-- <enter>: 打开当前文件或目录的 unstage diff panel，这样可以按 hunks 或 lines 来 stage。
-- <SPACE>: stage 当前文件
-- `: 切换文件树的显示方式（层次或扁平显示）
-- a: stage、unstaged 所有文件
-- s：stash 当前文件
-  - S: 查看 stash 选项（e.g. stash all, stash staged, stash unstaged)
-- i: 忽略当前文件
-- c: commit 当前的 stage 文件；
-- A：amend 上一次 commit
-- C-b: 只显示 stage 或 unstage 的文件；
-- r: refresh 文件
-
-Diff Panel:
-
-- h/l 或 <left>/<right>: 前一个或后一个 hunk：
-- <SPACE>: stage 当前 hunk line 或 selection，如果已经 staged 了，则 unstage 当前 hunk；
-- a: Toggle hunk selection mode，即一次选择一个 hunk；
-- range select：可以批量对选择的项目（file、commit）应用命令，如在 unstage panel 中选择一部分
-  hunk，然后使用 SPACE 命令来进行 stage。反之，在 stage panel 中，使用 v 选择一个 range 后，
-  使用 SPACE 命令来进行 unstage。
-  1. 先按 v，然后使用 up、down 或 j/k 来选择。再次按 v 来 reset 选择；
-  2. 或者按 shift+up 或 shift+down 来选择。再次按不带 shift 的 up、down 来 reset 选择；
-- d：discard 丢弃部分文件变更（丢弃文件中 staged、unstaged 部分的变更）
-  - When unstaged change is selected, discard the change using git reset.
-  - When staged change is selected, unstage the change.
-- <TAB>: 在 unstage 和 stage view 之间切换；
-- E: 编辑当前 diff hunk，编辑后保存关闭临时文件。
-- esc: 返回到 file panel。
-- {/}： 增加或减少 diff 上下文行数。
-- c: Commit staged changes.
-- w：Commit changes without pre-commit hook
-- C：Commit changes using git editor
-
-Branch Panel：
-
-- 以 \* 开头的 branch 为当前 branch；向上箭头表示 commit ahead，向下箭头表示 commit behind；
-- <SPACE>: checkout 当前 branch；
-- c：checkout by name，按 branch name 来 checkout，如果是 -，则代表 latest branch；
-- <Enter>: 查看当前 branch 的 commit 历史，在某个 commit 上按 <Enter> 则显示 Commit Panel。
-- p：pull 远程分支最新提交并合并到本地
-- f：fast-forward 当前分支到远程分支
-- F：force checkout，会丢弃当前 workspace 所有变更；
-- n：创建新 branch
-- R：rename branch
-- M：将当前光标所在分支 merge 到本地当前分支，显示 merge 选项
-- r：将当前本地分支 rebase 到光标所在分支
-
-* /: 按 branch name 搜索
-* [/]: 切换到该 panel 的其它 tab，如 remote branch 和 tags；
-* w : 从该 branch 创建 worktree；
-
-Commit Panel: 显示当前本地分支的 commit history list，可以进行 Squash、Fixup、Amend、Reword 等操作。
-
-- 4：切换到该 Panel
-- <Enter>: 显示该 commit 下的变更文件列表，在文件上按 <Enter> 显示该文件的 Patch。
-  - 和 diff panel 一样，可以对整个文件或部分 hunk 选择，然后生成 custom patch；
-  - 最后执行 Ctrl-p 来显示 custom patch menu；
-    - Reset patch cancel the custom patch, resetting any selections you've made
-    - Apply patch Run git applywith the patch here (this won't do anything if the patch is from this commit)
-    - Apply patch in reverse Run git apply --reverse with the patch here
-    - Remove patch from original commit Removes the selected changes from this commit and discards it! (Results in rebase)
-    - Move patch into new index Removes the selected changes from this commit and adds it to the stash (Results in rebase)
-    - Move patch into new commit Removes the selected changes from this commit and adds a new commit with the changes. The commit message will be "Split from <this commit>"
-- / : 按 commit hash id 或 message summary 搜索；
-
-- i：开始 interactive rebase，对要进行 rebase 的 commit 进行 squash (s), fixup (f),drop (d), edit (e), move up (ctrl+i) or move down (ctrl+j)，然后使用 m 触发 rebase options menu，选择 continue。可以使用 v 来选择多个 commit。
-- e：编辑（edit）选中的 commit，会对该 commit 以后的 commit 进行 rebase
-
-- A: amend, 如果 files panel 中有 staged changes 则 amend 会带上。如果对历史 commit 进行 amend，会进行 rebase。
-- s：squash，将所在 commit 合并到前一个（below it） commit（保留 commit message），会进行 rebase
-- f：fixup，将所在 commit 合并到后一个 commit（丢弃 commit message），会进行 rebase。
-- d：delete commit，会进行 rebase。
-- r：reword，编辑 commit message，会进行 rebase。
-- R：reword in editor，会进行 rebase。
-
-- F: Create fixup commit，为选择的 commit 创建 fixup！commit，后续在该 commit 上执行 S 来 squash all above fixup commits
-- S：Apply fixup commits，Squash all 'fixup!' commits, either above the selected commit,
-  or all in current branch (autosquash).
-
-- t：revert commit
-- T：tag commt
-- B: 将光标所在 commit 标记为 rebase Base commit（不包含光标所在的 commit，往上的所有 commit 将被 rebase 到其它分支），然后切换到其它 branch 执行 rebase；
-- a：Set/Reset commit author or set co-author.
-- <c-l>: 设置 commit log graph 显示选项；
-- <c-t> Open external diff tool (git difftool)
-- <SPACE>: Checkout the selected commit as a detached HEAD.
-- y：Copy commit attribute to clipboard (e.g. hash, URL, diff, message, author).
-- o：Open commit in browser
-- n：Create new branch off of commit
-- g：View reset options (soft/mixed/hard) for resetting onto selected item.
-
-Push 到远程不同的分支：
-
-1. 需要本地先建一个后续 push 到远程的分支；
-2. 执行 P 来 push 到远程。
-
-Merge conflict 解决：
-
-1. 有 conflict 的文件会显示 U 字母，这时 lazygit 会显示冲突列表；
-2. 使用 j/k 来在冲突列表中移动，然后 <SPACE> 来选择某一个版本。也可以使用 e/o 打开编辑器, 来编辑解决冲突。
-3. 最后 stage 解决完冲突的文件；
-
-Cherry picking：
-
-1. 在 commit panel 中使用 C（copy cherry-pick） 选中一个或多个 commit；
-2. 然后切换或选择另一个分支，使用 V（paste cherry-pick）来生效；
-
-Stash panel：stash 将当前 worktree 的变更保存到 stash 空间，然后将 worktree 恢复到上一次 commit 的干净状态。
-
-- 使用 5 来切换到该 panel
-- 在 files tab 中使用 s 命令将 staged 或 unstaged 的内容保存到 stash；
-- <SPACE>: apply stash 但是不 popup；
-- g：popup stash
-- n：从 stash 创建一个 branch；
-- d：delete stash entry；
-
-Interactive Rebase 操作（修改当前分支的 commit）：
-
-- https://github.com/jesseduffield/lazygit/wiki/Interactive-Rebasing
-
-1. 按 4 切换到 commit panel；
-2. 在要开始 interactive rebase 的 commit 上按 e（Edit），这时会从该 commit parent 开始 rebase，光标所在 commit 是 edit 状态，以后的（above）的 commit 都会被 pick 选中。
-
-- 如果执行的是 i 命令，则可以对整个 commit history 的 commit 进行标记，而不是像 edit 那样从标记的 commit 开始 rebase。
-
-3. lazygit 提示 YOU ARE HERE，这时 git 暂停在该 commit，等待用户修改该 commit（即 edit 语义）：
-
-- 可以对 above commit 进行修改，'squash（s）', 'drop（d）', 'edit（e）', 'pick（p）', and 'fixup（f）'；
-
-4. 修改 commit：在 worktree 中修改文件，然后 stage（<SPACE>)，再 amend 该 commit (shift-A)，这时在 commit diff 中可以看到该修改被合并到那个 commit 中。
-5. 回到 commit panel，按 m 来触发 merge or rebase options，然后选择 continue。
-6. 然后从 edit 开始的 commit 到最新的 commit 都会被重新提交，生成新的 commit id。
-
-Rebase onto 操作（将其它分支 commit rebase 到任意分支）：
-
-1. 在 branch panel 中选择 bugfix 分支，commit panel 中显示该分支的 commit；
-2. 在 commit panel 中选择要 Rebase 的 Base Commit，按 B，该 commit 后续（不包含该 commit）的 commits 都会被 rebase 到后续其它分支；
-3. 在 branch panel 中选择要 rebase 到的其它分支，按 r，这时会出现 rebase dialog，可以进行 simple
-   或 iteractive rebasing。
-
-注：amend 操作用于修改 commit，将当前 workspace 中要做的修改 stage，然后 git commit --amend 时会
-合并到该 commit 中。
-
-Bisect
-
-- Press b in the commits view to mark a commit as good/bad in order to begin a git bisect.
-
-What's the difference between git reflog and log?
-
-- https://stackoverflow.com/a/17860179/19867059
-
-  git log shows the current HEAD and its ancestry. That is, it prints the commit HEAD points to, then its parent, its parent, and so on. It traverses back through the repo's ancestry, by recursively looking up each commit's parent.
-
-  (In practice, some commits have more than one parent. To see a more representative log, use a command like git log --oneline --graph --decorate.)
-
-  git reflog doesn't traverse HEAD's ancestry at all. The reflog is an ordered list of the commits that HEAD has pointed to: it's undo history for your repo. The reflog isn't part of the repo itself (it's stored separately to the commits themselves) and isn't included in pushes, fetches or clones; it's purely local.
-
 # assistant
 
 zed 的 claude 3.5 Sonnet 每个账号每月 10 美元额度，超过的需要自己充值。
@@ -1227,7 +1024,7 @@ LOCAL_NOTEBOOK_DEV=1 zed ~/
 
 后续开发计划大概是下一年年初完善：https://github.com/zed-industries/zed/issues/5273#issuecomment-2486935753
 
-# remote
+# remote_server
 
 安装 docker desktop。
 
@@ -1248,38 +1045,49 @@ Serving on ipv? :::8080 by http,socks4,socks5
 1. 配置使用 Host Network 类型；
 1. 配置 HTTP 和 HTTPS 代理均为 https://127.0.0.1:8080
 
-切换到 zed 项目源码目录，启动 zed：
+修改 zed 项目的 .cargo/config.toml 文件，将 link-arg=-fuse-ld=mold 替换为 link-arg=-B/usr/local/libexec/mold
+
+关闭使用 sccache。
+
+切换到 zed 项目源码目录，手动编译并上传 remote_server binary：
+
+``` sh
+# 同构编译
+zj@a:~/go/src/github.com/zed-industries/zed$ cargo build --package remote_server --features debug-embed --target-dir target/remote_server
+
+# 交叉编译，生成 aarch64-unknown-linux-gnu 架构的 remote_server binary。
+# 需要本地启动支持交叉编译的 docker-desktop。
+zj@a:~/go/src/github.com/zed-industries/zed$ cargo install cross --git "https://github.com/cross-rs/cross"
+zj@a:~/go/src/github.com/zed-industries/zed$ CROSS_CONTAINER_OPTS="--mount type=bind,src=./target,dst=/app/target" "cross" "build" "--package" "remote_server" "--features" "debug-embed" "--target-dir" "target/remote_server" "--target" "aarch64-unknown-linux-gnu"
+
+zj@a:~/go/src/github.com/zed-industries/zed$ ls target/remote_server/aarch64-unknown-linux-gnu/debug/
+build/  deps/  examples/  incremental/  libremote_server.d  libremote_server.rlib  remote_server*  remote_server.d
+
+# 上传到远程服务器的 ~/.zed_server/zed-remote-server-dev-build 位置
+zj@a:~/go/src/github.com/zed-industries/zed$ scp target/remote_server/aarch64-unknown-linux-gnu/debug/remote_server dev2:~/.zed_server/zed-remote-server-dev-build
+```
+
+启动 zed：
++ dev 模式下需要 unset ZED_BUILD_REMOTE_SERVER 环境变量，否则每次连接远程服务器都会重新编译 remote_server binary。
 
 ```sh
-zj@a:~/.config/zed$ cd
 zj@a:~$ cd go/src/github.com/zed-industries/zed
-zj@a:~/go/src/github.com/zed-industries/zed$  RUST_LOG=debug /Applications/Zed\ Dev.app/Contents/MacOS/zed
+zj@a:~/go/src/github.com/zed-industries/zed$ RUST_LOG=debug /Applications/Zed\ Dev.app/Contents/MacOS/zed
 ```
 
-使用 `projects: open remote` 创建一个 SSH 连接，zed 会自动安装 cross 来为 ssh server 交叉编译一个
-zed binary 并上传。
+使用 `projects: open remote` 创建一个 SSH 连接，zed 在没有设置 ZED_BUILD_REMOTE_SERVER 环境变量的情况下，会复用 server 端一有的 ~/.zed_server/zed-remote-server-dev-build binary。
+
+登录目标服务器，可见 `~/.zed_server/zed-remote-server-dev-build` 二进制在运行：
 
 ```sh
-zj@a:~/go/src/github.com/zed-industries/zed$ docker ps -a
-CONTAINER ID   IMAGE                                                                 COMMAND                     CREATED         STATUS          PORTS     NAMES
-c5e53ec7bee9   localhost/cross-rs/cross-custom-zed:aarch64-unknown-linux-gnu-8d728   "sh -c 'PATH=\"$PATH\"…"   3 minutes ago   Up 3 minutes              cross-1.81-x86_64-unknown-linux-gnu-38948-eeb90cda1-aarch64-unknown-linux-gnu-8d728-1730176669812
-```
-
-然后登录目标服务器，可见本地的 zed 向它上传了一个本地交叉编译生成的 `zed-remote-server-dev-linux--aarch64` 二进制并运行：
-
-```sh
-alizj@lima-dev2:~$ ps -eH -opid,args |grep zed
-  54801           grep --color=auto zed
-  54534         .zed_server/zed-remote-server-dev-linux-aarch64 proxy --identifier dev-workspace-176
-  54536   /home/alizj.linux/.zed_server/zed-remote-server-dev-linux-aarch64 run --log-file /home/alizj.linux/.local/share/zed/logs/server-dev-workspace-176.log --pid-file /home/alizj.linux/.local/share/zed/server_state/dev-workspace-176/server.pid --stdin-socket /home/alizj.linux/.local/share/zed/server_state/dev-workspace-176/stdin.sock --stdout-socket /home/alizj.linux/.local/share/zed/server_state/dev-workspace-176/stdout.sock --stderr-socket /home/alizj.linux/.local/share/zed/server_state/dev-workspace-176/stderr.sock
-  54683     /home/alizj.linux/.local/share/zed/node/node-v22.5.1-linux-arm64/bin/node /home/alizj.linux/.local/share/zed/languages/json-language-server/node_modules/vscode-langservers-extracted/bin/vscode-json-language-server --stdio
+alizj@lima-dev2:~$ ps aux |grep zed
+alizj     288542  0.0  0.0 215088 14720 ?        Ssl  21:04   0:00 .zed_server/zed-remote-server-dev-build proxy --identifier dev-workspace-203
+alizj     288545  3.4  0.3 1637268 48148 ?       Sl   21:04   0:00 /home/alizj.linux/.zed_server/zed-remote-server-dev-build run --log-file /home/alizj.linux/.local/share/zed/logs/server-dev-workspace-203.log --pid-file /home/alizj.linux/.local/share/zed/server_state/dev-workspace-203/server.pid --stdin-socket /home/alizj.linux/.local/share/zed/server_state/dev-workspace-203/stdin.sock --stdout-socket /home/alizj.linux/.local/share/zed/server_state/dev-workspace-203/stdout.sock --stderr-socket /home/alizj.linux/.local/share/zed/server_state/dev-workspace-203/stderr.sock
 ```
 
 同时 zed 在目标服务器上创建和保存了如下文件和目录：
 
 ```sh
-alizj@lima-dev2:~$ ./.zed_server/zed-remote-server-dev-linux-aarch64 version
-0.160.0
 alizj@lima-dev2:~$ ls ~/.config/zed/
 settings.json
 
@@ -1301,9 +1109,85 @@ json-language-server
 - 协议链接：zed://ssh/<connnection>/<path>
 - zed 命令：zed ssh://my-host/~/code/zed
 
-# Bugs
+本地开发构建使用 `dev profile`，zed 内部会识别当前是否 dev 版本（通过宏 `cfg!(not(debug_assertions))`），会做一些 dev 特殊处理逻辑。
 
-## 交叉编译 remote_server 报错
+zed 的 ssh_session.rs 的 [update_server_binary_if_needed() 函数](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/remote/src/ssh_session.rs#L1735) 会先执行 server 上的 zed-remote-server 的 version 子命令来获得 server 语义版本(current_version)：
+
+```sh
+alizj@lima-dev2:~/.zed_server$ ~/.zed_server/zed-remote-server-dev-build version
+0.164.0
+```
+
+编译时，zed 使用文件 `crates/zed/RELEASE_CHANNEL` 中配置来确定 release channel 类型，可选值为：
+
+- dev
+- nightly
+- preview
+- stable
+
+有一些 zed 特性也是根据 release channel 类型来做不同处理的。例如 ssh_sessions.rs 的
+update_server_binary_if_needed() 根据 release channel 来确定需要为 remote server
+[安装的版本（wanted_version）](https://github.com/zed-industries/zed/blob/40802d91d4faf849ad35fb53d6b00320c1d04cc1/crates/remote/src/ssh_session.rs#L1760)：
+
+1. 如果是 dev，则设置 wanted_version 为 None，后续进行本地构建；
+2. 如果是 nightly、preview、stable，则从 zed.dev API 获得对应版本；
+
+如果执行成功则获得 current_version 值，否则将它设置为 None，则进行版本比较(current_version vs wanted_version)：
+
+1. 如果两者都有值且匹配，则不安装或升级；
+1. 如果本地版本低，则提示升级本地 zed 版本后返回；
+1. 否则（如 server 版本低，或者有任何一方为 None），则会安装新版本。
+
+在安装新 remote server binary 前，zed 会检查 bianry 是否在使用。如果在使用且 zed 不是 dev 版本，则会直接返回错误，提示 binary 在使用，不能升级。但是如果是 dev 版本，则即使在使用也可以升级。
+
+如果是 dev 模式（wanted_version 为 None）：
+
+1. 先检查环境变量 `ZED_BUILD_REMOTE_SERVER` 是否设置，如果 **未设置** ：
+  1. 如果 current_version 有值，则复用 server 端已有的 binary，直接返回；
+  2. 如果无值，则报错：ZED_BUILD_REMOTE_SERVER is not set, but no remote server exists
+2. 在设置 ZED_BUILD_REMOTE_SERVER 的情况下：
+  1. 如果是 dev 模式，则**每次都进行**本地构建和上传到 server；
+  2. 否则报错：Running development build in release mode, cannot cross compile
+    (unset ZED_BUILD_REMOTE_SERVER)
+
+如果不是 dev 模式，则检查配置参数 upload_binary_over_ssh：
+
+1. 如果为 false（默认），则 server 尝试先从 zed.dev 下载 binary，如果失败则从 zed 本地上传。
+2. 如果为 true，则从 zed 本地上传。
+
+从 zed 本地上传：本地 zed 先下载 binary，然后上传到 server。
+
+总结：在 dev 模式下：
+
+1. 如果未设置环境变量 ZED_BUILD_REMOTE_SERVER，则要求远端已经有 `~/.zed_server/zed-remote-server-dev-build` 二进制，**直接复用**，否则报错。
+2. 如果设置 ZED_BUILD_REMOTE_SERVER，则每次连接远端时都会进行本地构建和上传。
+
+所以不要在 ~/.bashrc 或为 zed 设置 ZED_BUILD_REMOTE_SERVER 环境变了，而是人工编译并 scp remote_server binary 到远程。
+
+# 交叉编译 remote_server 失败
+
+报错 1：
+
+zj@a:~/go/src/github.com/zed-industries/zed$  CROSS_CONTAINER_OPTS="--mount type=bind,src=./target,dst=/app/target" "cross" "build" "--package" "remote_server" "--features" "debug-embed" "--target-dir" "target/remote_server" "--target" "aarch64-unknown-linux-gnu"
+info: downloading component 'rust-src'
+info: installing component 'rust-src'
+//...
+View build details: docker-desktop://dashboard/build/desktop-linux/desktop-linux/eap81oo6osftl6z9tjcqe4h9c
+
+ 1 warning found (use docker --debug to expand):
+ - InvalidDefaultArgInFrom: Default value for ARG ${CROSS_BASE_IMAGE} results in empty or invalid base image name (line 4)
+error: process didn't exit successfully: `/opt/homebrew/bin/sccache rustc -vV` (exit status: 127)
+
+解决方案：
+
+  1. 注释 ~/.cargo/config.toml 文件中
+
+        [build]
+        #rustc-wrapper = "/opt/homebrew/bin/sccache"
+
+  2. 注释 ~/.bashrc 中的 export RUSTC_WRAPPER="/opt/homebrew/bin/sccache"
+
+报错 2：
 
    [2024-10-29T17:14:42+08:00 DEBUG worktree] ignoring event "target/remote_server/debug/incremental/build_script_build-34db12mrzjok5/s-h1avtiisg8-0xfewcx-working" within unloaded directory
    error: linking with `aarch64-linux-gnu-gcc` failed: exit status: 1
@@ -1311,27 +1195,28 @@ json-language-server
    = note: LC_ALL="C" PATH="/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin:/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin:/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/x86_64-unknown-linux-gnu/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/bin" VSLANG="1033" "aarch64-linux-gnu-gcc" "-Wl,--version-script=/tmp/rustc36YcCI/list" "-Wl,--no-undefined-version" "/tmp/rustc36YcCI/symbols.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62aa136303f7057-cgu.00.rcgu.o" "/target/aarch64-unknown-linux-gnu/debug/deps/zune_jpeg-d98812c935e11704.zune_jpeg.b62 "/Users/alizj/.rustup/toolchains/1.81-x86_64-unknown-linux-gnu/lib/rustlib/aarch64-unknown-linux-gnu/lib" "-o" "/target/aarch64-unknown-linux-gnu/debug/deps/libzune_jpeg-d98812c935e11704.so" "-Wl,--gc-sections" "-shared" "-Wl,-soname=libzune_jpeg-d98812c935e11704.so" "-Wl,-z,relro,-z,now" "-nodefaultlibs" "-fuse-ld=mold"
    = note: aarch64-linux-gnu-gcc: error: unrecognized command line option '-fuse-ld=mold'; did you mean '-fuse-ld=gold'?
 
-   解决办法：
+解决办法：
 
-   1. 下载 mold 包，并解压到 /usr/local；
-   2. 修改 .cargo/config.toml，使用 "link-arg=-B/usr/local/libexec/mold"，
-      https://github.com/zed-industries/zed/pull/19910, 该目录下的 ld 是 mold 的软链接，这样 gcc 在使用 ld 时实际使用的是 old。
+    修改 zed 项目的 .cargo/config.toml 文件，将 link-arg=-fuse-ld=mold 替换为 link-arg=-B/usr/local/libexec/mold
 
-   https://gitlab.kitware.com/cmake/cmake/-/issues/25748
+    该目录下的 ld 是 mold 的软链接，这样 gcc 在使用 ld 时实际使用的是 mold。
 
-   zj@a:~/go/src/github.com/zed-industries/zed$ docker run -it localhost/cross-rs/cross-custom-zed:aarch64-unknown-linux-gnu-8d728 bash
+    https://github.com/zed-industries/zed/pull/19910
 
-   root@b4fce23c85a8:/app# aarch64-linux-gnu-gcc --version
-   aarch64-linux-gnu-gcc (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0
-   Copyright (C) 2019 Free Software Foundation, Inc.
-   This is free software; see the source for copying conditions. There is NO
-   warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    ``` sh
+    zj@a:~/go/src/github.com/zed-industries/zed$ docker run -it localhost/cross-rs/cross-custom-zed:aarch64-unknown-linux-gnu-8d728 bash
 
-   root@b4fce23c85a8:/app# which mold
-   /usr/local/bin/mold
+    root@b4fce23c85a8:/app# aarch64-linux-gnu-gcc --version
+    aarch64-linux-gnu-gcc (Ubuntu 9.4.0-1ubuntu1~20.04.2) 9.4.0
+    Copyright (C) 2019 Free Software Foundation, Inc.
+    This is free software; see the source for copying conditions. There is NO
+    warranty; not even for MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
 
+    root@b4fce23c85a8:/app# which mold
+    /usr/local/bin/mold
+    ```
 
-## 构建 webrtc-sys 失败
+# 构建 webrtc-sys 失败
 
 - 将 reqwest 升级到最新的 v0.12 版本；
 - 启用 reqwest 的 socks feature；
@@ -1382,7 +1267,7 @@ if resp.status() != StatusCode::OK {
 }
 ```
 
-## 构建 WebRTC 失败
+# 构建 WebRTC 失败
 
 > An SSL error has occurred and a secure connection to the server cannot be made
 
@@ -1413,76 +1298,3 @@ zj@a:~/go/src/github.com/zed-industries/zed$ ls -l target/debug/WebRTC.framework
        <true/>
    </dict>
 ```
-
-本地开发构建使用 `dev profile`，zed 内部会识别当前是否 dev 版本（通过宏 `cfg!(not(debug_assertions))`），会做一些 dev 特殊处理逻辑。
-
-```sh
-# 构建 MacOS bundle DMG 并安装
-$ ./script/bundle-mac -idl
-
-# 或者只构建 binary
-$ cargo build --profile dev
-$ RUST_LOG=debug ./target/dev/zed
-```
-
-zed 的 ssh_session.rs 的 [update_server_binary_if_needed() 函数
-](https://github.com/zed-industries/zed/blob/f919fa92de1d73c492282084b96249b492732f83/crates/remote/src/ssh_session.rs#L1735) 会先执行 server 上的 zed-remote-server 的 version 子命令来获得 server 语义版本(current_version)：
-
-```sh
-alizj@lima-dev2:/Users/alizj/.config/zed$ ~/.zed_server/zed-remote-server-dev-linux-aarch64 version
-0.160.0
-```
-
-编译时，zed 使用文件 `crates/zed/RELEASE_CHANNEL` 中配置来确定 release channel 类型，可选值为：
-
-- dev
-- nightly
-- preview
-- stable
-
-有一些 zed 特性也是根据 release channel 类型来做不同处理的。例如 ssh_sessions.rs 的
-update_server_binary_if_needed() 根据 release channel 来确定需要为 remote server
-[安装的版本（wanted_version）](https://github.com/zed-industries/zed/blob/40802d91d4faf849ad35fb53d6b00320c1d04cc1/crates/remote/src/ssh_session.rs#L1760)：
-
-1. 如果是 dev，则设置 wanted_version 为 None，后续进行本地构建；
-2. 如果是 nightly、preview、stable，则从 zed.dev API 获得对应版本；
-
-如果执行成功则获得 current_version 值，否则将它设置为 None，则进行版本比较(current_version vs wanted_version)：
-
-1. 如果两者都有值且匹配，则不安装或升级；
-1. 如果本地版本低，则提示升级本地 zed 版本后返回；
-1. 否则（如 server 版本低，或者有任何一方为 None），则会安装新版本。
-
-在安装新 remote server binary 前，zed 会检查 bianry 是否在使用。如果在使用且 zed 不是 dev 版本，则会直接返回错误，提 示 binary 在 使用，不能升级。但是如果是 dev 版本，则即使在使用也可以升级。
-
-如果是 dev 模式（wanted_version 为 None）：
-
-1. 先检查环境变量 `ZED_BUILD_REMOTE_SERVER` 是否设置，如果 **未设置** ：
-1. 如果 current_version 有值，则复用 binary，直接返回；
-1. 如果无值，则报错：ZED_BUILD_REMOTE_SERVER is not set, but no remote server exists
-1. 在设置 ZED_BUILD_REMOTE_SERVER 的情况下：
-1. 如果是 dev 模式，则进行本地构建和上传到 server；
-1. 否则报错：Running development build in release mode, cannot cross compile
-   (unset ZED_BUILD_REMOTE_SERVER)
-
-如果不是 dev 模式，则检查配置参数 upload_binary_over_ssh：
-
-1. 如果为 false（默认），则 server 尝试先从 zed.dev 下载 binary，如果失败则从 zed 本地上传。
-2. 如果为 true，则从 zed 本地上传。
-
-从 zed 本地上传：本地 zed 先下载 binary，然后上传到 server。
-
-总结：在 dev 模式下：
-
-1. 如果未设置环境变量 ZED_BUILD_REMOTE_SERVER，则要求远端已经有 bianry 在运行，**直接复用**。
-2. 如果设置 ZED_BUILD_REMOTE_SERVER，则会本地侯建和上传。
-
-```sh
-ZED_BUILD_REMOTE_SERVER=1  RUST_log=debug target/debug/zed
-```
-
-zed 本地构建 remote server bianry 时执行的命令：
-
-1. 同构：cargo build --package remote_server --features debug-embed --target-dir target/remote_server
-2. 异构：triple=aarch64-linux cargo install cross --git "https://github.com/cross-rs/cross"
-   cross build --package remote_server --features debug-embed --target-dir target/remote_server --target ${triple}
