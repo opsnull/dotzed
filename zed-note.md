@@ -1212,6 +1212,21 @@ zed 各主题预览：https://zed-themes.com/?order=recent
 1. https://github.com/catppuccin/zed
 2. 内置的 Gruvbox Dark Hard
 
+# repl
+
+[Initial Notebook UI structure](https://github.com/zed-industries/zed/pull/19756)
+
+启用方式：
+1. 设置 LOCAL_NOTEBOOK_DEV=1；
+2. 然后开启一个 workspace(而非单个 ipynb 文件）；
+
+例如:
+``` sh
+LOCAL_NOTEBOOK_DEV=1 zed ~/
+```
+
+后续开发计划大概是下一年年初完善：https://github.com/zed-industries/zed/issues/5273#issuecomment-2486935753
+
 # remote
 
 安装 docker desktop。

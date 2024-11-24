@@ -175,8 +175,8 @@
   },
   "proxy": "socks5h://127.0.0.1:1080",
   "git": {
-    // 在最左侧显示 git gutter。
-    "git_gutter": "tracked_files",
+    // 是否在最左侧显示 git gutter。
+    "git_gutter": "hide",
     "inline_blame": {
       "enabled": true,
       "delay_ms": 5000,

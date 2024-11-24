@@ -152,6 +152,8 @@
       "cmd-shift-f": "editor::SelectToNextWordEnd",
       "cmd-shift-b": "editor::SelectToPreviousWordStart",
       "ctrl-space": "editor::SelectToNextWordEnd",
+      // ctrl-cmd-space 默认被绑定到 MacOS 的 editor::ShowCharacterPalette。
+      "ctrl-cmd-space": "editor::SelectToNextWordEnd",
       "ctrl-u ctrl-space": "editor::SelectToPreviousWordStart",
       "cmd-l": "editor::SelectLine",
       "ctrl-shift-a": ["editor::SelectToBeginningOfLine", { "stop_at_soft_wraps": true }],
