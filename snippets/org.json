@@ -1,32 +1,32 @@
 {
   "center block": {
     "description": "#+BEGIN_CENTER block",
-    "prefix": "<C",
+    "prefix": "_center",
     "body": ["#+BEGIN_CENTER", "$0", "#+END_CENTER"]
   },
   "comment block": {
     "description": "#+BEGIN_COMMENT block",
-    "prefix": "<c",
+    "prefix": "_comment",
     "body": ["#+BEGIN_COMMENT", "$0", "#+END_COMMENT"]
   },
   "example block": {
     "description": "#+BEGIN_EXAMPLE block",
-    "prefix": "<e",
+    "prefix": "_example",
     "body": ["#+BEGIN_EXAMPLE", "$0", "#+END_EXAMPLE"]
   },
   "src block": {
     "description": "#+BEGIN_SRC ... block",
-    "prefix": "<s",
+    "prefix": "_src",
     "body": ["#+BEGIN_SRC ${1:lang}", "$0", "#+END_SRC"]
   },
   "verse": {
     "description": "verse",
-    "prefix": "<v",
+    "prefix": "_verse",
     "body": ["#+BEGIN_VERSE", "$0", "#+END_VERSE"]
   },
   "export ascii": {
     "description": "#+BEGIN_EXPORT ascii",
-    "prefix": "<a",
+    "prefix": "_export",
     "body": ["#+BEGIN_EXPORT ascii", "$0", "#+END_EXPORT"]
   },
   "export html": {
@@ -59,11 +59,6 @@
       "$0"
     ]
   },
-  "code": {
-    "description": "code",
-    "prefix": "code",
-    "body": ["#+BEGIN_${1:LANG} ${2:options}", "$0", "#+END_$1"]
-  },
   "dot": {
     "description": "dot",
     "prefix": "dot",
@@ -88,15 +83,7 @@
   "entry": {
     "description": "entry",
     "prefix": "entry",
-    "body": [
-      "#+BEGIN_HTML",
-      "---",
-      "layout: ${1:default}",
-      "title: ${2:title}",
-      "---",
-      "#+END_HTML",
-      "$0"
-    ]
+    "body": ["#+BEGIN_HTML", "---", "layout: ${1:default}", "title: ${2:title}", "---", "#+END_HTML", "$0"]
   },
   "export": {
     "description": "export",
@@ -120,11 +107,7 @@
   "image": {
     "description": "img",
     "prefix": "img",
-    "body": [
-      "#+ATTR_HTML: :alt $2 :align ${3:left} :class img",
-      "[[${1:src}]${4:[${5:title}]}]",
-      "$0"
-    ]
+    "body": ["#+ATTR_HTML: :alt $2 :align ${3:left} :class img", "[[${1:src}]${4:[${5:title}]}]", "$0"]
   },
   "latex": {
     "description": "latex",
@@ -150,6 +133,7 @@
   },
   "html width": {
     "description": "#+attr_html: :width ...",
+    "prefix": "html",
     "body": ["#+ATTR_HTML: :width ${1:500px}"]
   }
 }

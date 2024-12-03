@@ -32,9 +32,9 @@
   // 根据 preferred_line_length 或当前 editor 的宽度来自动“软”换行。
   // 软换行：视觉上换行，但是实际文本并没有插入换行字符。
   "soft_wrap": "bounded",
-  "preferred_line_length": 120,
+  "preferred_line_length": 130,
   // 在列表中的各宽度位置显示 guide line。
-  "wrap_guides": [90, 120],
+  //"wrap_guides": [85, 120],
   "indent_guides": {
     "coloring": "fixed"
   },
@@ -232,8 +232,6 @@
     "Markdown": {
       "tab_size": 2,
       "formatter": "prettier"
-      //"preferred_line_length": 110,
-      //"soft_wrap": "preferred_line_length"
     },
     "TOML": {
       "formatter": "prettier",
@@ -245,12 +243,10 @@
     },
     "JSON": {
       "tab_size": 2,
-      "preferred_line_length": 130,
       "formatter": "prettier"
     },
     "JSONC": {
       "tab_size": 2,
-      "preferred_line_length": 100,
       "formatter": "prettier"
     }
     // "C": {

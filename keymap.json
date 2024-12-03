@@ -14,6 +14,10 @@
 // 不使用 Macos 全局快捷键，如输入法切换等。
 //
 // 使用 > 来定义嵌套 context，父子 context 是直接的关系，使用 debug: open key contex view 命令来查看。
+//
+// 问题：
+// control-/ 不生效，需要替换为 cmd-/
+// ctrl-alt-x 不生效，需要替换为 cmd-alt-x
 [
   {
     // Global context - 最低优先级
@@ -31,27 +35,26 @@
       "cmd-enter": "menu::SecondaryConfirm",
       "escape": "menu::Cancel",
       "ctrl-g": ["workspace::SendKeystrokes", "escape"],
-
       /// Dock 面板
       "ctrl-x ctrl-a": "assistant::ToggleFocus",
       "ctrl-x ctrl-p": "project_panel::ToggleFocus",
       "ctrl-x ctrl-o": "outline_panel::ToggleFocus",
-      "ctrl-x ctrl-t": "terminal_panel::ToggleFocus",
       "ctrl-x ctrl-`": "terminal_panel::ToggleFocus",
       "cmd-1": "workspace::ToggleLeftDock",
       "cmd-2": "workspace::ToggleBottomDock",
       "cmd-3": "workspace::ToggleRightDock",
       "ctrl-`": "workspace::ToggleBottomDock",
-
       /// 文件操作
+      // workspace::Open 和 workspace::AddFolderToProject 对应的文件或目录必须存在。
       "ctrl-x ctrl-f": "workspace::Open",
+      // 将文件或目录添加到 workspace，这样后续打开该 workspace 时文件或目录都还在。
+      "ctrl-x ctrl-cmd-f": "workspace::AddFolderToProject",
+      "ctrl-x ctrl-t": "workspace::OpenInTerminal",
+      "ctrl-x ctrl-r": "editor::RevealInFileManager",
       "ctrl-x ctrl-s": "workspace::Save",
       "ctrl-x ctrl-w": "workspace::SaveAs",
       "ctrl-x ctrl-n": "workspace::NewFile",
       "ctrl-x 4 b": "workspace::NewFile",
-      // 将文件或目录添加到 workspace，这样后续打开该 workspace 时文件或目录都还在。
-      "ctrl-x ctrl-cmd-f": "workspace::AddFolderToProject",
-
       /// 命令和工具
       "ctrl-x p b": "branches::OpenRecent",
       "ctrl-x p f": "file_finder::Toggle",
@@ -61,8 +64,6 @@
       "ctrl-tab": "tab_switcher::Toggle",
       "ctrl-x b": "tab_switcher::Toggle",
       "ctrl-x ctrl-c": "zed::Quit",
-      "ctrl-x ctrl-r": "editor::RevealInFileManager",
-      "ctrl-x ctrl-cmd-r": "workspace::OpenInTerminal",
       "cmd-x": "command_palette::Toggle",
       "ctrl-h k": "debug::OpenKeyContextView"
     }
@@ -73,7 +74,6 @@
     "bindings": {
       "escape": "workspace::Unfollow",
       "ctrl-g": "workspace::Unfollow",
-
       /// Pane Item 切换
       "ctrl-[": "pane::ActivatePrevItem",
       "ctrl-]": "pane::ActivateNextItem",
@@ -152,7 +152,7 @@
       "cmd-shift-f": "editor::SelectToNextWordEnd",
       "cmd-shift-b": "editor::SelectToPreviousWordStart",
       "ctrl-space": "editor::SelectToNextWordEnd",
-      // ctrl-cmd-space 默认被绑定到 MacOS 的 editor::ShowCharacterPalette。
+      // ctrl-cmd-space 默认被绑定到 MacOS 的 editor::ShowCharacterPalette，在插入 emoji 字符时需要。
       "ctrl-cmd-space": "editor::SelectToNextWordEnd",
       "ctrl-u ctrl-space": "editor::SelectToPreviousWordStart",
       "cmd-l": "editor::SelectLine",
@@ -193,10 +193,7 @@
       // 剪切当前行到剪切板：DeleteLine 不会存剪贴板，但又没有 CutLine 命令。
       "ctrl-cmd-k": ["workspace::SendKeystrokes", "ctrl-a ctrl-k ctrl-k"],
       // 删除连续的空格为一个。
-      "cmd-space": [
-        "workspace::SendKeystrokes",
-        "cmd-b cmd-f cmd-shift-f cmd-shift-b backspace space"
-      ],
+      "cmd-space": ["workspace::SendKeystrokes", "cmd-b cmd-f cmd-shift-f cmd-shift-b backspace space"],
       // 删除连续的空行为一行。
       "cmd-\\": ["workspace::SendKeystrokes", "cmd-{ cmd-} ctrl-cmd-} ctrl-cmd-{ backspace"],
 
@@ -210,7 +207,8 @@
       "cmd-g cmd-g": "go_to_line::Toggle",
 
       /// 撤销和重做
-      "ctrl-/": "editor::Undo",
+      "ctrl-/": "editor::Undo", // FIXME: 无效？
+      "cmd-/": "editor::Undo",
       "ctrl-cmd-/": "editor::Redo",
 
       // buffer 内搜索
@@ -226,44 +224,25 @@
 
       /// 代码开发功能
       "ctrl-\\": "editor::ShowCompletions",
-      //"ctrl-c ctrl-h": "editor::ToggleInlayHints",
-      //"ctrl-c ctrl-a": "editor::ToggleCodeActions",
-      //"ctrl-c ctrl-i": "editor::Hover",
-      //"ctrl-c ctrl-s": "editor::ShowSignatureHelp",
-      //"ctrl-c ctrl-r": "editor::Rename",
-      // 在浏览器打开符号文档（如果使用 cargo doc 生成本地文档，则打开本地文档）。
-      //"ctrl-c d .": "editor::OpenDocs",
-      // "ctrl-c d s": ["task::Spawn", { "task_name": "open-rust-std-doc" }],
-      // "ctrl-c d w": ["task::Spawn", { "task_name": "open-rust-docs-rs" }],
-      // "ctrl-c d p": ["task::Spawn", { "task_name": "open-rust-crates-io" }],
-      // "ctrl-c ctrl-e": "diagnostics::Deploy",
-      // "ctrl-c ctrl-l": "diagnostics::Deploy",
-      // "ctrl-c ctrl-n": "editor::GoToDiagnostic",
-      // "ctrl-c ctrl-p": "editor::GoToPrevDiagnostic",
-
       "cmd-h": "editor::ToggleInlayHints",
+      "cmd-a": "editor::ToggleCodeActions",
       "cmd-r": "editor::Rename",
       "cmd-i": "editor::Hover",
       "ctrl-c ctrl-d": "editor::OpenDocs",
       "cmd-s": "editor::ShowSignatureHelp",
       "cmd-.": "editor::GoToDefinition",
-      "ctrl-cmd-.": "editor::GoToDefinitionSplit",
       "cmd-,": "editor::GoToImplementation",
-      "ctrl-cmd-,": "editor::GoToImplementationSplit",
       "cmd-?": "editor::FindAllReferences",
 
       "cmd-e": "diagnostics::Deploy",
       "cmd-j": "editor::GoToDiagnostic",
       "cmd-k": "editor::GoToPrevDiagnostic",
 
-      //"ctrl-c ctrl-d": "editor::ToggleHunkDiff",
-      "alt-h": "editor::ToggleHunkDiff",
-      "ctrl-alt-h": "editor::ExpandAllHunkDiffs",
+      "alt-d": "editor::ToggleHunkDiff",
+      "alt-shift-d": "editor::ExpandAllHunkDiffs",
       "alt-a": "editor::ApplyDiffHunk",
-      "ctrl-alt-a": "editor::ApplyAllDiffHunks",
+      "alt-shift-a": "editor::ApplyAllDiffHunks",
       "alt-r": "editor::RevertSelectedHunks",
-      // "ctrl-c ctrl-j": "editor::GoToHunk",
-      // "ctrl-c ctrl-k": "editor::GoToPrevHunk",
       "alt-j": "editor::GoToHunk",
       "alt-k": "editor::GoToPrevHunk",
 
@@ -628,6 +607,9 @@
       "escape": ["terminal::SendKeystroke", "escape"],
       "enter": ["terminal::SendKeystroke", "enter"],
       "ctrl-c": ["terminal::SendKeystroke", "ctrl-c"],
+      // ctrl-t 和 alt-c 是 fzf 默认快捷键。
+      "ctrl-t": ["terminal::SendKeystroke", "ctrl-t"],
+      "alt-c": ["terminal::SendKeystroke", "alt-c"],
       "ctrl-s": "buffer_search::Deploy",
       "cmd-enter": "workspace::NewTerminal",
       "cmd-b": ["terminal::SendText", "\u001bb"],

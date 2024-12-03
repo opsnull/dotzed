@@ -72,6 +72,8 @@ zed 打开 project 时, 会使用 direnv/editorconfig 等机制来获得项目�
 
 # workspace
 
+快速切换 zed 的多个 window：在 MacOS 的 键盘 -》快捷键 -》调度中心 中，设置“应用程序窗口”快捷键：cmd-`
+
 使用 `file finder: toggle` 命令来打开一个项目或文件，会显示一个历史选择列表（Picker）:
 - enter：在当前 window 中打开；
 - cmd-enter：在新的 window 中打开；
@@ -909,7 +911,10 @@ PR: https://github.com/zed-industries/zed/pull/13937
 + `snippets.json`：定义语言无关的全局 snippets；
 + 其它文件是语言名称相关的 json 文件，如 `org.json`;
 
+另外，zed 实现的 snippet 的 prefix 不能使用 < 开头，如 <e 是不能触发不全的，但是可以使用 _e。
+
 https://github.com/rafamadriz/friendly-snippets 项目提供了丰富的 snippets, 可以将将它 clone 下来后，将 snippets 目录替换 `~/.config/zed/snippets`，同时需要将其中的子目录内容都移动到 `~/.config/zed/snippets` 目录下（可能需要手动合并）。
++ 需要修改 prefix。
 
 ``` sh
 zj@a:~/.config/zed$ ls snippets/rust/
@@ -1269,11 +1274,63 @@ if resp.status() != StatusCode::OK {
 
 # 构建 WebRTC 失败
 
-> An SSL error has occurred and a secure connection to the server cannot be made
+编译 WebRTC 时内部使用 swift build 命令从 github 下载依赖包，所以需要开代理。但它不识别 HTTP/HTTPS 环境变量代理，而是使用 MacOS 系统的全局代理。
++ ali lang 设置的加速代理会报 “An SSL error has occurred and a secure connection to the server ”；
+
+``` sh
+zj@a:~/go/src/github.com/zed-industries/zed$ RUST_BACKTRACE=1 ./script/bundle-mac -ldi
+~/go/src/github.com/zed-industries/zed/crates/zed ~/go/src/github.com/zed-industries/zed
+~/go/src/github.com/zed-industries/zed
+Building for local target only.
+   Compiling live_kit_client v0.1.0 (/Users/alizj/go/src/github.com/zed-industries/zed/crates/live_kit_client)
+error: failed to run custom build command for `live_kit_client v0.1.0 (/Users/alizj/go/src/github.com/zed-industries/zed/crates/live_kit_client)`
+note: To improve backtraces for build dependencies, set the CARGO_PROFILE_DEV_BUILD_OVERRIDE_DEBUG=true environment variable to enable debug information generation.
+
+Caused by:
+  process didn't exit successfully: `/Users/alizj/go/src/github.com/zed-industries/zed/target/debug/build/live_kit_client-3336570aded05b91/build-script-build` (exit status: 101)
+  --- stdout
+  cargo:rerun-if-env-changed=MACOSX_DEPLOYMENT_TARGET
+  cargo:rerun-if-changed=LiveKitBridge/Sources
+  cargo:rerun-if-changed=LiveKitBridge/Package.swift
+  cargo:rerun-if-changed=LiveKitBridge/Package.resolved
+
+  --- stderr
+  [4257/21811700] Downloading https://github.com/webrtc-sdk/Specs/releases/download/104.5112.17/WebRTC.xcframework.zip
+  Downloading binary artifact https://github.com/webrtc-sdk/Specs/releases/download/104.5112.17/WebRTC.xcframework.zip
+  error: failed downloading 'https://github.com/webrtc-sdk/Specs/releases/download/104.5112.17/WebRTC.xcframework.zip' which is required by binary target 'WebRTC': downloadError("An SSL error has occurred and a secure connection to the server cannot be made.. Would you like to connect to the server anyway?")
+  thread 'main' panicked at crates/live_kit_client/build.rs:80:9:
+  Failed to compile swift package in /Users/alizj/go/src/github.com/zed-industries/zed/crates/live_kit_client/LiveKitBridge
+  stack backtrace:
+     0: rust_begin_unwind
+               at /rustc/eeb90cda1969383f56a2637cbd3037bdf598841c/library/std/src/panicking.rs:665:5
+     1: core::panicking::panic_fmt
+               at /rustc/eeb90cda1969383f56a2637cbd3037bdf598841c/library/core/src/panicking.rs:74:14
+     2: build_script_build::build_bridge
+     3: build_script_build::main
+     4: <fn() as core::ops::function::FnOnce<()>>::call_once
+  note: Some details are omitted, run with `RUST_BACKTRACE=full` for a verbose backtrace.
+```
+
+解决办法：在网络设置中， 将 代理 -》SOCKS 代理 设置为 127.0.0.1:1080。
+
+``` sh
+# 查看系统全局代理，确保没有谁用ali代理，而是使用上面的 1080 代理。
+scutil --proxy
+```
+
+或者手动下载 zip 包，然后解压到 target/aarch64-apple-darwin/LiveKitBridge_target/artifacts/specs/WebRTC，目解压后的目录名为：WebRTC.xcframework
+
+``` sh
+target/aarch64-apple-darwin/LiveKitBridge_target/artifacts/specs/WebRTC
+target/aarch64-apple-darwin/LiveKitBridge_target/artifacts/specs/WebRTC/WebRTC.xcframework
+target/aarch64-apple-darwin/LiveKitBridge_target/artifacts/specs/WebRTC/WebRTC.xcframework/macos-arm64_x86_64/WebRTC.framework
+```
+
+编译后的结果：
 
 ```sh
-# 查看系统全局代理：
-scutil --proxy
+zj@a:~/go/src/github.com/zed-industries/zed$ ls target/debug/WebRTC.framework/
+Headers@  Modules@  Resources@  Versions/  WebRTC@
 
 zj@a:~/go/src/github.com/zed-industries/zed$ ls -l target/debug/WebRTC.framework/
 total 0
