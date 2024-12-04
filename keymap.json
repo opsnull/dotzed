@@ -15,9 +15,6 @@
 //
 // 使用 > 来定义嵌套 context，父子 context 是直接的关系，使用 debug: open key contex view 命令来查看。
 //
-// 问题：
-// control-/ 不生效，需要替换为 cmd-/
-// ctrl-alt-x 不生效，需要替换为 cmd-alt-x
 [
   {
     // Global context - 最低优先级
@@ -35,6 +32,7 @@
       "cmd-enter": "menu::SecondaryConfirm",
       "escape": "menu::Cancel",
       "ctrl-g": ["workspace::SendKeystrokes", "escape"],
+
       /// Dock 面板
       "ctrl-x ctrl-a": "assistant::ToggleFocus",
       "ctrl-x ctrl-p": "project_panel::ToggleFocus",
@@ -44,6 +42,7 @@
       "cmd-2": "workspace::ToggleBottomDock",
       "cmd-3": "workspace::ToggleRightDock",
       "ctrl-`": "workspace::ToggleBottomDock",
+
       /// 文件操作
       // workspace::Open 和 workspace::AddFolderToProject 对应的文件或目录必须存在。
       "ctrl-x ctrl-f": "workspace::Open",
@@ -55,6 +54,7 @@
       "ctrl-x ctrl-w": "workspace::SaveAs",
       "ctrl-x ctrl-n": "workspace::NewFile",
       "ctrl-x 4 b": "workspace::NewFile",
+
       /// 命令和工具
       "ctrl-x p b": "branches::OpenRecent",
       "ctrl-x p f": "file_finder::Toggle",
@@ -74,6 +74,7 @@
     "bindings": {
       "escape": "workspace::Unfollow",
       "ctrl-g": "workspace::Unfollow",
+
       /// Pane Item 切换
       "ctrl-[": "pane::ActivatePrevItem",
       "ctrl-]": "pane::ActivateNextItem",
@@ -106,9 +107,7 @@
       "ctrl-x 3": "pane::SplitRight",
       "cmd-t": "workspace::NewFile",
       "cmd-shift-t": "pane::ReopenClosedItem",
-      "ctrl-x t r": "pane::ReopenClosedItem",
-      "ctrl-x t p": "pane::RevealInProjectPanel",
-      "ctrl-x t 0": "pane::CloseInactiveItems",
+      "ctrl-x ctrl-cmd-p": "pane::RevealInProjectPanel",
       "ctrl-x ctrl-=": "zed::IncreaseBufferFontSize",
       "ctrl-x ctrl--": "zed::DecreaseBufferFontSize",
       "ctrl-x ctrl-0": "zed::ResetBufferFontSize"
@@ -162,7 +161,7 @@
       "ctrl-shift-n": "editor::SelectDown",
       "ctrl-cmd-{": "editor::SelectToStartOfParagraph",
       "ctrl-cmd-}": "editor::SelectToEndOfParagraph",
-      //  选中整个段落。
+      // 选中整个段落。
       "cmd-shift-h": ["workspace::SendKeystrokes", "cmd-{ ctrl-cmd-}"],
       "ctrl-cmd-<": "editor::SelectToBeginning",
       "ctrl-cmd->": "editor::SelectToEnd",
@@ -207,19 +206,16 @@
       "cmd-g cmd-g": "go_to_line::Toggle",
 
       /// 撤销和重做
-      "ctrl-/": "editor::Undo", // FIXME: 无效？
-      "cmd-/": "editor::Undo",
+      "ctrl-/": "editor::Undo",
       "ctrl-cmd-/": "editor::Redo",
 
       // buffer 内搜索
       "ctrl-s": "buffer_search::Deploy",
       // project 项目搜索
-      "ctrl-u ctrl-s": "pane::DeploySearch",
       "ctrl-cmd-s": "pane::DeploySearch",
 
       // 显式项目大纲
       "ctrl-o": "outline::Toggle",
-      "ctrl-u ctrl-o": "project_symbols::Toggle",
       "ctrl-cmd-o": "project_symbols::Toggle",
 
       /// 代码开发功能
@@ -239,9 +235,9 @@
       "cmd-k": "editor::GoToPrevDiagnostic",
 
       "alt-d": "editor::ToggleHunkDiff",
-      "alt-shift-d": "editor::ExpandAllHunkDiffs",
+      "ctrl-alt-d": "editor::ExpandAllHunkDiffs",
       "alt-a": "editor::ApplyDiffHunk",
-      "alt-shift-a": "editor::ApplyAllDiffHunks",
+      "ctrl-alt-a": "editor::ApplyAllDiffHunks",
       "alt-r": "editor::RevertSelectedHunks",
       "alt-j": "editor::GoToHunk",
       "alt-k": "editor::GoToPrevHunk",

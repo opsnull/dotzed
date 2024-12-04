@@ -49,11 +49,12 @@
   "confirm_quit": true,
   "cursor_shape": "bar",
   // Sarasa Mono SC 是基于 Isoveka 的中英文编程字体，字体偏小。
-  //"buffer_font_family": "Sarasa Mono SC",
-  "buffer_font_size": 16,
+  // 首选 Mono 字体，因为它的中英文是等宽的，否则 softwrap 会有问题。
+  "buffer_font_family": "LXGW WenKai Mono Screen",
+  "buffer_font_size": 18,
   "ui_font_size": 18,
   // comfortable 是 1.618 倍行距，便于阅读。
-  "buffer_line_height": "comfortable",
+  "buffer_line_height": "standard",
   "buffer_font_features": {
     // calt 指 ligatures
     "calt": false
