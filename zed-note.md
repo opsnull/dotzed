@@ -1,30 +1,6 @@
 # build
 
-对 `script/bundle-mac` 文件做如下修改:
-
-```sh
-zj@a:~/go/src/github.com/zed-industries/zed$ git diff script/bundle-mac
-diff --git a/script/bundle-mac b/script/bundle-mac
-index bc95e1dd6a..a20fd09268 100755
---- a/script/bundle-mac
-+++ b/script/bundle-mac
-@@ -1,5 +1,5 @@
- #!/usr/bin/env bash
--
-+set -x
- set -euo pipefail
- source script/lib/blob-store.sh
-
-@@ -232,7 +231,7 @@ function sign_app_binaries() {
-     fi
-
-     echo "Downloading git binary"
--    download_git "${architecture}" "${app_path}/Contents/MacOS/git"
-+    #download_git "${architecture}" "${app_path}/Contents/MacOS/git"
-
-     # Note: The app identifier for our development builds is the same as the app identifier for nightly.
-     cp crates/zed/contents/$channel/embedded.provisionprofile "${app_path}/Contents/"
-```
+注释 `script/bundle-mac` 文件中 download_git 函数的调用。
 
 修改程序名称：修改 `crates/zed/Cargo.toml` 文件中 `[package.metadata.bundle-dev]` 中 name，由 "Zed Dev" 修改为 "Dev".
 
@@ -47,7 +23,7 @@ $ RUST_LOG=debug /Applications/Zed\ Dev.app/Contents/MacOS/zed
 
 # zed cli
 
-编译 zed 后生成 cli 和 zed 两个 binary，并打包到 Mac 应用中，执行上面菜单中的 `Install CLI` 命令来更新系统的 zed cli binary。
+编译 zed 后生成 cli 和 zed 两个 binary，并打包到 Mac 应用中，执行菜单中的 `Install CLI` 命令来更新系统的 zed cli binary。
 
 ```sh
 zj@a:~$ which zed
@@ -60,7 +36,6 @@ lrwxr-xr-x 1 root 44 10 26 14:54 /usr/local/bin/zed -> '/Applications/Zed Dev.ap
 
 ```sh
 $ zed ~/emacs/minimal.el # 在当前 workspae 中打开文件，但是不将文件添加到 workspace
-$ zed -a ~/emacs/minimal.el # 在当前 workspace 中打开文件，同时将文件添加到 workspace
 $ zed -a ~/emacs # 将目录添加到 workspace
 ```
 
@@ -72,7 +47,7 @@ zed 打开 project 时, 会使用 direnv/editorconfig 等机制来获得项目�
 
 # workspace
 
-快速切换 zed 的多个 window：在 MacOS 的 键盘 -》快捷键 -》调度中心 中，设置“应用程序窗口”快捷键：cmd-`
+快速切换 zed 的多个 window：在 MacOS 的 键盘 -》快捷键 -》键盘 中，设置“将焦点移动到下一个窗口”快捷键：cmd-`
 
 使用 `file finder: toggle` 命令来打开一个项目或文件，会显示一个历史选择列表（Picker）:
 - enter：在当前 window 中打开；
@@ -84,7 +59,9 @@ zed 打开 project 时, 会使用 direnv/editorconfig 等机制来获得项目�
 
 如果想在当前 window 中打开文件或目录，而且后续重新打开该 workspace 时还保留，则可以执行 `workspace: add folder to project` 命令将文件或目录添加到 workspace。
 
-对于打开的多个 window，可以通过 zed 的 Window 菜单进行切换选择。
+对于有多个 project 的 workspace，如果要在某个 project 中搜索文件，则执行 C-x p f 时，可以先输入 project 名称或路径关键字，然后空格，再输入文件名。
+
+![20241206183913.jpg](./images/20241206183913.jpg)
 
 一个 window 有多个 panes （通过 spit），一个 pane 有多个 items（tabs）。
 
@@ -111,9 +88,9 @@ zed 打开 MacOS 系统文件对话框后，按 `cmd-shift-g` 可以按照文件
     "wrap_guides": [90, 120],
     ```
 
-在终端中快速打开当前 pane item 对应的目录：`workspace::OpenInTerminal`。
+在终端中快速打开当前编辑文件对应目录 `workspace::OpenInTerminal`，或者快捷键 `Ctrl-x Ctrl-t`。
 
-在 editor 或 terminal buffer 中，当光标位于 URL (需要带 http 或 https 前缀)或 File Path 上时，可以按 `cmd` 来快速打开。
+在 editor 或 terminal buffer 中，当光标位于文件、目录或带 http/https 的 URL 上时，按 `cmd` 命令可以快速打开。对于目录，会自动添加到当前 workspace 中。也可以选中 URL 的一部分，这样只打开选择部分的 URL。
 
 快速选择一个 block：将光标移动到 block 边界字符上，然后按 `ctrl-=` 来按语法选择。
 
@@ -519,7 +496,7 @@ linux-aarch64/
 zj@a:~/Library/Application Support/Zed$ ls remote_servers/dev/linux-aarch64/0.160.0.gz
 ```
 
-本地安装的扩展、LSP Server、Remote binary 等位于 `~/Library/Application\ Support/Zed/` 目录下：
+本地安装的扩展、LSP Server、Remote binary 等位于 `~/Library/Application Support/Zed/` 目录下：
 
 ```sh
 $ ls ~/Library/Application\ Support/Zed/
@@ -550,7 +527,17 @@ zed 支持 by 语言参数[参数列表](https://zed.dev/docs/configuring-langua
         "soft_wrap": "preferred_line_length",
         "language_servers": ["intelephense", "!phpactor", "..."],
         "enable_language_server": false  // 是否开启 language server,
-         "format_on_save": "off"
+        // "format_on_save": "off",
+        "format_on_save": {
+          "external": {
+            "command": "./node_modules/.bin/prettier",
+            "arguments": [
+              "--ignore-unknown",
+              "--stdin-filepath",
+              "{buffer_path}"
+            ]
+          }
+        }
       }
     }
 
@@ -581,6 +568,13 @@ zed 支持 by 语言参数[参数列表](https://zed.dev/docs/configuring-langua
         }
       }
     }
+
+## prettier
+
+可以按照语言来指定和配置 prettier 的参数。同时在项目的根目录下，添加 prettier 使用的配置文件：
+1. .prettierignore
+2. .prettierrc 或 .editorconfig
+
 
 ## python
 
@@ -670,7 +664,7 @@ zed 也会自动根据项目语言生成一些 task，如对于 rust 项目，�
 
 env 字段指定添加到 task 的环境变量，不支持变量替换，优先级高，会覆盖 terminal 环境变量。
 
-zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。但是当前 zed 对 work directory 的判断是基于当前 _正在编辑的文件_ 为基础的，可能会将普通文件判断为 work directory，从而导致 task 执行静默出错。
+zed 使用 terminal shell 来执行 task 命令 `bash -i -c 'xxx'`。
 
 注意：
 
@@ -800,16 +794,38 @@ lazygit task：
 
         ``` json
         {
-          "label": "Lazygit",
-          "command": "lazygit",
+          "label": "lazygit",
+          //"command": "macism com.apple.keylayout.ABC; lazygit",
+          "command": "azygit",
           "args": [],
           "env": {
             "XDG_CONFIG_HOME": "/Users/alizj/.config"
           },
-          "use_new_terminal": false, // 复用已有未结束的终端
+          "use_new_terminal": false,
           "allow_concurrent_runs": true,
-          "hide": "always" // 任务结束后自动关闭终端
+          "hide": "never",
+          "cwd": "${ZED_WORKTREE_ROOT}",
+          "show_command": false,
+          "show_summary": false
         }
+        ```
+
+3. 配置快捷键：
+  + 对于 task:Spawn 快捷键打开的终端 task，可以使用 "target": "center" 参数用于控制将终端 pane 全屏显示。
+
+        ``` json
+        {
+          "context": "Workspace && !Terminal",
+          "bindings": {
+            "ctrl-t": "task::Spawn",
+            // 重新执行上次的 task
+            "ctrl-cmd-t": "task::Rerun",
+            // 打开 lazygit, "target": "center" 参数用于控制将终端 pane 全屏显示。
+            "shift shift": ["task::Spawn", { "task_name": "lazygit", "target": "center" }]
+            // 快速切换输入法
+            //"shift shift": ["task::Spawn", { "task_name": "switch-input-method" }]
+          }
+        },
         ```
 
 # assistant

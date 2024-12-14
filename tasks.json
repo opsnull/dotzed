@@ -18,6 +18,7 @@
   {
     "label": "lazygit",
     "command": "macism com.apple.keylayout.ABC; lazygit",
+    //"command": "lazygit",
     "args": [],
     "env": {
       "XDG_CONFIG_HOME": "/Users/alizj/.config"

@@ -11,9 +11,7 @@
 // 1. 如果 shift 后面是字母，OK。
 // 2. 如果 shift 后面是第二按键，则直接使用第二按键（如 }) 而不要使用 shift（如不使用 shift-})。
 //
-// 不使用 Macos 全局快捷键，如输入法切换等。
-//
-// 使用 > 来定义嵌套 context，父子 context 是直接的关系，使用 debug: open key contex view 命令来查看。
+// 使用 > 来定义父子（直接关系）context，使用 debug: open key contex view 命令来查看。
 //
 [
   {
@@ -65,7 +63,8 @@
       "ctrl-x b": "tab_switcher::Toggle",
       "ctrl-x ctrl-c": "zed::Quit",
       "cmd-x": "command_palette::Toggle",
-      "ctrl-h k": "debug::OpenKeyContextView"
+      "ctrl-h k": "debug::OpenKeyContextView",
+      "alt-c": "editor::OpenContextMenu"
     }
   },
   {
@@ -177,6 +176,7 @@
       /// 剪切和粘贴
       "ctrl-w": "editor::Cut",
       "cmd-w": "editor::Copy",
+      "cmd-c": "editor::Copy",
       "ctrl-y": "editor::Paste",
 
       /// 删除操作
@@ -201,7 +201,8 @@
       "ctrl-m": "editor::NewlineBelow",
       "cmd-up": "editor::MoveLineUp",
       "cmd-down": "editor::MoveLineDown",
-      "ctrl-cmd-l": "editor::DuplicateLineUp",
+      // DuplicateSelection: 如果有选择，则重复选择，否则重复当前行。
+      "ctrl-cmd-l": "editor::DuplicateSelection",
       "cmd-^": "editor::JoinLines",
       "cmd-g cmd-g": "go_to_line::Toggle",
 
@@ -262,7 +263,7 @@
     }
   },
   {
-    // 编辑普通文件、编辑 assistant/multibuffer 时有效（mode 均为 full）。
+    // 编辑普通文件、编辑 assistant/multibuffer 时有效（mode 均为 full），与之对应的是 mode 为 single_line，是单行输入的场景。
     // 与 Editor 相同有优先级。
     "context": "Editor && mode == full",
     "bindings": {
@@ -289,6 +290,24 @@
     "bindings": {
       "enter": "editor::ConfirmCompletion",
       "tab": "editor::ComposeCompletion"
+    }
+  },
+  {
+    // 在有选择的情况下，改变选择范围。先使用带 shift 的按键触发选择，然后使用下面的快捷键来改变选择范围。
+    "context": "Editor && selection",
+    "bindings": {
+      "ctrl-f": "editor::SelectRight",
+      "ctrl-b": "editor::SelectLeft",
+      "ctrl-n": "editor::SelectDown",
+      "ctrl-p": "editor::SelectUp",
+      "ctrl-a": "editor::SelectToBeginningOfLine",
+      "ctrl-e": "editor::SelectToEndOfLine",
+      "cmd-f": "editor::SelectToNextWordEnd",
+      "cmd-b": "editor::SelectToPreviousWordStart",
+      "cmd-{": "editor::SelectToStartOfParagraph",
+      "cmd-}": "editor::SelectToEndOfParagraph",
+      "cmd-<": "editor::SelectToBeginning",
+      "cmd->": "editor::SelectToEnd"
     }
   },
   {
@@ -335,7 +354,9 @@
     "bindings": {
       "ctrl-t": "task::Spawn",
       // 重新执行上次的 task
-      "ctrl-cmd-t": "task::Rerun"
+      "ctrl-cmd-t": "task::Rerun",
+      // 打开 lazygit, "target": "center" 参数用于控制将终端 pane 全屏显示。
+      "shift shift": ["task::Spawn", { "task_name": "lazygit", "target": "center" }]
       // 快速切换输入法
       //"shift shift": ["task::Spawn", { "task_name": "switch-input-method" }]
     }

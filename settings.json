@@ -7,24 +7,9 @@
   },
   // 不使用缺省的 keymap，只使用自定义 keymap。
   "base_keymap": "None",
+  "show_user_picture": false,
   // open 和 save as 使用 zed 内置的文件选择，更高效。
   "use_system_path_prompts": false,
-  "assistant": {
-    "show_hints": false,
-    "default_model": {
-      "provider": "zed.dev",
-      "model": "claude-3-5-sonnet-latest"
-    },
-    "inline_alternatives": [
-      {
-        "provider": "zed.dev",
-        "model": "claude-3-5-sonnet-latest"
-      }
-    ],
-    "button": true,
-    "enabled": true,
-    "version": "2"
-  },
   "journal": {
     "hour_format": "hour24",
     "path": "~/docs"
@@ -51,10 +36,10 @@
   // Sarasa Mono SC 是基于 Isoveka 的中英文编程字体，字体偏小。
   // 首选 Mono 字体，因为它的中英文是等宽的，否则 softwrap 会有问题。
   "buffer_font_family": "LXGW WenKai Mono Screen",
-  "buffer_font_size": 18,
+  "buffer_font_size": 16,
   "ui_font_size": 18,
   // comfortable 是 1.618 倍行距，便于阅读。
-  "buffer_line_height": "standard",
+  "buffer_line_height": "comfortable",
   "buffer_font_features": {
     // calt 指 ligatures
     "calt": false
@@ -82,6 +67,7 @@
   "current_line_highlight": "all",
   "auto_signature_help": true,
   "hover_popover_enabled": true,
+  "hover_popover_delay": 300,
   "scroll_sensitivity": 0.3,
   // 空闲超过指定时间后自动保存。
   "autosave": { "after_delay": { "milliseconds": 5000 } },
@@ -125,6 +111,8 @@
     "show": true,
     "show_nav_history_buttons": false
   },
+  // 一个 pane 最多显示的 tab 数量
+  "max_tabs": 3,
   "toolbar": {
     // 是否显示搜索、AI、Inlay 等快速操作按钮。
     "quick_actions": false,
@@ -329,6 +317,7 @@
       }
     },
     "rust-analyzer": {
+      // 使用源码编译安装的 rust-analyzer
       "binary": {
         "path": "/Users/alizj/.cargo/bin/rust-analyzer",
         "arguments": []
