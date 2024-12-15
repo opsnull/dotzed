@@ -1,6 +1,6 @@
 # build
 
-注释 `script/bundle-mac` 文件中 download_git 函数的调用。
+注释 `script/bundle-mac` 文件中 `download_git` 函数的调用。
 
 修改程序名称：修改 `crates/zed/Cargo.toml` 文件中 `[package.metadata.bundle-dev]` 中 name，由 "Zed Dev" 修改为 "Dev".
 
@@ -36,7 +36,7 @@ lrwxr-xr-x 1 root 44 10 26 14:54 /usr/local/bin/zed -> '/Applications/Zed Dev.ap
 
 ```sh
 $ zed ~/emacs/minimal.el # 在当前 workspae 中打开文件，但是不将文件添加到 workspace
-$ zed -a ~/emacs # 将目录添加到 workspace
+$ zed -a ~/emacs         # 将目录添加到 workspace
 ```
 
 zed 获得环境变量的方式：
@@ -67,7 +67,7 @@ zed 打开 project 时, 会使用 direnv/editorconfig 等机制来获得项目�
 
 pane 有自己的 tool bar 和导航 history（前进、后退）。光标在 Pane buffer 的移动位置会被记录到 Pane 导航历史记录中，可以点击左上角的左、右箭头来回到上一次、下一次的位置。通过使用导航历史快捷键，可以快捷的前后移动。
 
-可以使用 ctrl-0/1/2 等数字快捷键快速在多个 pane tab 切换。
+使用 ctrl-0/1/2 等数字快捷键快速在多个 pane tab 切换。
 
 将 project 和 outline panel 都设置到 left dock, 便于查看。
 
@@ -77,7 +77,7 @@ zed 打开 MacOS 系统文件对话框后，按 `cmd-shift-g` 可以按照文件
 
 使用 tab switcher 可以快速在当前已经打开的文件间切换，而且默认选择上一次打开的文件。这是最便捷的多文件编辑时切换方式。
 
-设置 `soft wrap` 模式为 `bounded`，且设置较大的 `preferred_line_length` 值，这样不需要人为的为一段话插入物理换行，后续还可以根据 editor 窗口大小自动软换行。
+设置 `soft wrap` 模式为 `bounded`，且设置较大的 `preferred_line_length` 值，这样不需要人为插入物理换行，后续还可以根据 editor 窗口大小自动软换行。
 
     ``` json
     // 根据 preferred_line_length 或当前 editor 的宽度来自动“软”换行。
@@ -308,7 +308,7 @@ Workspace 优先级比 Editor、Pane、Term 低，但比 Global 高，用于定�
 gpui::actions!() 和 impl_actions!() 宏定义了各种命令面板中的命令，如：
 https://github.com/zed-industries/zed/blob/92c29be74cc2ac09dfe0d71d5a1048121b6ab4c6/crates/editor/src/actions.rs#L156
 
-keymap 的 context 除了 > 外，并不不表示层次关系，或有衔接关系，而只是用于将当前节点的 identify 与条件进行匹配。
+keymap 的 context 除了 > 外，并不不表示层次关系或有衔接关系，而只是用于将当前节点的 identify 与条件进行匹配。
 
 - https://github.com/zed-industries/zed/blob/d209eab05879ddd49c4ebbb439966150f7c3b686/crates/workspace/src/workspace.rs#L4706
 - https://github.com/zed-industries/zed/blob/d209eab05879ddd49c4ebbb439966150f7c3b686/crates/gpui/src/keymap.rs#L78
@@ -860,22 +860,6 @@ inline assistant 使用当前 assistant panel 的内容作为 context，所以�
 
 inline assistant 中不能使用 slash 命令，如 /file ，但是 assistant panel 可以。
 
-支持的 slash 命令：
-
-- /default: Inserts the default prompt into the context
-- /diagnostics: Injects errors reported by the project's language server into the context
-- /fetch: Fetches the content of a webpage and inserts it into the context
-- /file: Inserts a single file or a directory of files into the context
-- /now: Inserts the current date and time into the context
-- /prompt: Adds a custom-configured prompt to the context (see Prompt Library)
-- /symbols: Inserts the current tab's active symbols into the context
-- /tab: Inserts the content of the active tab or all open tabs into the context
-- /terminal: Inserts a select number of lines of output from the terminal
-- /search: Performs semantic search for content in your project based on natural language
-  Not generally available yet, but some users may have access to it.
-- /workflow: Opts into the edit workflow for a specific context
-  Not generally available yet.
-
 部分命令支持参数，如：
 
 - /diagnostics [--include-warnings] [path]
@@ -1358,16 +1342,4 @@ lrwxr-xr-x 1 alizj  23 11  2 11:08 WebRTC -> Versions/Current/WebRTC*
 
 zj@a:~/go/src/github.com/zed-industries/zed$ ls -l target/debug/WebRTC.framework/Resources/Info.plist
 -rw-r--r-- 1 alizj 1018 11  2 11:08 target/debug/WebRTC.framework/Resources/Info.plist
-```
-
-编辑生成的 `Info.plist` 文件，在 dict 中添加如下内容：
-
-- 参考：https://github.com/microsoft/vscode/issues/73806#issuecomment-496334904
-
-```xml
-<key>NSAppTransportSecurity</key>
-   <dict>
-       <key>NSAllowsArbitraryLoads</key>
-       <true/>
-   </dict>
 ```
