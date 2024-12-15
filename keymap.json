@@ -228,6 +228,7 @@
       "ctrl-c ctrl-d": "editor::OpenDocs",
       "cmd-s": "editor::ShowSignatureHelp",
       "cmd-.": "editor::GoToDefinition",
+      "ctrl-cmd-.": "editor::GoToDefinitionSplit",
       "cmd-,": "editor::GoToImplementation",
       "cmd-?": "editor::FindAllReferences",
 
@@ -356,7 +357,7 @@
       // 重新执行上次的 task
       "ctrl-cmd-t": "task::Rerun",
       // 打开 lazygit, "target": "center" 参数用于控制将终端 pane 全屏显示。
-      "shift shift": ["task::Spawn", { "task_name": "lazygit", "target": "center" }]
+      "ctrl-x g": ["task::Spawn", { "task_name": "lazygit", "target": "center" }]
       // 快速切换输入法
       //"shift shift": ["task::Spawn", { "task_name": "switch-input-method" }]
     }

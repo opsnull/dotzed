@@ -1,4 +1,11 @@
 {
+  "assistant": {
+    "default_model": {
+      "provider": "zed.dev",
+      "model": "claude-3-5-sonnet-latest"
+    },
+    "version": "2"
+  },
   // 默认是 One Dark 和 One Light theme。
   "theme": {
     "dark": "Gruvbox Dark Hard",
@@ -112,7 +119,7 @@
     "show_nav_history_buttons": false
   },
   // 一个 pane 最多显示的 tab 数量
-  "max_tabs": 3,
+  "max_tabs": 10,
   "toolbar": {
     // 是否显示搜索、AI、Inlay 等快速操作按钮。
     "quick_actions": false,
